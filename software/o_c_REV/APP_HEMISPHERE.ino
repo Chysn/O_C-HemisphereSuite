@@ -1,3 +1,9 @@
+#define HEMISPHERE_AVAILABLE_APPLETS 2
+#define HEMISPHERE_APPLETS { \
+    DECLARE_APPLET('S','H', "Sample & Hold", SampleAndHold), \
+    DECLARE_APPLET('M','M', "MinMax", MinMax),\
+}
+
 #define DECLARE_APPLET(a, b, name, prefix) \
 { TWOCC<a,b>::value, name, prefix ## _Start, prefix ## _Controller, \
   prefix ## _View, prefix ## _Screensaver, \
@@ -66,12 +72,13 @@ public:
 	}
 
 	void gfxOutputLine(int out, int value) {
-		gfxRect(1, 20 + (out * 15), ProportionCV(value, 60), 10);
+		gfxRect(1, 20 + (out * 15), ProportionCV(value, 60), 1);
 	}
 
 	int ProportionCV(int value, int max) {
 		int divisions = HEMISPHERE_MAX_CV / max; // Divide the CV into little pieces
 		int proportion = value / divisions;
+		if (proportion > max) proportion = max;
 		return proportion;
 	}
 
@@ -119,17 +126,11 @@ class HemisphereManager {
 public:
 	void Init() {
 		select_mode = -1; // Not selecting
-		Applet applets[] = {
-
-				DECLARE_APPLET('S','H', "Sample & Hold", SampleAndHold),
-				DECLARE_APPLET('M','M', "MinMax", MinMax),
-
-		};
+		Applet applets[] = HEMISPHERE_APPLETS;
 		memcpy(&available_applets, &applets, sizeof(applets));
 
 		SetApplet(0, 0);
 		SetApplet(1, 1);
-		ExecuteStart();
 	}
 
 	void Resume() {
@@ -138,23 +139,29 @@ public:
 
 	void SetApplet(int hemisphere, int applet_index) {
 		my_applets[hemisphere] = applet_index;
+		available_applets[applet_index].Start(hemisphere);
 	}
 
-    void EnterSelectMode(int hemisphere) {
-    		select_mode = hemisphere;
-    }
+	void ChangeApplet(int dir) {
+		if (SelectModeEnabled()) {
+			int index = my_applets[select_mode];
+			index += dir;
+			if (index >= 2) index = 0;
+			if (index < 0) index = 1;
+			SetApplet(select_mode, index);
+		}
+	}
 
-    void CancelSelectMode() {
-    		select_mode = -1;
-    }
-
-    void ExecuteStart()
-    {
-    		for (int a = 0; a < 2; a++)
-    		{
-    			int idx = my_applets[a];
-    			available_applets[idx].Start(a);
+    void ToggleSelectMode(int hemisphere) {
+    		if (hemisphere == select_mode) {
+    			select_mode = -1;
+    		} else {
+    			select_mode = hemisphere;
     		}
+    }
+
+    bool SelectModeEnabled() {
+    		return select_mode > -1;
     }
 
     void ExecuteControllers() {
@@ -174,15 +181,11 @@ public:
 		}
 
 		if (select_mode == LEFT_HEMISPHERE) {
-			graphics.invertRect(0, 0, 62, 64);
-		} else {
-			graphics.drawFrame(0, 0, 62, 64);
+			graphics.drawFrame(0, 0, 64, 64);
 		}
 
 		if (select_mode == RIGHT_HEMISPHERE) {
-			graphics.invertRect(63, 0, 62, 64);
-		} else {
-			graphics.drawFrame(63, 0, 62, 64);
+			graphics.drawFrame(64, 0, 64, 64);
 		}
     }
 
@@ -212,7 +215,7 @@ public:
     }
 
 private:
-    Applet available_applets[];
+    Applet available_applets[HEMISPHERE_AVAILABLE_APPLETS];
     int my_applets[2]; // Indexes to available_applets
     int select_mode;
 };
@@ -264,7 +267,7 @@ void HEMISPHERE_handleButtonEvent(const UI::Event &event) {
 	if (UI::EVENT_BUTTON_PRESS == event.type) {
 		if (event.control == OC::CONTROL_BUTTON_UP || event.control == OC::CONTROL_BUTTON_DOWN) {
 			int hemisphere = (event.control == OC::CONTROL_BUTTON_UP) ? LEFT_HEMISPHERE : RIGHT_HEMISPHERE;
-			manager.EnterSelectMode(hemisphere);
+			manager.ToggleSelectMode(hemisphere);
 		} else {
 			// It's one of the encoder buttons, so delegate via manager
 			manager.DelegateButtonPush(event);
@@ -273,5 +276,9 @@ void HEMISPHERE_handleButtonEvent(const UI::Event &event) {
 }
 
 void HEMISPHERE_handleEncoderEvent(const UI::Event &event) {
-	manager.DelegateEncoderMovement(event);
+	if (manager.SelectModeEnabled()) {
+		manager.ChangeApplet(event.value > 0 ? 1 : -1);
+	} else {
+		manager.DelegateEncoderMovement(event);
+	}
 }

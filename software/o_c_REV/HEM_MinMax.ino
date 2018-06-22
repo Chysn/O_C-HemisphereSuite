@@ -22,13 +22,13 @@ public:
 
 	void View() {
 		gfxPrint(4, 4, "MinMax");
-		gfxRect(2, 15, ProportionCV(min, 60), 10);
-		gfxRect(2, 30, ProportionCV(max, 60), 10);
+		gfxOutputBar(0, min);
+		gfxOutputBar(0, max);
 	}
 
 	void ScreensaverView() {
-		gfxRect(2, 15, ProportionCV(min, 60), 1);
-		gfxRect(2, 30, ProportionCV(max, 60), 1);
+		gfxOutputLine(0, min);
+		gfxOutputLine(0, max);
 	}
 
 	void OnButtonPress() {
