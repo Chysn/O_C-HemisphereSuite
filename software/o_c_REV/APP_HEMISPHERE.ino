@@ -1,18 +1,13 @@
-#define HEMISPHERE_AVAILABLE_APPLETS 2
-#define HEMISPHERE_APPLETS { \
-    DECLARE_APPLET('S','H', "Sample & Hold", SampleAndHold), \
-    DECLARE_APPLET('M','M', "MinMax", MinMax),\
-}
+#include "hemisphere_config.h"
 
-#define DECLARE_APPLET(a, b, name, prefix) \
-{ TWOCC<a,b>::value, name, prefix ## _Start, prefix ## _Controller, \
+#define DECLARE_APPLET(a, b, prefix) \
+{ TWOCC<a,b>::value, prefix ## _Start, prefix ## _Controller, \
   prefix ## _View, prefix ## _Screensaver, \
   prefix ## _OnButtonPress, prefix ## _OnButtonLongPress, \
   prefix ## _OnEncoderMove }
 
 typedef struct Applet {
   uint16_t id;
-  const char *name; // applet name
   void (*Start)(int); // Initialize when selected
   void (*Controller)(int);  // Interrupt Service Routine
   void (*View)(int);  // Draw main view

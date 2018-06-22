@@ -1,0 +1,5 @@
+#define HEMISPHERE_AVAILABLE_APPLETS 2
+#define HEMISPHERE_APPLETS { \
+    DECLARE_APPLET('S','H', SampleAndHold), \
+    DECLARE_APPLET('M','M', MinMax),\
+}
