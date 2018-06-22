@@ -1,13 +1,13 @@
 #include "hemisphere_config.h"
 
-#define DECLARE_APPLET(a, b, prefix) \
-{ TWOCC<a,b>::value, prefix ## _Start, prefix ## _Controller, \
+#define DECLARE_APPLET(id, prefix) \
+{ id, prefix ## _Start, prefix ## _Controller, \
   prefix ## _View, prefix ## _Screensaver, \
   prefix ## _OnButtonPress, prefix ## _OnButtonLongPress, \
   prefix ## _OnEncoderMove }
 
 typedef struct Applet {
-  uint16_t id;
+  int id;
   void (*Start)(int); // Initialize when selected
   void (*Controller)(int);  // Interrupt Service Routine
   void (*View)(int);  // Draw main view
@@ -40,6 +40,14 @@ public:
 		io_offset = h * 2;
 	}
 
+	/* Proportion CV values for display purposes */
+	int ProportionCV(int value, int max) {
+		int divisions = HEMISPHERE_MAX_CV / max; // Divide the CV into little pieces
+		int proportion = value / divisions;
+		if (proportion > max) proportion = max;
+		return proportion;
+	}
+
 	/* Offset Graphics Methods */
 	void gfxPrint(int x, int y, const char *str) {
 		graphics.setPrintPos(x + gfx_offset, y);
@@ -62,19 +70,18 @@ public:
 		graphics.drawLine(x + gfx_offset, y, x2 + gfx_offset, y);
 	}
 
+	/* Hemisphere-specific graphics methods */
 	void gfxOutputBar(int out, int value) {
-		gfxRect(1, 20 + (out * 15), ProportionCV(value, 60), 10);
+		gfxRect(1, 25 + (out * 15), ProportionCV(value, 60), 10);
 	}
 
 	void gfxOutputLine(int out, int value) {
-		gfxRect(1, 20 + (out * 15), ProportionCV(value, 60), 1);
+		gfxRect(1, 25 + (out * 15), ProportionCV(value, 60), 1);
 	}
 
-	int ProportionCV(int value, int max) {
-		int divisions = HEMISPHERE_MAX_CV / max; // Divide the CV into little pieces
-		int proportion = value / divisions;
-		if (proportion > max) proportion = max;
-		return proportion;
+	void gfxHeader(const char *str) {
+		gfxPrint(4, 4, str);
+		gfxLine(0, 10, 62, 10);
 	}
 
 	/* Offset I/O Methods */

@@ -18,7 +18,7 @@ public:
 	}
 
 	void View() {
-		gfxPrint(4, 4, "Dual S&H");
+		gfxHeader("Dual S&H");
 		for (int ch = 0; ch < 2; ch++)
 		{
 			gfxOutputBar(ch, held_values[ch]);

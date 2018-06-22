@@ -21,7 +21,7 @@ public:
 	}
 
 	void View() {
-		gfxPrint(4, 4, "MinMax");
+		gfxHeader("MinMax");
 		gfxOutputBar(0, min);
 		gfxOutputBar(0, max);
 	}
