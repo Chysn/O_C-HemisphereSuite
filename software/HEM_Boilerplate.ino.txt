@@ -1,0 +1,88 @@
+// Hemisphere Applet Boilerplate. Follow these steps to add a Hemisphere app:
+//
+// (1) Save this file as HEM_ClassName.ino
+// (2) Find and replace "ClassName" with the name of your Applet class
+// (3) Implement all of the public methods below
+// (4) Add a DECLARE_APPLET(id, ClassName) line in hemisphere_config.h
+
+class ClassName : public HemisphereApplet {
+public:
+
+	/* Run when the Applet is selected */
+    void Start() {
+    }
+
+	/* Run during the interrupt service routine */
+    void Controller() {
+    }
+
+	/* Draw the screen */
+    void View() {
+        gfxHeader("ClassName");
+        gfxButterfly(0);
+    }
+
+	/* Draw the screensaver */
+    void ScreensaverView() {
+        gfxButterfly(1);
+    }
+
+	/* Called when the encoder button for this hemisphere is pressed */
+    void OnButtonPress() {
+    }
+
+	/* Called when the encoder button for this hemisphere is long-pressed */
+    void OnButtonLongPress() {
+    }
+
+	/* Called when the encoder for this hemisphere is rotated
+	 * direction 1 is clockwise
+	 * direction -1 is counterclockwise
+	 */
+    void OnEncoderMove(int direction) {
+    }
+
+private:
+
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+//// Hemisphere Applet Functions
+///
+///  Once you run the find-and-replace to make these refer to ClassName,
+///  it's usually not necessary to do anything with these functions. You
+///  should prefer to handle things in the HemisphereApplet child class
+///  above.
+////////////////////////////////////////////////////////////////////////////////
+ClassName ClassName_instance[2];
+
+void ClassName_Start(int hemisphere) {
+    ClassName_instance[hemisphere].SetHemisphere(hemisphere);
+    ClassName_instance[hemisphere].Start();
+}
+
+void ClassName_Controller(int hemisphere) {
+    ClassName_instance[hemisphere].IO();
+    ClassName_instance[hemisphere].Controller();
+}
+
+void ClassName_View(int hemisphere) {
+    ClassName_instance[hemisphere].View();
+}
+
+void ClassName_Screensaver(int hemisphere) {
+    ClassName_instance[hemisphere].ScreensaverView();
+}
+
+void ClassName_OnButtonPress(int hemisphere) {
+    ClassName_instance[hemisphere].OnButtonPress();
+}
+
+void ClassName_OnButtonLongPress(int hemisphere) {
+    ClassName_instance[hemisphere].OnButtonLongPress();
+}
+
+void ClassName_OnEncoderMove(int hemisphere, int direction) {
+    ClassName_instance[hemisphere].OnEncoderMove(direction);
+}
