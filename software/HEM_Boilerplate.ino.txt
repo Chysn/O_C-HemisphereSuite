@@ -3,10 +3,17 @@
 // (1) Save this file as HEM_ClassName.ino
 // (2) Find and replace "ClassName" with the name of your Applet class
 // (3) Implement all of the public methods below
-// (4) Add a DECLARE_APPLET(id, ClassName) line in hemisphere_config.h
+// (4) Add text to the help section below in SetHelp()
+// (5) Add a declare line in hemisphere_config.h, which looks like this:
+//     DECLARE_APPLET(id, ClassName), \
+// (6) Increment HEMISPHERE_AVAILABLE_APPLETS in hemisphere_config.h
 
 class ClassName : public HemisphereApplet {
 public:
+
+    const char* applet_name() { // Maximum 10 characters
+        return "ClassName";
+    }
 
 	/* Run when the Applet is selected */
     void Start() {
@@ -18,7 +25,7 @@ public:
 
 	/* Draw the screen */
     void View() {
-        gfxHeader("ClassName"); // 9-character maximum
+        gfxHeader(applet_name()); // 9-character maximum
         gfxButterfly(0);
     }
 
@@ -42,6 +49,15 @@ public:
     void OnEncoderMove(int direction) {
     }
 
+protected:
+    /* Set help text. Each help section can have up to 18 characters. Be concise! */
+    void SetHelp() {
+        help[HEMISPHERE_HELP_DIGITALS] = "Digital in help";
+        help[HEMISPHERE_HELP_CVS] = "CV in help";
+        help[HEMISPHERE_HELP_OUTS] = "Out help";
+        help[HEMISPHERE_HELP_ENCODER] = "123456789012345678";
+    }
+    
 private:
 
 };
@@ -68,8 +84,7 @@ void ClassName_Controller(int hemisphere, bool forwarding) {
 }
 
 void ClassName_View(int hemisphere) {
-    ClassName_instance[hemisphere].View();
-    ClassName_instance[hemisphere].DrawNotifications();
+    ClassName_instance[hemisphere].BaseView();
 }
 
 void ClassName_Screensaver(int hemisphere) {
@@ -80,10 +95,10 @@ void ClassName_OnButtonPress(int hemisphere) {
     ClassName_instance[hemisphere].OnButtonPress();
 }
 
-void ClassName_OnButtonLongPress(int hemisphere) {
-    ClassName_instance[hemisphere].OnButtonLongPress();
-}
-
 void ClassName_OnEncoderMove(int hemisphere, int direction) {
     ClassName_instance[hemisphere].OnEncoderMove(direction);
+}
+
+void ClassName_ToggleHelpScreen(int hemisphere) {
+    ClassName_instance[hemisphere].HelpScreen();
 }

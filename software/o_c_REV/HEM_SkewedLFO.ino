@@ -12,6 +12,10 @@
 class SkewedLFO : public HemisphereApplet {
 public:
 
+    const char* applet_name() {
+        return "SkewedLFO";
+    }
+
     void Start() {
         rate = 31;
         skew = 31;
@@ -30,12 +34,12 @@ public:
             cycle_tick = 0;
             ClockOut(1);
         }
-        int cv = HEM_SIMFLOAT2INT(AmplitudeAtPosition(cycle_tick) * HEMISPHERE_MAX_CV);
+        int cv = simfloat2int(AmplitudeAtPosition(cycle_tick) * HEMISPHERE_MAX_CV);
         Out(0, cv);
     }
 
     void View() {
-        gfxHeader("SkewedLFO"); // 9-character maximum
+        gfxHeader(applet_name());
 
         DrawCursor();
         DrawSkewedWaveform();
@@ -51,15 +55,20 @@ public:
         selected = 1 - selected;
     }
 
-    void OnButtonLongPress() {
-    }
-
     void OnEncoderMove(int direction) {
         if (selected == 0) {
             rate = constrain(rate += direction, 0, LFO_MAX_CONTROL);
         } else {
             skew = constrain(skew += direction, 0, LFO_MAX_CONTROL);
         }
+    }
+
+protected:
+    void SetHelp() {
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Reset";
+        help[HEMISPHERE_HELP_CVS] = "";
+        help[HEMISPHERE_HELP_OUTS] = "A=CV B=Clock";
+        help[HEMISPHERE_HELP_ENCODER] = "T=Rate,Skew P=Set";
     }
 
 private:
@@ -87,24 +96,24 @@ private:
     }
 
     void DrawWaveformPosition() {
-        int height = HEM_SIMFLOAT2INT(AmplitudeAtPosition(cycle_tick) * 30);
-        hem_simfloat coeff = HEM_SIMFLOAT(cycle_tick) / TicksAtRate();
-        int x = HEM_SIMFLOAT2INT(coeff * 62);
+        int height = simfloat2int(AmplitudeAtPosition(cycle_tick) * 30);
+        simfloat coeff = int2simfloat(cycle_tick) / TicksAtRate();
+        int x = simfloat2int(coeff * 62);
         gfxLine(x, 63, x, 63 - height);
     }
 
-    hem_simfloat AmplitudeAtPosition(int tick) {
-        hem_simfloat amplitude;
+    simfloat AmplitudeAtPosition(int tick) {
+        simfloat amplitude;
 
         int ticks_at_rate = TicksAtRate();
-        hem_simfloat coeff = HEM_SIMFLOAT(skew) / LFO_MAX_CONTROL;
-        int fall_point = HEM_SIMFLOAT2INT(coeff * ticks_at_rate);
+        simfloat coeff = int2simfloat(skew) / LFO_MAX_CONTROL;
+        int fall_point = simfloat2int(coeff * ticks_at_rate);
         if (tick < fall_point) {
             // Rise portion
-            amplitude = HEM_SIMFLOAT(tick) / fall_point; // No div by 0 (fall point > 0 to get here)
+            amplitude = int2simfloat(tick) / fall_point; // No div by 0 (fall point > 0 to get here)
         } else {
             // Fall portion
-            amplitude = HEM_SIMFLOAT(ticks_at_rate - tick) / (ticks_at_rate - fall_point);
+            amplitude = int2simfloat(ticks_at_rate - tick) / (ticks_at_rate - fall_point);
         }
 
         return amplitude;
@@ -113,8 +122,8 @@ private:
     int TicksAtRate() {
         int inv_rate = LFO_MAX_CONTROL - rate;
         int range = HEMISPHERE_LFO_HIGH - HEMISPHERE_LFO_LOW;
-        hem_simfloat coeff = HEM_SIMFLOAT(inv_rate) / LFO_MAX_CONTROL;
-        int ticks_at_rate = HEM_SIMFLOAT2INT(coeff * range) + HEMISPHERE_LFO_LOW;
+        simfloat coeff = int2simfloat(inv_rate) / LFO_MAX_CONTROL;
+        int ticks_at_rate = simfloat2int(coeff * range) + HEMISPHERE_LFO_LOW;
         return ticks_at_rate;
     }
 
@@ -142,8 +151,7 @@ void SkewedLFO_Controller(int hemisphere, bool forwarding) {
 }
 
 void SkewedLFO_View(int hemisphere) {
-    SkewedLFO_instance[hemisphere].View();
-    SkewedLFO_instance[hemisphere].DrawNotifications();
+    SkewedLFO_instance[hemisphere].BaseView();
 }
 
 void SkewedLFO_Screensaver(int hemisphere) {
@@ -154,10 +162,10 @@ void SkewedLFO_OnButtonPress(int hemisphere) {
     SkewedLFO_instance[hemisphere].OnButtonPress();
 }
 
-void SkewedLFO_OnButtonLongPress(int hemisphere) {
-    SkewedLFO_instance[hemisphere].OnButtonLongPress();
-}
-
 void SkewedLFO_OnEncoderMove(int hemisphere, int direction) {
     SkewedLFO_instance[hemisphere].OnEncoderMove(direction);
+}
+
+void SkewedLFO_ToggleHelpScreen(int hemisphere) {
+    SkewedLFO_instance[hemisphere].HelpScreen();
 }

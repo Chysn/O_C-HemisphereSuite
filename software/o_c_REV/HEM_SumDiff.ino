@@ -1,6 +1,10 @@
 class SumDiff : public HemisphereApplet {
 public:
 
+    const char* applet_name() {
+        return "Sum/Diff";
+    }
+
     void Start() {
         sum = 0;
         diff = 0;
@@ -23,7 +27,7 @@ public:
     }
 
     void View() {
-        gfxHeader("SumDiff");
+        gfxHeader(applet_name());
         gfxButterfly(0);
     }
 
@@ -38,6 +42,15 @@ public:
     }
 
     void OnEncoderMove(int direction) {
+    }
+
+protected:
+    void SetHelp() {
+        // Each help section can have up to 18 characters. Be concise!
+        help[HEMISPHERE_HELP_DIGITALS] = "";
+        help[HEMISPHERE_HELP_CVS] = "1,2=CV";
+        help[HEMISPHERE_HELP_OUTS] = "A=Sum B=abs(Diff)";
+        help[HEMISPHERE_HELP_ENCODER] = "";
     }
 
 private:
@@ -61,8 +74,7 @@ void SumDiff_Controller(int hemisphere, bool forwarding) {
 }
 
 void SumDiff_View(int hemisphere) {
-    SumDiff_instance[hemisphere].View();
-    SumDiff_instance[hemisphere].DrawNotifications();
+    SumDiff_instance[hemisphere].BaseView();
 }
 
 void SumDiff_Screensaver(int hemisphere) {
@@ -73,11 +85,10 @@ void SumDiff_OnButtonPress(int hemisphere) {
     SumDiff_instance[hemisphere].OnButtonPress();
 }
 
-void SumDiff_OnButtonLongPress(int hemisphere) {
-    SumDiff_instance[hemisphere].OnButtonLongPress();
-}
-
 void SumDiff_OnEncoderMove(int hemisphere, int direction) {
     SumDiff_instance[hemisphere].OnEncoderMove(direction);
 }
 
+void SumDiff_ToggleHelpScreen(int hemisphere) {
+    SumDiff_instance[hemisphere].HelpScreen();
+}

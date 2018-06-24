@@ -2,10 +2,9 @@
 #include "HemisphereApplet.h"
 
 #define DECLARE_APPLET(id, prefix) \
-{ id, prefix ## _Start, prefix ## _Controller, \
-  prefix ## _View, prefix ## _Screensaver, \
-  prefix ## _OnButtonPress, prefix ## _OnButtonLongPress, \
-  prefix ## _OnEncoderMove }
+{ id, prefix ## _Start, prefix ## _Controller, prefix ## _View, prefix ## _Screensaver, \
+  prefix ## _OnButtonPress, prefix ## _OnEncoderMove, prefix ## _ToggleHelpScreen \
+}
 
 typedef struct Applet {
   int id;
@@ -13,9 +12,9 @@ typedef struct Applet {
   void (*Controller)(int, bool);  // Interrupt Service Routine
   void (*View)(int);  // Draw main view
   void (*Screensaver)(int); // Draw screensaver view
-  void (*OnButtonPress)(int);
-  void (*OnButtonLongPress)(int);
-  void (*OnEncoderMove)(int, int);
+  void (*OnButtonPress)(int); // Encoder button has been pressed
+  void (*OnEncoderMove)(int, int); // Encoder has been rotated
+  void (*ToggleHelpScreen)(int); // Help Screen has been requested
 } Applet;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -29,6 +28,7 @@ public:
         Applet applets[] = HEMISPHERE_APPLETS;
         memcpy(&available_applets, &applets, sizeof(applets));
         forwarding = 0;
+        help_hemisphere = -1;
 
         SetApplet(0, 0);
         SetApplet(1, 1);
@@ -43,7 +43,7 @@ public:
     }
 
     void ChangeApplet(int dir) {
-        if (SelectModeEnabled()) {
+        if (SelectModeEnabled() and help_hemisphere == -1) {
             int index = my_applets[select_mode];
             index += dir;
             if (index >= HEMISPHERE_AVAILABLE_APPLETS) index = 0;
@@ -65,56 +65,73 @@ public:
     }
 
     void ExecuteControllers() {
-        for (int a = 0; a < 2; a++)
+        for (int h = 0; h < 2; h++)
         {
-            int idx = my_applets[a];
-            available_applets[idx].Controller(a, (bool)forwarding);
+            int idx = my_applets[h];
+            available_applets[idx].Controller(h, (bool)forwarding);
         }
     }
 
     void DrawViews() {
-        for (int a = 0; a < 2; a++)
-        {
-            int idx = my_applets[a];
-            available_applets[idx].View(a);
-        }
+        if (help_hemisphere > -1) {
+            int idx = my_applets[help_hemisphere];
+            available_applets[idx].View(help_hemisphere);
+        } else {
+            for (int h = 0; h < 2; h++)
+            {
+                int idx = my_applets[h];
+                available_applets[idx].View(h);
+            }
 
-        if (select_mode == LEFT_HEMISPHERE) {
-            graphics.drawFrame(0, 0, 64, 64);
-        }
+            if (select_mode == LEFT_HEMISPHERE) {
+                graphics.drawFrame(0, 0, 64, 64);
+            }
 
-        if (select_mode == RIGHT_HEMISPHERE) {
-            graphics.drawFrame(64, 0, 64, 64);
+            if (select_mode == RIGHT_HEMISPHERE) {
+                graphics.drawFrame(64, 0, 64, 64);
+            }
         }
     }
 
     void DrawScreensavers() {
-        for (int a = 0; a < 2; a++)
+        for (int h = 0; h < 2; h++)
         {
-            int idx = my_applets[a];
-            available_applets[idx].Screensaver(a);
+            int idx = my_applets[h];
+            available_applets[idx].Screensaver(h);
         }
     }
 
     void DelegateButtonPush(const UI::Event &event) {
-        int a = (event.control == OC::CONTROL_BUTTON_L) ? 0 : 1;
-        int idx = my_applets[a];
+        int h = (event.control == OC::CONTROL_BUTTON_L) ? 0 : 1;
+        int idx = my_applets[h];
         if (event.type == UI::EVENT_BUTTON_PRESS) {
-            available_applets[idx].OnButtonPress(a);
-        }
-        if (event.type == UI::EVENT_BUTTON_LONG_PRESS) {
-            available_applets[idx].OnButtonLongPress(a);
+            available_applets[idx].OnButtonPress(h);
         }
     }
 
     void DelegateEncoderMovement(const UI::Event &event) {
-        int a = (event.control == OC::CONTROL_ENCODER_L) ? 0 : 1;
-        int idx = my_applets[a];
-        available_applets[idx].OnEncoderMove(a, event.value > 0 ? 1 : -1);
+        int h = (event.control == OC::CONTROL_ENCODER_L) ? LEFT_HEMISPHERE : RIGHT_HEMISPHERE;
+        int idx = my_applets[h];
+        available_applets[idx].OnEncoderMove(h, event.value > 0 ? 1 : -1);
     }
 
     void ToggleForwarding() {
         forwarding = forwarding ? 0 : 1;
+    }
+
+    void ToggleHelpScreen() {
+        if (help_hemisphere > -1) { // Turn off the previous help screen
+            int idx = my_applets[help_hemisphere];
+            available_applets[idx].ToggleHelpScreen(help_hemisphere);
+        }
+
+        help_hemisphere++; // Move to the next help screen
+        if (help_hemisphere > 1) help_hemisphere = -1; // Turn them all off
+
+        if (help_hemisphere > -1) { // Turn on the next hemisphere's screen
+            int idx = my_applets[help_hemisphere];
+            available_applets[idx].ToggleHelpScreen(help_hemisphere);
+        }
     }
 
 private:
@@ -122,6 +139,7 @@ private:
     int my_applets[2]; // Indexes to available_applets
     int select_mode;
     int forwarding;
+    int help_hemisphere; // Which of the hemispheres (if any) is in help mode, or -1 if none
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -168,18 +186,18 @@ void HEMISPHERE_screensaver() {
 }
 
 void HEMISPHERE_handleButtonEvent(const UI::Event &event) {
-    if (UI::EVENT_BUTTON_PRESS == event.type) {
+    if (event.type == UI::EVENT_BUTTON_PRESS) {
         if (event.control == OC::CONTROL_BUTTON_UP || event.control == OC::CONTROL_BUTTON_DOWN) {
             int hemisphere = (event.control == OC::CONTROL_BUTTON_UP) ? LEFT_HEMISPHERE : RIGHT_HEMISPHERE;
             manager.ToggleSelectMode(hemisphere);
         } else {
-            // It's one of the encoder buttons, so delegate via manager
             manager.DelegateButtonPush(event);
         }
     }
 
-    if (event.control == OC::CONTROL_BUTTON_DOWN && event.type == UI::EVENT_BUTTON_LONG_PRESS) {
-        manager.ToggleForwarding();
+    if (event.type == UI::EVENT_BUTTON_LONG_PRESS) {
+        if (event.control == OC::CONTROL_BUTTON_DOWN) manager.ToggleForwarding();
+        if (event.control == OC::CONTROL_BUTTON_L) manager.ToggleHelpScreen();
     }
 }
 

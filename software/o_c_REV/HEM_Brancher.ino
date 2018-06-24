@@ -1,6 +1,10 @@
 class Brancher : public HemisphereApplet {
 public:
 
+    const char* applet_name() {
+        return "Brancher";
+    }
+
 	/* Run when the Applet is selected */
     void Start() {
     	    prob = 50;
@@ -57,15 +61,19 @@ public:
     		last_index = 1 - last_index;
     }
 
-	/* Called when the encoder button for this hemisphere is long-pressed */
-    void OnButtonLongPress() {
-    }
-
     /* Change the probability */
     void OnEncoderMove(int direction) {
         prob += (direction * 5);
         if (prob > 100) prob = 100;
         if (prob < 0) prob = 0;
+    }
+
+protected:
+    void SetHelp() {
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock, choose CV";
+        help[HEMISPHERE_HELP_CVS] = "1,2=CV";
+        help[HEMISPHERE_HELP_OUTS] = "1=CV based on p";
+        help[HEMISPHERE_HELP_ENCODER] = "T:Set probability";
     }
 
 private:
@@ -96,8 +104,7 @@ void Brancher_Controller(int hemisphere, bool forwarding) {
 }
 
 void Brancher_View(int hemisphere) {
-    Brancher_instance[hemisphere].View();
-    Brancher_instance[hemisphere].DrawNotifications();
+    Brancher_instance[hemisphere].BaseView();
 }
 
 void Brancher_Screensaver(int hemisphere) {
@@ -108,10 +115,10 @@ void Brancher_OnButtonPress(int hemisphere) {
     Brancher_instance[hemisphere].OnButtonPress();
 }
 
-void Brancher_OnButtonLongPress(int hemisphere) {
-    Brancher_instance[hemisphere].OnButtonLongPress();
-}
-
 void Brancher_OnEncoderMove(int hemisphere, int direction) {
     Brancher_instance[hemisphere].OnEncoderMove(direction);
+}
+
+void Brancher_ToggleHelpScreen(int hemisphere) {
+    Brancher_instance[hemisphere].HelpScreen();
 }

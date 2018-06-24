@@ -1,6 +1,10 @@
 class Switch : public HemisphereApplet {
 public:
 
+    const char* applet_name() {
+        return "Switch x2";
+    }
+
     void Start() {
     }
 
@@ -22,7 +26,7 @@ public:
     }
 
     void View() {
-        gfxHeader("Switch");
+        gfxHeader(applet_name());
         gfxButterfly(0);
     }
 
@@ -33,10 +37,16 @@ public:
     void OnButtonPress() {
     }
 
-    void OnButtonLongPress() {
+    void OnEncoderMove(int direction) {
     }
 
-    void OnEncoderMove(int direction) {
+protected:
+    void SetHelp() {
+        // Each help section can have up to 18 characters. Be concise!
+        help[HEMISPHERE_HELP_DIGITALS] = "Gate 1,2=Choose CV";
+        help[HEMISPHERE_HELP_CVS] = "1,2=CV#";
+        help[HEMISPHERE_HELP_OUTS] = "A,B=CV2 when gated";
+        help[HEMISPHERE_HELP_ENCODER] = "";
     }
 
 private:
@@ -66,8 +76,7 @@ void Switch_Controller(int hemisphere, bool forwarding) {
 }
 
 void Switch_View(int hemisphere) {
-    Switch_instance[hemisphere].View();
-    Switch_instance[hemisphere].DrawNotifications();
+    Switch_instance[hemisphere].BaseView();
 }
 
 void Switch_Screensaver(int hemisphere) {
@@ -78,10 +87,10 @@ void Switch_OnButtonPress(int hemisphere) {
     Switch_instance[hemisphere].OnButtonPress();
 }
 
-void Switch_OnButtonLongPress(int hemisphere) {
-    Switch_instance[hemisphere].OnButtonLongPress();
-}
-
 void Switch_OnEncoderMove(int hemisphere, int direction) {
     Switch_instance[hemisphere].OnEncoderMove(direction);
+}
+
+void Switch_ToggleHelpScreen(int hemisphere) {
+    Switch_instance[hemisphere].HelpScreen();
 }

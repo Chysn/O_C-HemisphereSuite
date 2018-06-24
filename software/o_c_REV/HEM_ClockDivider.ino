@@ -9,6 +9,11 @@
 
 class ClockDivider : public HemisphereApplet {
 public:
+
+    const char* applet_name() {
+        return "Clock Div";
+    }
+
     void Start() {
         for (int ch = 0; ch < 2; ch++)
         {
@@ -63,7 +68,7 @@ public:
     }
 
     void View() {
-        gfxHeader("Clock Div"); // 9-character maximum
+        gfxHeader(applet_name());
         for (int ch = 0; ch < 2; ch++)
         {
             int y = 16 + (ch * 25);
@@ -97,9 +102,6 @@ public:
         selected = 1 - selected;
     }
 
-    void OnButtonLongPress() {
-    }
-
     void OnEncoderMove(int direction) {
         div[selected] += direction;
         if (div[selected] > HEMISPHERE_CLOCKDIV_MAX) div[selected] = HEMISPHERE_CLOCKDIV_MAX;
@@ -107,6 +109,14 @@ public:
         if (div[selected] == 0) div[selected] = direction > 0 ? 1 : -2; // No such thing as 1/1 Multiple
         if (div[selected] == -1) div[selected] = 1; // Must be moving up to hit -1 (see previous line)
         count[selected] = 0; // Start the count over so things aren't missed
+    }
+
+protected:
+    void SetHelp() {
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
+        help[HEMISPHERE_HELP_CVS] = "";
+        help[HEMISPHERE_HELP_OUTS] = "Clk A=Ch1 B=Ch2";
+        help[HEMISPHERE_HELP_ENCODER] = "T=Set div P=Set Ch";
     }
 
 private:
@@ -140,8 +150,7 @@ void ClockDivider_Controller(int hemisphere, bool forwarding) {
 }
 
 void ClockDivider_View(int hemisphere) {
-    ClockDivider_instance[hemisphere].View();
-    ClockDivider_instance[hemisphere].DrawNotifications();
+    ClockDivider_instance[hemisphere].BaseView();
 }
 
 void ClockDivider_Screensaver(int hemisphere) {
@@ -152,10 +161,10 @@ void ClockDivider_OnButtonPress(int hemisphere) {
     ClockDivider_instance[hemisphere].OnButtonPress();
 }
 
-void ClockDivider_OnButtonLongPress(int hemisphere) {
-    ClockDivider_instance[hemisphere].OnButtonLongPress();
-}
-
 void ClockDivider_OnEncoderMove(int hemisphere, int direction) {
     ClockDivider_instance[hemisphere].OnEncoderMove(direction);
+}
+
+void ClockDivider_ToggleHelpScreen(int hemisphere) {
+    ClockDivider_instance[hemisphere].HelpScreen();
 }

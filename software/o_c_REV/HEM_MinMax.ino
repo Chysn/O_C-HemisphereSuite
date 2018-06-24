@@ -1,6 +1,10 @@
 class MinMax : public HemisphereApplet {
 public:
 
+    const char* applet_name() {
+        return "Min/Max";
+    }
+
     void Start() {
         min = 0;
         max = 0;
@@ -21,7 +25,7 @@ public:
     }
 
     void View() {
-        gfxHeader("MinMax");
+        gfxHeader(applet_name());
         gfxButterfly(0);
     }
 
@@ -32,10 +36,15 @@ public:
     void OnButtonPress() {
     }
 
-    void OnButtonLongPress() {
+    void OnEncoderMove(int direction) {
     }
 
-    void OnEncoderMove(int direction) {
+protected:
+    void SetHelp() {
+        help[HEMISPHERE_HELP_DIGITALS] = "";
+        help[HEMISPHERE_HELP_CVS] = "1,2=CV";
+        help[HEMISPHERE_HELP_OUTS] = "A=Min B=Max";
+        help[HEMISPHERE_HELP_ENCODER] = "";
     }
 
 private:
@@ -59,8 +68,7 @@ void MinMax_Controller(int hemisphere, bool forwarding) {
 }
 
 void MinMax_View(int hemisphere) {
-    MinMax_instance[hemisphere].View();
-    MinMax_instance[hemisphere].DrawNotifications();
+    MinMax_instance[hemisphere].BaseView();
 }
 
 void MinMax_Screensaver(int hemisphere) {
@@ -71,11 +79,10 @@ void MinMax_OnButtonPress(int hemisphere) {
     MinMax_instance[hemisphere].OnButtonPress();
 }
 
-void MinMax_OnButtonLongPress(int hemisphere) {
-    MinMax_instance[hemisphere].OnButtonLongPress();
-}
-
 void MinMax_OnEncoderMove(int hemisphere, int direction) {
     MinMax_instance[hemisphere].OnEncoderMove(direction);
 }
 
+void MinMax_ToggleHelpScreen(int hemisphere) {
+    MinMax_instance[hemisphere].HelpScreen();
+}

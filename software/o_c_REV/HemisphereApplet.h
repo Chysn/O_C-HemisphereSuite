@@ -7,13 +7,23 @@ const int RIGHT_HEMISPHERE = 1;
 const int HEMISPHERE_MAX_CV = 7800;
 const int HEMISPHERE_CLOCK_TICKS = 100; // 6ms
 
+// Codes for help system sections
+const int HEMISPHERE_HELP_DIGITALS = 0;
+const int HEMISPHERE_HELP_CVS = 1;
+const int HEMISPHERE_HELP_OUTS = 2;
+const int HEMISPHERE_HELP_ENCODER = 3;
+
 // Simulated fixed floats by multiplying and dividing by a factor of ten
-#define HEM_SIMFLOAT(x) 10000 * (x)
-#define HEM_SIMFLOAT2INT(x) (x) / 10000
-typedef int hem_simfloat;
+#define int2simfloat(x) 10000 * (x)
+#define simfloat2int(x) (x) / 10000
+typedef int simfloat;
 
 class HemisphereApplet {
 public:
+
+    virtual const char* applet_name(); // Maximum of 10 characters
+    virtual void View();
+
     void IO(bool forwarding) {
         forwarding_on = (forwarding && hemisphere == RIGHT_HEMISPHERE);
         int fwd = forwarding_on ? io_offset : 0;
@@ -38,6 +48,12 @@ public:
         forwarding_on = false;
         clock_countdown[0] = 0;
         clock_countdown[1] = 0;
+        help_active = 0;
+    }
+
+    /* Help Screen Toggle */
+    void HelpScreen() {
+        help_active = 1 - help_active;
     }
 
     /* Proportion CV values for display purposes */
@@ -48,6 +64,16 @@ public:
         return proportion;
     }
 
+    void BaseView() {
+        if (help_active) {
+            // If help is active, draw the help screen instead of the application screen
+            DrawHelpScreen();
+        } else {
+            View();
+            DrawNotifications();
+        }
+    }
+
     /* System notifications from the base class regarding manager state(s) */
     void DrawNotifications() {
         // CV Forwarding Icon
@@ -56,6 +82,24 @@ public:
             graphics.print(">");
             graphics.setPrintPos(59, 2);
             graphics.print(">");
+        }
+    }
+
+    void DrawHelpScreen() {
+        gfxHeader(applet_name());
+        SetHelp();
+        for (int section = 0; section < 4; section++)
+        {
+            int y = section * 12 + 16;
+            graphics.setPrintPos(0, y);
+            if (section == HEMISPHERE_HELP_DIGITALS) graphics.print("Dig");
+            if (section == HEMISPHERE_HELP_CVS) graphics.print("CV");
+            if (section == HEMISPHERE_HELP_OUTS) graphics.print("Out");
+            if (section == HEMISPHERE_HELP_ENCODER) graphics.print("Enc");
+            graphics.invertRect(0, y - 1, 19, 9);
+
+            graphics.setPrintPos(20, y);
+            graphics.print(help[section]);
         }
     }
 
@@ -183,6 +227,10 @@ public:
         ClockOut(ch, HEMISPHERE_CLOCK_TICKS);
     }
 
+protected:
+    const char* help[4];
+    virtual void SetHelp();
+
 private:
     int hemisphere; // Which hemisphere (0, 1) this applet uses
     int gfx_offset; // Graphics offset, based on the side
@@ -191,4 +239,6 @@ private:
     int outputs[2];
     int clock_countdown[2];
     bool forwarding_on; // Forwarding was on during the last ISR cycle
+
+    int help_active;
 };
