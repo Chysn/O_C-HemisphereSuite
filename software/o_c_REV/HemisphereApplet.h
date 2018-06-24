@@ -5,16 +5,23 @@
 const int LEFT_HEMISPHERE = 0;
 const int RIGHT_HEMISPHERE = 1;
 const int HEMISPHERE_MAX_CV = 7800;
+const int HEMISPHERE_CLOCK_TICKS = 100; // 6ms
 
 class HemisphereApplet {
 public:
     void IO(bool forwarding) {
-    		forwarding_on = (forwarding && hemisphere == RIGHT_HEMISPHERE);
-    		int fwd = forwarding_on ? io_offset : 0;
-        for (int i = 0; i < 2; i++)
+        forwarding_on = (forwarding && hemisphere == RIGHT_HEMISPHERE);
+        int fwd = forwarding_on ? io_offset : 0;
+        for (int ch = 0; ch < 2; ch++)
         {
-            ADC_CHANNEL channel = (ADC_CHANNEL)(i + io_offset - fwd);
-            inputs[i] = OC::ADC::raw_pitch_value(channel);
+            // Set or forward CV inputs
+            ADC_CHANNEL channel = (ADC_CHANNEL)(ch + io_offset - fwd);
+            inputs[ch] = OC::ADC::raw_pitch_value(channel);
+
+            // Handle clock timing
+            if (clock_countdown[ch] > 0) {
+                if (--clock_countdown[ch] == 0) Out(ch, 0);
+            }
         }
     }
 
@@ -24,6 +31,8 @@ public:
         gfx_offset = h * 65;
         io_offset = h * 2;
         forwarding_on = false;
+        clock_countdown[0] = 0;
+        clock_countdown[1] = 0;
     }
 
     /* Proportion CV values for display purposes */
@@ -36,13 +45,13 @@ public:
 
     /* System notifications from the base class regarding manager state(s) */
     void DrawNotifications() {
-    		// CV Forwarding Icon
-    		if (forwarding_on) {
-    			graphics.setPrintPos(61, 2);
-    			graphics.print(">");
-    			graphics.setPrintPos(59, 2);
-    			graphics.print(">");
-    		}
+        // CV Forwarding Icon
+        if (forwarding_on) {
+            graphics.setPrintPos(61, 2);
+            graphics.print(">");
+            graphics.setPrintPos(59, 2);
+            graphics.print(">");
+        }
     }
 
     /* Offset Graphics Methods */
@@ -53,6 +62,14 @@ public:
 
     void gfxPrint(int x, int y, int num) {
         graphics.setPrintPos(x + gfx_offset, y);
+        graphics.print(num);
+    }
+
+    void gfxPrint(const char *str) {
+        graphics.print(str);
+    }
+
+    void gfxPrint(int num) {
         graphics.print(num);
     }
 
@@ -74,6 +91,10 @@ public:
 
     void gfxLine(int x, int y, int x2, int y2) {
         graphics.drawLine(x + gfx_offset, y, x2 + gfx_offset, y);
+    }
+
+    void gfxCircle(int x, int y, int r) {
+        graphics.drawCircle(x + gfx_offset, y, r);
     }
 
     /* Hemisphere-specific graphics methods */
@@ -108,44 +129,53 @@ public:
     }
 
     /* Offset I/O Methods */
-    int In(int i) {
-        return inputs[i];
+    int In(int ch) {
+        return inputs[ch];
     }
 
-    void Out(int o, int value, int octave) {
-        DAC_CHANNEL channel = (DAC_CHANNEL)(o + io_offset);
+    void Out(int ch, int value, int octave) {
+        DAC_CHANNEL channel = (DAC_CHANNEL)(ch + io_offset);
         OC::DAC::set_pitch(channel, value, octave);
-        outputs[o] = value;
+        outputs[ch] = value;
     }
 
-    void Out(int o, int value) {
-        Out(o, value, 0);
+    void Out(int ch, int value) {
+        Out(ch, value, 0);
     }
 
-    bool Clock(int i) {
+    bool Clock(int ch) {
         bool clocked = 0;
         if (hemisphere == 0) {
-            if (i == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
-            if (i == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_2>();
+            if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
+            if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_2>();
         }
         if (hemisphere == 1) {
-            if (i == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_3>();
-            if (i == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_4>();
+            if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_3>();
+            if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_4>();
         }
         return clocked;
     }
 
-    int Gate(int i) {
+    int Gate(int ch) {
         bool gated = 0;
         if (hemisphere == 0) {
-            if (i == 0) gated = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_1>();
-            if (i == 1) gated = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_2>();
+            if (ch == 0) gated = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_1>();
+            if (ch == 1) gated = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_2>();
         }
         if (hemisphere == 1) {
-            if (i == 0) gated = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_3>();
-            if (i == 1) gated = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_4>();
+            if (ch == 0) gated = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_3>();
+            if (ch == 1) gated = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_4>();
         }
         return gated;
+    }
+
+    void ClockOut(int ch, int ticks) {
+        clock_countdown[ch] = ticks;
+        Out(ch, 0, 5);
+    }
+
+    void ClockOut(int ch) {
+        ClockOut(ch, HEMISPHERE_CLOCK_TICKS);
     }
 
 private:
@@ -154,5 +184,6 @@ private:
     int io_offset; // Input/Output offset, based on the side
     int inputs[2];
     int outputs[2];
+    int clock_countdown[2];
     bool forwarding_on; // Forwarding was on during the last ISR cycle
 };

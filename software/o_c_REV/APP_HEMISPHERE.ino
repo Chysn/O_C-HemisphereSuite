@@ -61,7 +61,7 @@ public:
     }
 
     bool SelectModeEnabled() {
-            return select_mode > -1;
+        return select_mode > -1;
     }
 
     void ExecuteControllers() {
@@ -73,7 +73,6 @@ public:
     }
 
     void DrawViews() {
-
         for (int a = 0; a < 2; a++)
         {
             int idx = my_applets[a];
@@ -100,12 +99,12 @@ public:
     void DelegateButtonPush(const UI::Event &event) {
         int a = (event.control == OC::CONTROL_BUTTON_L) ? 0 : 1;
         int idx = my_applets[a];
-		if (event.type == UI::EVENT_BUTTON_PRESS) {
-			available_applets[idx].OnButtonPress(a);
-		}
-		if (event.type == UI::EVENT_BUTTON_LONG_PRESS) {
-			available_applets[idx].OnButtonLongPress(a);
-		}
+        if (event.type == UI::EVENT_BUTTON_PRESS) {
+            available_applets[idx].OnButtonPress(a);
+        }
+        if (event.type == UI::EVENT_BUTTON_LONG_PRESS) {
+            available_applets[idx].OnButtonLongPress(a);
+        }
     }
 
     void DelegateEncoderMovement(const UI::Event &event) {
@@ -115,7 +114,7 @@ public:
     }
 
     void ToggleForwarding() {
-    		forwarding = forwarding ? 0 : 1;
+        forwarding = forwarding ? 0 : 1;
     }
 
 private:
@@ -171,9 +170,9 @@ void HEMISPHERE_screensaver() {
 void HEMISPHERE_handleButtonEvent(const UI::Event &event) {
     if (UI::EVENT_BUTTON_PRESS == event.type) {
         if (event.control == OC::CONTROL_BUTTON_UP || event.control == OC::CONTROL_BUTTON_DOWN) {
-			int hemisphere = (event.control == OC::CONTROL_BUTTON_UP) ? LEFT_HEMISPHERE : RIGHT_HEMISPHERE;
-			manager.ToggleSelectMode(hemisphere);
-	    } else {
+            int hemisphere = (event.control == OC::CONTROL_BUTTON_UP) ? LEFT_HEMISPHERE : RIGHT_HEMISPHERE;
+            manager.ToggleSelectMode(hemisphere);
+        } else {
             // It's one of the encoder buttons, so delegate via manager
             manager.DelegateButtonPush(event);
         }

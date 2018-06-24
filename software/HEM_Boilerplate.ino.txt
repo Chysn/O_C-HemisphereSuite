@@ -18,7 +18,7 @@ public:
 
 	/* Draw the screen */
     void View() {
-        gfxHeader("ClassName");
+        gfxHeader("ClassName"); // 9-character maximum
         gfxButterfly(0);
     }
 
