@@ -7,6 +7,11 @@ const int RIGHT_HEMISPHERE = 1;
 const int HEMISPHERE_MAX_CV = 7800;
 const int HEMISPHERE_CLOCK_TICKS = 100; // 6ms
 
+// Simulated fixed floats by multiplying and dividing by a factor of ten
+#define HEM_SIMFLOAT(x) 10000 * (x)
+#define HEM_SIMFLOAT2INT(x) (x) / 10000
+typedef int hem_simfloat;
+
 class HemisphereApplet {
 public:
     void IO(bool forwarding) {
@@ -90,7 +95,7 @@ public:
     }
 
     void gfxLine(int x, int y, int x2, int y2) {
-        graphics.drawLine(x + gfx_offset, y, x2 + gfx_offset, y);
+        graphics.drawLine(x + gfx_offset, y, x2 + gfx_offset, y2);
     }
 
     void gfxCircle(int x, int y, int r) {
