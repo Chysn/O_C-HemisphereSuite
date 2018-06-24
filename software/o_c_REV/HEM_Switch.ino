@@ -60,13 +60,14 @@ void Switch_Start(int hemisphere) {
     Switch_instance[hemisphere].Start();
 }
 
-void Switch_Controller(int hemisphere) {
-    Switch_instance[hemisphere].IO();
+void Switch_Controller(int hemisphere, bool forwarding) {
+    Switch_instance[hemisphere].IO(forwarding);
     Switch_instance[hemisphere].Controller();
 }
 
 void Switch_View(int hemisphere) {
     Switch_instance[hemisphere].View();
+    Switch_instance[hemisphere].DrawNotifications();
 }
 
 void Switch_Screensaver(int hemisphere) {

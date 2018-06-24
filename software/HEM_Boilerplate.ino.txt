@@ -62,13 +62,14 @@ void ClassName_Start(int hemisphere) {
     ClassName_instance[hemisphere].Start();
 }
 
-void ClassName_Controller(int hemisphere) {
-    ClassName_instance[hemisphere].IO();
+void ClassName_Controller(int hemisphere, bool forwarding) {
+    ClassName_instance[hemisphere].IO(forwarding);
     ClassName_instance[hemisphere].Controller();
 }
 
 void ClassName_View(int hemisphere) {
     ClassName_instance[hemisphere].View();
+    ClassName_instance[hemisphere].DrawNotifications();
 }
 
 void ClassName_Screensaver(int hemisphere) {

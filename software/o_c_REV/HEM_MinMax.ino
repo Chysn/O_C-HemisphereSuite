@@ -53,13 +53,14 @@ void MinMax_Start(int hemisphere) {
     MinMax_instance[hemisphere].Start();
 }
 
-void MinMax_Controller(int hemisphere) {
-    MinMax_instance[hemisphere].IO();
+void MinMax_Controller(int hemisphere, bool forwarding) {
+    MinMax_instance[hemisphere].IO(forwarding);
     MinMax_instance[hemisphere].Controller();
 }
 
 void MinMax_View(int hemisphere) {
     MinMax_instance[hemisphere].View();
+    MinMax_instance[hemisphere].DrawNotifications();
 }
 
 void MinMax_Screensaver(int hemisphere) {

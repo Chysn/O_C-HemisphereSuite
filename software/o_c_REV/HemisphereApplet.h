@@ -8,10 +8,12 @@ const int HEMISPHERE_MAX_CV = 7800;
 
 class HemisphereApplet {
 public:
-    void IO() {
+    void IO(bool forwarding) {
+    		forwarding_on = (forwarding && hemisphere == RIGHT_HEMISPHERE);
+    		int fwd = forwarding_on ? io_offset : 0;
         for (int i = 0; i < 2; i++)
         {
-            ADC_CHANNEL channel = (ADC_CHANNEL)(i + io_offset);
+            ADC_CHANNEL channel = (ADC_CHANNEL)(i + io_offset - fwd);
             inputs[i] = OC::ADC::raw_pitch_value(channel);
         }
     }
@@ -21,6 +23,7 @@ public:
         hemisphere = h;
         gfx_offset = h * 65;
         io_offset = h * 2;
+        forwarding_on = false;
     }
 
     /* Proportion CV values for display purposes */
@@ -29,6 +32,17 @@ public:
         int proportion = value / divisions;
         if (proportion > max) proportion = max;
         return proportion;
+    }
+
+    /* System notifications from the base class regarding manager state(s) */
+    void DrawNotifications() {
+    		// CV Forwarding Icon
+    		if (forwarding_on) {
+    			graphics.setPrintPos(61, 2);
+    			graphics.print(">");
+    			graphics.setPrintPos(59, 2);
+    			graphics.print(">");
+    		}
     }
 
     /* Offset Graphics Methods */
@@ -140,4 +154,5 @@ private:
     int io_offset; // Input/Output offset, based on the side
     int inputs[2];
     int outputs[2];
+    bool forwarding_on; // Forwarding was on during the last ISR cycle
 };

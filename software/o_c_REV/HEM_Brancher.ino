@@ -90,13 +90,14 @@ void Brancher_Start(int hemisphere) {
     Brancher_instance[hemisphere].Start();
 }
 
-void Brancher_Controller(int hemisphere) {
-	Brancher_instance[hemisphere].IO();
+void Brancher_Controller(int hemisphere, bool forwarding) {
+	Brancher_instance[hemisphere].IO(forwarding);
     Brancher_instance[hemisphere].Controller();
 }
 
 void Brancher_View(int hemisphere) {
     Brancher_instance[hemisphere].View();
+    Brancher_instance[hemisphere].DrawNotifications();
 }
 
 void Brancher_Screensaver(int hemisphere) {

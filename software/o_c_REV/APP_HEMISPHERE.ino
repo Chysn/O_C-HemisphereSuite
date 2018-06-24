@@ -10,7 +10,7 @@
 typedef struct Applet {
   int id;
   void (*Start)(int); // Initialize when selected
-  void (*Controller)(int);  // Interrupt Service Routine
+  void (*Controller)(int, bool);  // Interrupt Service Routine
   void (*View)(int);  // Draw main view
   void (*Screensaver)(int); // Draw screensaver view
   void (*OnButtonPress)(int);
@@ -28,6 +28,7 @@ public:
         select_mode = -1; // Not selecting
         Applet applets[] = HEMISPHERE_APPLETS;
         memcpy(&available_applets, &applets, sizeof(applets));
+        forwarding = 0;
 
         SetApplet(0, 0);
         SetApplet(1, 1);
@@ -52,11 +53,11 @@ public:
     }
 
     void ToggleSelectMode(int hemisphere) {
-            if (hemisphere == select_mode) {
-                select_mode = -1;
-            } else {
-                select_mode = hemisphere;
-            }
+        if (hemisphere == select_mode) {
+            select_mode = -1;
+        } else {
+            select_mode = hemisphere;
+        }
     }
 
     bool SelectModeEnabled() {
@@ -67,7 +68,7 @@ public:
         for (int a = 0; a < 2; a++)
         {
             int idx = my_applets[a];
-            available_applets[idx].Controller(a);
+            available_applets[idx].Controller(a, (bool)forwarding);
         }
     }
 
@@ -99,12 +100,12 @@ public:
     void DelegateButtonPush(const UI::Event &event) {
         int a = (event.control == OC::CONTROL_BUTTON_L) ? 0 : 1;
         int idx = my_applets[a];
-            if (event.type == UI::EVENT_BUTTON_PRESS) {
-                available_applets[idx].OnButtonPress(a);
-            }
-            if (event.type == UI::EVENT_BUTTON_LONG_PRESS) {
-                available_applets[idx].OnButtonLongPress(a);
-            }
+		if (event.type == UI::EVENT_BUTTON_PRESS) {
+			available_applets[idx].OnButtonPress(a);
+		}
+		if (event.type == UI::EVENT_BUTTON_LONG_PRESS) {
+			available_applets[idx].OnButtonLongPress(a);
+		}
     }
 
     void DelegateEncoderMovement(const UI::Event &event) {
@@ -113,10 +114,15 @@ public:
         available_applets[idx].OnEncoderMove(a, event.value > 0 ? 1 : -1);
     }
 
+    void ToggleForwarding() {
+    		forwarding = forwarding ? 0 : 1;
+    }
+
 private:
     Applet available_applets[HEMISPHERE_AVAILABLE_APPLETS];
     int my_applets[2]; // Indexes to available_applets
     int select_mode;
+    int forwarding;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -152,7 +158,7 @@ void HEMISPHERE_handleAppEvent(OC::AppEvent event) {
     }
 }
 
-void HEMISPHERE_loop() {} // Deprecated
+void HEMISPHERE_loop() {} // Essentially deprecated in favor of ISR
 
 void HEMISPHERE_menu() {
     manager.DrawViews();
@@ -165,12 +171,16 @@ void HEMISPHERE_screensaver() {
 void HEMISPHERE_handleButtonEvent(const UI::Event &event) {
     if (UI::EVENT_BUTTON_PRESS == event.type) {
         if (event.control == OC::CONTROL_BUTTON_UP || event.control == OC::CONTROL_BUTTON_DOWN) {
-            int hemisphere = (event.control == OC::CONTROL_BUTTON_UP) ? LEFT_HEMISPHERE : RIGHT_HEMISPHERE;
-            manager.ToggleSelectMode(hemisphere);
-        } else {
+			int hemisphere = (event.control == OC::CONTROL_BUTTON_UP) ? LEFT_HEMISPHERE : RIGHT_HEMISPHERE;
+			manager.ToggleSelectMode(hemisphere);
+	    } else {
             // It's one of the encoder buttons, so delegate via manager
             manager.DelegateButtonPush(event);
         }
+    }
+
+    if (event.control == OC::CONTROL_BUTTON_DOWN && event.type == UI::EVENT_BUTTON_LONG_PRESS) {
+        manager.ToggleForwarding();
     }
 }
 

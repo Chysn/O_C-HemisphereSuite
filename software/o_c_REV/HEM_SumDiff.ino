@@ -55,13 +55,14 @@ void SumDiff_Start(int hemisphere) {
     SumDiff_instance[hemisphere].Start();
 }
 
-void SumDiff_Controller(int hemisphere) {
-    SumDiff_instance[hemisphere].IO();
+void SumDiff_Controller(int hemisphere, bool forwarding) {
+    SumDiff_instance[hemisphere].IO(forwarding);
     SumDiff_instance[hemisphere].Controller();
 }
 
 void SumDiff_View(int hemisphere) {
     SumDiff_instance[hemisphere].View();
+    SumDiff_instance[hemisphere].DrawNotifications();
 }
 
 void SumDiff_Screensaver(int hemisphere) {

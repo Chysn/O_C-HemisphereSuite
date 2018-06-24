@@ -43,13 +43,14 @@ void SampleAndHold_Start(int hemisphere) {
     SampleAndHold_instance[hemisphere].Start();
 }
 
-void SampleAndHold_Controller(int hemisphere) {
-    SampleAndHold_instance[hemisphere].IO();
+void SampleAndHold_Controller(int hemisphere, bool forwarding) {
+    SampleAndHold_instance[hemisphere].IO(forwarding);
     SampleAndHold_instance[hemisphere].Controller();
 }
 
 void SampleAndHold_View(int hemisphere) {
     SampleAndHold_instance[hemisphere].View();
+    SampleAndHold_instance[hemisphere].DrawNotifications();
 }
 
 void SampleAndHold_Screensaver(int hemisphere) {
