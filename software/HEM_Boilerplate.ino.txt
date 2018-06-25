@@ -25,7 +25,7 @@ public:
 
 	/* Draw the screen */
     void View() {
-        gfxHeader(applet_name()); // 9-character maximum
+        gfxHeader(applet_name());
         gfxButterfly(0);
     }
 
@@ -36,10 +36,6 @@ public:
 
 	/* Called when the encoder button for this hemisphere is pressed */
     void OnButtonPress() {
-    }
-
-	/* Called when the encoder button for this hemisphere is long-pressed */
-    void OnButtonLongPress() {
     }
 
 	/* Called when the encoder for this hemisphere is rotated

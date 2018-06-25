@@ -34,7 +34,7 @@ public:
             cycle_tick = 0;
             ClockOut(1);
         }
-        int cv = simfloat2int(AmplitudeAtPosition(cycle_tick) * HEMISPHERE_MAX_CV);
+        int cv = AmplitudeAtPosition(cycle_tick, HEMISPHERE_MAX_CV);
         Out(0, cv);
     }
 
@@ -42,7 +42,7 @@ public:
         gfxHeader(applet_name());
 
         DrawCursor();
-        DrawSkewedWaveform();
+        DrawSkewedWaveform(0);
         DrawRateIndicator();
         DrawWaveformPosition();
     }
@@ -79,41 +79,39 @@ private:
 
     void DrawCursor() {
         if (selected == 0) {
-            gfxFrame(0, 12, 63, 17);
+            gfxRect(1, 16, rate, 4);
         } else {
-            gfxFrame(0, 31, 63, 33);
+            DrawSkewedWaveform(1);
+            DrawSkewedWaveform(-1);
         }
     }
 
     void DrawRateIndicator() {
-        int x = (64 - rate) / 2; // Center it
-        gfxRect(x, 20, rate, 3);
+        gfxFrame(1, 15, 62, 6);
+        gfxLine(rate, 15, rate, 20);
     }
 
-    void DrawSkewedWaveform() {
-        gfxLine(0, 62, skew, 33);
-        gfxLine(skew, 33, 62, 62);
+    void DrawSkewedWaveform(int y_offset) {
+        gfxLine(0, 62 + y_offset, skew, 33 + y_offset);
+        gfxLine(skew, 33 + y_offset, 62, 62 + y_offset);
     }
 
     void DrawWaveformPosition() {
-        int height = simfloat2int(AmplitudeAtPosition(cycle_tick) * 30);
-        simfloat coeff = int2simfloat(cycle_tick) / TicksAtRate();
-        int x = simfloat2int(coeff * 62);
+        int height = AmplitudeAtPosition(cycle_tick, 30);
+        int x = CalculateScaledValue(cycle_tick, TicksAtRate(), 62);
         gfxLine(x, 63, x, 63 - height);
     }
 
-    simfloat AmplitudeAtPosition(int tick) {
-        simfloat amplitude;
-
+    int AmplitudeAtPosition(int position, int max_amplitude) {
+        int amplitude = 0;
         int ticks_at_rate = TicksAtRate();
-        simfloat coeff = int2simfloat(skew) / LFO_MAX_CONTROL;
-        int fall_point = simfloat2int(coeff * ticks_at_rate);
-        if (tick < fall_point) {
+        int fall_point = CalculateScaledValue(skew, LFO_MAX_CONTROL, ticks_at_rate);
+        if (position < fall_point) {
             // Rise portion
-            amplitude = int2simfloat(tick) / fall_point; // No div by 0 (fall point > 0 to get here)
+            amplitude = CalculateScaledValue(position, fall_point, max_amplitude);
         } else {
             // Fall portion
-            amplitude = int2simfloat(ticks_at_rate - tick) / (ticks_at_rate - fall_point);
+            amplitude = CalculateScaledValue(ticks_at_rate - position, ticks_at_rate - fall_point, max_amplitude);
         }
 
         return amplitude;
@@ -122,8 +120,7 @@ private:
     int TicksAtRate() {
         int inv_rate = LFO_MAX_CONTROL - rate;
         int range = HEMISPHERE_LFO_HIGH - HEMISPHERE_LFO_LOW;
-        simfloat coeff = int2simfloat(inv_rate) / LFO_MAX_CONTROL;
-        int ticks_at_rate = simfloat2int(coeff * range) + HEMISPHERE_LFO_LOW;
+        int ticks_at_rate = CalculateScaledValue(inv_rate, LFO_MAX_CONTROL, range) + HEMISPHERE_LFO_LOW;
         return ticks_at_rate;
     }
 

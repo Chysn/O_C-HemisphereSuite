@@ -23,11 +23,11 @@ public:
 
     void View() {
         gfxHeader(applet_name());
-        gfxButterfly(0);
+        gfxButterfly_Channel(0);
     }
 
     void ScreensaverView() {
-        gfxButterfly(1);
+        gfxButterfly_Channel(1);
     }
 
     void OnButtonPress() {

@@ -13,10 +13,12 @@ const int HEMISPHERE_HELP_CVS = 1;
 const int HEMISPHERE_HELP_OUTS = 2;
 const int HEMISPHERE_HELP_ENCODER = 3;
 
-// Simulated fixed floats by multiplying and dividing by a factor of ten
-#define int2simfloat(x) 10000 * (x)
-#define simfloat2int(x) (x) / 10000
-typedef int simfloat;
+// Simulated fixed floats by multiplying and dividing by powers of 2
+#define int2simfloat(x) (x << 14)
+#define simfloat2int(x) (x >> 14)
+typedef int32_t simfloat;
+
+#define BottomAlign(h) (62 - h)
 
 class HemisphereApplet {
 public:
@@ -56,14 +58,6 @@ public:
         help_active = 1 - help_active;
     }
 
-    /* Proportion CV values for display purposes */
-    int ProportionCV(int value, int max) {
-        int divisions = HEMISPHERE_MAX_CV / max; // Divide the CV into little pieces
-        int proportion = value / divisions;
-        if (proportion > max) proportion = max;
-        return proportion;
-    }
-
     void BaseView() {
         if (help_active) {
             // If help is active, draw the help screen instead of the application screen
@@ -74,7 +68,8 @@ public:
         }
     }
 
-    /* System notifications from the base class regarding manager state(s) */
+    //////////////// Notifications from the base class regarding manager state(s)
+    ////////////////////////////////////////////////////////////////////////////////
     void DrawNotifications() {
         // CV Forwarding Icon
         if (forwarding_on) {
@@ -103,7 +98,8 @@ public:
         }
     }
 
-    /* Offset Graphics Methods */
+    //////////////// Offset graphics methods
+    ////////////////////////////////////////////////////////////////////////////////
     void gfxPrint(int x, int y, const char *str) {
         graphics.setPrintPos(x + gfx_offset, y);
         graphics.print(str);
@@ -146,38 +142,50 @@ public:
         graphics.drawCircle(x + gfx_offset, y, r);
     }
 
-    /* Hemisphere-specific graphics methods */
-    void gfxOutputBar(int ch, bool screensaver) {
+    //////////////// Hemisphere-specific graphics methods
+    ////////////////////////////////////////////////////////////////////////////////
+    void gfxOutputBar(int ch, int y, bool screensaver) {
         int width = ProportionCV(outputs[ch], 60);
         if (width < 0) {width = 0;}
         int height = screensaver ? 2 : 12;
         int x = (hemisphere == 0) ? 64 - width : 0;
-        gfxRect(x, 35 + (ch * 15), width, height);
+        gfxRect(x, y, width, height);
     }
 
-    void gfxInputBar(int ch, bool screensaver) {
+    void gfxInputBar(int ch, int y, bool screensaver) {
         int width = ProportionCV(inputs[ch], 63);
         if (width < 0) {width = 0;}
         int height = screensaver ? 1 : 6;
         int x = (hemisphere == 0) ? 63 - width : 0;
-        gfxFrame(x, 15 + (ch * 10), width, height);
+        gfxFrame(x, y, width, height);
     }
 
+    /* Original butterfly: functional grouping (ins with outs) */
     void gfxButterfly(bool screensaver) {
         for (int ch = 0; ch < 2; ch++)
         {
-            gfxOutputBar(ch, screensaver);
-            gfxInputBar(ch, screensaver);
+            gfxInputBar(ch, 15 + (ch * 10), screensaver);
+            gfxOutputBar(ch, 35 + (ch * 15), screensaver);
+        }
+    }
+
+    /* Alternate butterfly: Channel grouping (Ch1 with Ch2) */
+    void gfxButterfly_Channel(bool screensaver) {
+        for (int ch = 0; ch < 2; ch++)
+        {
+            gfxInputBar(ch, 15 + (ch * 25), screensaver);
+            gfxOutputBar(ch, 25 + (ch * 25), screensaver);
         }
     }
 
     void gfxHeader(const char *str) {
-        gfxPrint(2, 2, str);
+        gfxPrint(1, 2, str);
         gfxLine(0, 10, 62, 10);
         gfxLine(0, 12, 62, 12);
     }
 
-    /* Offset I/O Methods */
+    //////////////// Offset I/O methods
+    ////////////////////////////////////////////////////////////////////////////////
     int In(int ch) {
         return inputs[ch];
     }
@@ -230,6 +238,26 @@ public:
 protected:
     const char* help[4];
     virtual void SetHelp();
+
+    //////////////// Calculation methods
+    ////////////////////////////////////////////////////////////////////////////////
+
+    /* Calculation method using simfloat, useful for calculating scaled values given
+     * a fractional value.
+     */
+    int CalculateScaledValue(int numerator, int denominator, int max_value) {
+        simfloat proportion = int2simfloat((int32_t)numerator) / (int32_t)denominator;
+        int scaled = simfloat2int(proportion * max_value);
+        return scaled;
+    }
+
+    /* Proportion CV values for display purposes */
+    int ProportionCV(int value, int max) {
+        int divisions = HEMISPHERE_MAX_CV / max; // Divide the CV into little pieces
+        int proportion = value / divisions;
+        if (proportion > max) proportion = max;
+        return proportion;
+    }
 
 private:
     int hemisphere; // Which hemisphere (0, 1) this applet uses
