@@ -242,21 +242,33 @@ protected:
     //////////////// Calculation methods
     ////////////////////////////////////////////////////////////////////////////////
 
-    /* Calculation method using simfloat, useful for calculating scaled values given
+    /* Proportion method using simfloat, useful for calculating scaled values given
      * a fractional value.
+     *
+     * Solves this:  numerator        ???
+     *              ----------- = -----------
+     *              denominator       max
+     *
+     * For example, to convert a parameter with a range of 1 to 100 into value scaled
+     * to HEMISPHERE_MAX_CV, to be sent to the DAC:
+     *
+     * Out(ch, Proportion(value, 100, HEMISPHERE_MAX_CV));
+     *
      */
-    int CalculateScaledValue(int numerator, int denominator, int max_value) {
+    int Proportion(int numerator, int denominator, int max_value) {
         simfloat proportion = int2simfloat((int32_t)numerator) / (int32_t)denominator;
         int scaled = simfloat2int(proportion * max_value);
         return scaled;
     }
 
-    /* Proportion CV values for display purposes */
-    int ProportionCV(int value, int max) {
-        int divisions = HEMISPHERE_MAX_CV / max; // Divide the CV into little pieces
-        int proportion = value / divisions;
-        if (proportion > max) proportion = max;
-        return proportion;
+    /* Proportion CV values into pixels for display purposes.
+     *
+     * Solves this:     cv_value           ???
+     *              ----------------- = ----------
+     *              HEMISPHERE_MAX_CV   max_pixels
+     */
+    int ProportionCV(int cv_value, int max_pixels) {
+        return Proportion(cv_value, HEMISPHERE_MAX_CV, max_pixels);
     }
 
 private:

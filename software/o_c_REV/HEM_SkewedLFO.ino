@@ -98,20 +98,20 @@ private:
 
     void DrawWaveformPosition() {
         int height = AmplitudeAtPosition(cycle_tick, 30);
-        int x = CalculateScaledValue(cycle_tick, TicksAtRate(), 62);
+        int x = Proportion(cycle_tick, TicksAtRate(), 62);
         gfxLine(x, 63, x, 63 - height);
     }
 
     int AmplitudeAtPosition(int position, int max_amplitude) {
         int amplitude = 0;
         int ticks_at_rate = TicksAtRate();
-        int fall_point = CalculateScaledValue(skew, LFO_MAX_CONTROL, ticks_at_rate);
+        int fall_point = Proportion(skew, LFO_MAX_CONTROL, ticks_at_rate);
         if (position < fall_point) {
             // Rise portion
-            amplitude = CalculateScaledValue(position, fall_point, max_amplitude);
+            amplitude = Proportion(position, fall_point, max_amplitude);
         } else {
             // Fall portion
-            amplitude = CalculateScaledValue(ticks_at_rate - position, ticks_at_rate - fall_point, max_amplitude);
+            amplitude = Proportion(ticks_at_rate - position, ticks_at_rate - fall_point, max_amplitude);
         }
 
         return amplitude;
@@ -120,7 +120,7 @@ private:
     int TicksAtRate() {
         int inv_rate = LFO_MAX_CONTROL - rate;
         int range = HEMISPHERE_LFO_HIGH - HEMISPHERE_LFO_LOW;
-        int ticks_at_rate = CalculateScaledValue(inv_rate, LFO_MAX_CONTROL, range) + HEMISPHERE_LFO_LOW;
+        int ticks_at_rate = Proportion(inv_rate, LFO_MAX_CONTROL, range) + HEMISPHERE_LFO_LOW;
         return ticks_at_rate;
     }
 

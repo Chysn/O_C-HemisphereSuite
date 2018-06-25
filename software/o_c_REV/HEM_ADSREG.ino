@@ -68,7 +68,7 @@ public:
 
         for (int ch = 0; ch < 2; ch++)
         {
-            int w = CalculateScaledValue(GetAmplitudeOf(ch), HEMISPHERE_MAX_CV, 62);
+            int w = Proportion(GetAmplitudeOf(ch), HEMISPHERE_MAX_CV, 62);
             gfxRect(0, 15 + (ch * 10), w, 6);
         }
     }
@@ -77,7 +77,7 @@ public:
         int h[2];
         for (int ch = 0; ch < 2; ch++)
         {
-            h[ch] = CalculateScaledValue(GetAmplitudeOf(ch), HEMISPHERE_MAX_CV, 40);
+            h[ch] = Proportion(GetAmplitudeOf(ch), HEMISPHERE_MAX_CV, 40);
             gfxLine(0 + (37 * ch), BottomAlign(h[ch]), 25 + (37 * ch), BottomAlign(h[ch]));
         }
         gfxLine(25, BottomAlign(h[0]), 37, BottomAlign(h[1]));
@@ -132,30 +132,32 @@ private:
     }
 
     int DrawAttack(int x, int length) {
-        int xA = x + CalculateScaledValue(attack, length, 62);
+        int xA = x + Proportion(attack, length, 62);
         gfxLine(x, BottomAlign(0), xA, BottomAlign(HEM_EG_DISPLAY_HEIGHT));
         if (edit_stage == HEM_EG_ATTACK) {
             gfxLine(x, BottomAlign(1), xA, BottomAlign(HEM_EG_DISPLAY_HEIGHT + 1));
             gfxLine(x, BottomAlign(2), xA, BottomAlign(HEM_EG_DISPLAY_HEIGHT + 2));
-        }
+            gfxLine(x + 1, BottomAlign(0), xA + 1, BottomAlign(HEM_EG_DISPLAY_HEIGHT));
+    }
         return xA;
     }
 
     int DrawDecay(int x, int length) {
-        int xD = x + CalculateScaledValue(decay, length, 62);
+        int xD = x + Proportion(decay, length, 62);
         if (xD < 0) xD = 0;
-        int yS = CalculateScaledValue(sustain, 100, HEM_EG_DISPLAY_HEIGHT);
+        int yS = Proportion(sustain, 100, HEM_EG_DISPLAY_HEIGHT);
         gfxLine(x, BottomAlign(HEM_EG_DISPLAY_HEIGHT), xD, BottomAlign(yS));
         if (edit_stage == HEM_EG_DECAY) {
             gfxLine(x, BottomAlign(HEM_EG_DISPLAY_HEIGHT + 1), xD, BottomAlign(yS + 1));
             gfxLine(x, BottomAlign(HEM_EG_DISPLAY_HEIGHT + 2), xD, BottomAlign(yS + 2));
+            gfxLine(x + 1, BottomAlign(HEM_EG_DISPLAY_HEIGHT), xD + 1, BottomAlign(yS));
         }
         return xD;
     }
 
     int DrawSustain(int x, int length) {
-        int xS = x + CalculateScaledValue(HEM_SUSTAIN_CONST, length, 62);
-        int yS = CalculateScaledValue(sustain, 100, HEM_EG_DISPLAY_HEIGHT);
+        int xS = x + Proportion(HEM_SUSTAIN_CONST, length, 62);
+        int yS = Proportion(sustain, 100, HEM_EG_DISPLAY_HEIGHT);
         if (xS < 0) xS = 0;
         gfxLine(x, BottomAlign(yS), xS, BottomAlign(yS));
         if (edit_stage == HEM_EG_SUSTAIN) {
@@ -166,18 +168,19 @@ private:
     }
 
     int DrawRelease(int x, int length) {
-        int xR = x + CalculateScaledValue(release, length, 62);
-        int yS = CalculateScaledValue(sustain, 100, HEM_EG_DISPLAY_HEIGHT);
+        int xR = x + Proportion(release, length, 62);
+        int yS = Proportion(sustain, 100, HEM_EG_DISPLAY_HEIGHT);
         gfxLine(x, BottomAlign(yS), xR, BottomAlign(0));
         if (edit_stage == HEM_EG_RELEASE) {
             gfxLine(x, BottomAlign(yS + 1), xR, BottomAlign(1));
             gfxLine(x, BottomAlign(yS + 2), xR, BottomAlign(2));
+            gfxLine(x - 1, BottomAlign(yS), xR - 1, BottomAlign(0));
         }
         return xR;
     }
 
     void AttackAmplitude(int ch) {
-        int total_stage_ticks = CalculateScaledValue(attack, 100, HEM_EG_MAX_TICKS_AD);
+        int total_stage_ticks = Proportion(attack, 100, HEM_EG_MAX_TICKS_AD);
         int ticks_remaining = total_stage_ticks - stage_ticks[ch];
         simfloat amplitude_remaining = int2simfloat(HEMISPHERE_MAX_CV) - amplitude[ch];
 
@@ -191,9 +194,9 @@ private:
     }
 
     void DecayAmplitude(int ch) {
-        int total_stage_ticks = CalculateScaledValue(decay, 100, HEM_EG_MAX_TICKS_AD);
+        int total_stage_ticks = Proportion(decay, 100, HEM_EG_MAX_TICKS_AD);
         int ticks_remaining = total_stage_ticks - stage_ticks[ch];
-        simfloat amplitude_remaining = amplitude[ch] - int2simfloat(CalculateScaledValue(sustain, 100, HEMISPHERE_MAX_CV));
+        simfloat amplitude_remaining = amplitude[ch] - int2simfloat(Proportion(sustain, 100, HEMISPHERE_MAX_CV));
 
         if (ticks_remaining <= 0) { // End of decay; move to sustain
             stage[ch] = HEM_EG_SUSTAIN;
@@ -205,11 +208,11 @@ private:
     }
 
     void SustainAmplitude(int ch) {
-        amplitude[ch] = int2simfloat(CalculateScaledValue(sustain, 100, HEMISPHERE_MAX_CV));
+        amplitude[ch] = int2simfloat(Proportion(sustain, 100, HEMISPHERE_MAX_CV));
     }
 
     void ReleaseAmplitude(int ch) {
-        int total_stage_ticks = CalculateScaledValue(release, 100, HEM_EG_MAX_TICKS_R);
+        int total_stage_ticks = Proportion(release, 100, HEM_EG_MAX_TICKS_R);
         int ticks_remaining = total_stage_ticks - stage_ticks[ch];
         if (ticks_remaining <= 0 || amplitude[ch] <= 0) { // End of release; turn off envelope
             stage[ch] = HEM_EG_NO_STAGE;
