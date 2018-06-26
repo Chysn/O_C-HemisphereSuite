@@ -182,6 +182,9 @@ public:
 
     //////////////// Hemisphere-specific graphics methods
     ////////////////////////////////////////////////////////////////////////////////
+    /* Output bars are 12 pixels tall; there should be 15 pixels from the top of an
+     * output bar to the top of the next vertical element.
+     */
     void gfxOutputBar(int ch, int y, bool screensaver) {
         int width = ProportionCV(outputs[ch], 60);
         if (width < 0) {width = 0;}
@@ -190,6 +193,9 @@ public:
         gfxRect(x, y, width, height);
     }
 
+    /* Input bars are 6 pixels tall; there should be 10 pixels from the top of an
+     * input bar to the top of the next vertical element.
+     */
     void gfxInputBar(int ch, int y, bool screensaver) {
         int width = ProportionCV(inputs[ch], 63);
         if (width < 0) {width = 0;}

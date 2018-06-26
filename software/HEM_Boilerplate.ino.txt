@@ -48,10 +48,12 @@ public:
 protected:
     /* Set help text. Each help section can have up to 18 characters. Be concise! */
     void SetHelp() {
+        //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "Digital in help";
-        help[HEMISPHERE_HELP_CVS] = "CV in help";
-        help[HEMISPHERE_HELP_OUTS] = "Out help";
-        help[HEMISPHERE_HELP_ENCODER] = "123456789012345678";
+        help[HEMISPHERE_HELP_CVS]      = "CV in help";
+        help[HEMISPHERE_HELP_OUTS]     = "Out help";
+        help[HEMISPHERE_HELP_ENCODER]  = "123456789012345678";
+        //                               "------------------" <-- Size Guide
     }
     
 private:
