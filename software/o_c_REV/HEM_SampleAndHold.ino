@@ -11,7 +11,7 @@ public:
     }
 
     void Controller() {
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             if (Clock(ch)) {
                 int cv = In(ch);

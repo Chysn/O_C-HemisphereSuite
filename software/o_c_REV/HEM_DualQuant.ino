@@ -11,7 +11,7 @@ public:
 
     void Start() {
         selected = 0;
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             quantizer[ch].Init();
             scale[ch] = ch + 5;
@@ -23,7 +23,7 @@ public:
     }
 
     void Controller() {
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             if (Clock(ch)) {
                 int32_t pitch = In(ch);
@@ -78,7 +78,7 @@ private:
 
     void DrawSelector()
     {
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             gfxBitmap(0 + (31 * ch), 15, 8, notes[ch]);
             gfxPrint(0 + (31 * ch), 25, OC::scale_names_short[scale[ch]]);
@@ -91,7 +91,7 @@ private:
 
     void DrawLittleNotes()
     {
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             int x = ProportionCV(last_note[ch], 54);
             gfxBitmap(x, note_y[ch], 8, notes[ch]);

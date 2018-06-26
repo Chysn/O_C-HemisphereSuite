@@ -9,7 +9,7 @@ public:
     }
 
     void Controller() {
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             if (Gate(ch)) {
                 int cv = In(1);

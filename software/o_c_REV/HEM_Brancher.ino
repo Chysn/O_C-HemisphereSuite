@@ -13,7 +13,7 @@ public:
 
 	/* Run during the interrupt service routine */
     void Controller() {
-        for (int ch = 0; ch < 2; ch++) choices[ch] = In(ch);
+        ForEachChannel(ch) choices[ch] = In(ch);
     	    if (Clock(0)) {
     	        last_index = (random(1, 100) > prob) ? 0 : 1;
     	    }
@@ -30,7 +30,7 @@ public:
         
         // Show the choices along the right side,
         // with the chosen one
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             int height = ProportionCV(choices[ch], 48);
             int y = (52 - height) / 2; // To put it in the center
@@ -44,7 +44,7 @@ public:
 
 	/* Draw the screensaver */
     void ScreensaverView() {
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             int height = ProportionCV(choices[ch], 48);
             int y = (52 - height) / 2; // To put it in the center

@@ -37,7 +37,7 @@ public:
         io_offset = h * 2;
 
         // Initialize some things for startup
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             clock_countdown[ch]  = 0;
             inputs[ch] = 0;
@@ -57,7 +57,7 @@ public:
     void BaseController(bool forwarding) {
         forwarding_on = (forwarding && hemisphere == RIGHT_HEMISPHERE);
         int fwd = forwarding_on ? io_offset : 0;
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             // Set or forward CV inputs
             ADC_CHANNEL channel = (ADC_CHANNEL)(ch + io_offset - fwd);
@@ -200,7 +200,7 @@ public:
 
     /* Original butterfly: functional grouping (ins with outs) */
     void gfxButterfly(bool screensaver) {
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             gfxInputBar(ch, 15 + (ch * 10), screensaver);
             gfxOutputBar(ch, 35 + (ch * 15), screensaver);
@@ -209,7 +209,7 @@ public:
 
     /* Alternate butterfly: Channel grouping (Ch1 with Ch2) */
     void gfxButterfly_Channel(bool screensaver) {
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             gfxInputBar(ch, 15 + (ch * 25), screensaver);
             gfxOutputBar(ch, 25 + (ch * 25), screensaver);

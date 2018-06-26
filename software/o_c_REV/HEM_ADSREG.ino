@@ -22,7 +22,7 @@ public:
         decay = 15;
         sustain = 60;
         release = 15;
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             stage_ticks[ch] = 0;
             gated[ch] = 0;
@@ -31,7 +31,7 @@ public:
     }
 
     void Controller() {
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             if (Gate(ch)) {
                 if (!gated[ch]) { // The gate wasn't on last time, so this is a newly-gated EG
@@ -66,7 +66,7 @@ public:
         gfxHeader(applet_name());
         DrawADSR();
 
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             int w = Proportion(GetAmplitudeOf(ch), HEMISPHERE_MAX_CV, 62);
             gfxRect(0, 15 + (ch * 10), w, 6);
@@ -75,7 +75,7 @@ public:
 
     void ScreensaverView() {
         int h[2];
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             h[ch] = Proportion(GetAmplitudeOf(ch), HEMISPHERE_MAX_CV, 40);
             gfxLine(0 + (37 * ch), BottomAlign(h[ch]), 25 + (37 * ch), BottomAlign(h[ch]));

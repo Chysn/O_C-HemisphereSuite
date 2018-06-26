@@ -15,7 +15,7 @@ public:
     }
 
     void Start() {
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             div[ch] = ch + 1;
             count[ch] = 0;
@@ -35,7 +35,7 @@ public:
             cycle_time = this_tick - last_clock;
 
             // At the clock input, handle clock division
-            for (int ch = 0; ch < 2; ch++)
+            ForEachChannel(ch)
             {
                 count[ch]++;
                 if (div[ch] > 0) { // Positive value indicates clock division
@@ -55,7 +55,7 @@ public:
         }
 
         // Handle clock multiplication
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             if (div[ch] < 0) { // Negative value indicates clock multiplication
                 if (this_tick == next_clock[ch]) {
@@ -69,7 +69,7 @@ public:
 
     void View() {
         gfxHeader(applet_name());
-        for (int ch = 0; ch < 2; ch++)
+        ForEachChannel(ch)
         {
             int y = 16 + (ch * 25);
             if (ch == selected) {
