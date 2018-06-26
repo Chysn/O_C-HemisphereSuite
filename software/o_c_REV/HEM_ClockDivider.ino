@@ -73,8 +73,7 @@ public:
         {
             int y = 16 + (ch * 25);
             if (ch == selected) {
-                // Cursor frame
-                gfxFrame(0, y-2, 63, 11);
+                gfxCursor(0, y + 9, 63);
             }
             if (div[ch] > 0) {
                 gfxPrint(2, y, "1/");
@@ -100,6 +99,7 @@ public:
 
     void OnButtonPress() {
         selected = 1 - selected;
+        ResetCursor();
     }
 
     void OnEncoderMove(int direction) {

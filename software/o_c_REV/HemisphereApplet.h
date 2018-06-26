@@ -6,6 +6,7 @@ const int LEFT_HEMISPHERE = 0;
 const int RIGHT_HEMISPHERE = 1;
 const int HEMISPHERE_MAX_CV = 7800;
 const int HEMISPHERE_CLOCK_TICKS = 100; // 6ms
+const int HEMISPHERE_CURSOR_TICKS = 12000;
 
 // Codes for help system sections
 const int HEMISPHERE_HELP_DIGITALS = 0;
@@ -40,6 +41,9 @@ public:
                 if (--clock_countdown[ch] == 0) Out(ch, 0);
             }
         }
+
+        // Cursor countdown. See CursorBlink(), ResetCursor(), and gfxCursor()
+        if (--cursor_countdown < -HEMISPHERE_CURSOR_TICKS) cursor_countdown = HEMISPHERE_CURSOR_TICKS;
     }
 
     /* Assign the child class instance to a left or right hemisphere */
@@ -56,6 +60,14 @@ public:
     /* Help Screen Toggle */
     void HelpScreen() {
         help_active = 1 - help_active;
+    }
+
+    bool CursorBlink() {
+        return cursor_countdown > 0;
+    }
+
+    void ResetCursor() {
+        cursor_countdown = HEMISPHERE_CURSOR_TICKS;
     }
 
     void BaseView() {
@@ -100,6 +112,10 @@ public:
 
     //////////////// Offset graphics methods
     ////////////////////////////////////////////////////////////////////////////////
+    void gfxCursor(int x, int y, int w) {
+        if (CursorBlink()) gfxLine(x, y, x + w - 1, y);
+    }
+
     void gfxPrint(int x, int y, const char *str) {
         graphics.setPrintPos(x + gfx_offset, y);
         graphics.print(str);
@@ -278,6 +294,7 @@ private:
     int inputs[2];
     int outputs[2];
     int clock_countdown[2];
+    int cursor_countdown;
     bool forwarding_on; // Forwarding was on during the last ISR cycle
 
     int help_active;

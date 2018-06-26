@@ -81,7 +81,6 @@ private:
         if (selected == 0) {
             gfxRect(1, 16, rate, 4);
         } else {
-            DrawSkewedWaveform(1);
             DrawSkewedWaveform(-1);
         }
     }
