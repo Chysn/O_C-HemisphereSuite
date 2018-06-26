@@ -94,8 +94,7 @@ private:
 Brancher Brancher_instance[2];
 
 void Brancher_Start(int hemisphere) {
-    Brancher_instance[hemisphere].SetHemisphere(hemisphere);
-    Brancher_instance[hemisphere].BaseStart();
+    Brancher_instance[hemisphere].BaseStart(hemisphere);
 }
 
 void Brancher_Controller(int hemisphere, bool forwarding) {

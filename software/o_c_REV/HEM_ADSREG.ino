@@ -237,8 +237,7 @@ private:
 ADSREG ADSREG_instance[2];
 
 void ADSREG_Start(int hemisphere) {
-    ADSREG_instance[hemisphere].SetHemisphere(hemisphere);
-    ADSREG_instance[hemisphere].BaseStart();
+    ADSREG_instance[hemisphere].BaseStart(hemisphere);
 }
 
 void ADSREG_Controller(int hemisphere, bool forwarding) {

@@ -58,8 +58,7 @@ private:
 MinMax MinMax_instance[2];
 
 void MinMax_Start(int hemisphere) {
-    MinMax_instance[hemisphere].SetHemisphere(hemisphere);
-    MinMax_instance[hemisphere].BaseStart();
+    MinMax_instance[hemisphere].BaseStart(hemisphere);
 }
 
 void MinMax_Controller(int hemisphere, bool forwarding) {

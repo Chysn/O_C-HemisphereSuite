@@ -137,8 +137,7 @@ private:
 SkewedLFO SkewedLFO_instance[2];
 
 void SkewedLFO_Start(int hemisphere) {
-    SkewedLFO_instance[hemisphere].SetHemisphere(hemisphere);
-    SkewedLFO_instance[hemisphere].BaseStart();
+    SkewedLFO_instance[hemisphere].BaseStart(hemisphere);
 }
 
 void SkewedLFO_Controller(int hemisphere, bool forwarding) {

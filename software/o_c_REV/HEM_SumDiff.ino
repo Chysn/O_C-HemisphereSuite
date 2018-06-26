@@ -64,8 +64,7 @@ private:
 SumDiff SumDiff_instance[2];
 
 void SumDiff_Start(int hemisphere) {
-    SumDiff_instance[hemisphere].SetHemisphere(hemisphere);
-    SumDiff_instance[hemisphere].BaseStart();
+    SumDiff_instance[hemisphere].BaseStart(hemisphere);
 }
 
 void SumDiff_Controller(int hemisphere, bool forwarding) {

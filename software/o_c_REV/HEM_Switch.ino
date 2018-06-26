@@ -66,8 +66,7 @@ private:
 Switch Switch_instance[2];
 
 void Switch_Start(int hemisphere) {
-    Switch_instance[hemisphere].SetHemisphere(hemisphere);
-    Switch_instance[hemisphere].BaseStart();
+    Switch_instance[hemisphere].BaseStart(hemisphere);
 }
 
 void Switch_Controller(int hemisphere, bool forwarding) {

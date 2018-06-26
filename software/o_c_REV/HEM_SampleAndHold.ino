@@ -53,8 +53,7 @@ private:
 SampleAndHold SampleAndHold_instance[2];
 
 void SampleAndHold_Start(int hemisphere) {
-    SampleAndHold_instance[hemisphere].SetHemisphere(hemisphere);
-    SampleAndHold_instance[hemisphere].BaseStart();
+    SampleAndHold_instance[hemisphere].BaseStart(hemisphere);
 }
 
 void SampleAndHold_Controller(int hemisphere, bool forwarding) {

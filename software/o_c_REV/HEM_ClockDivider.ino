@@ -140,8 +140,7 @@ private:
 ClockDivider ClockDivider_instance[2];
 
 void ClockDivider_Start(int hemisphere) {
-    ClockDivider_instance[hemisphere].SetHemisphere(hemisphere);
-    ClockDivider_instance[hemisphere].BaseStart();
+    ClockDivider_instance[hemisphere].BaseStart(hemisphere);
 }
 
 void ClockDivider_Controller(int hemisphere, bool forwarding) {

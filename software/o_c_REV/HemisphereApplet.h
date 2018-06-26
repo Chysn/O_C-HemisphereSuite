@@ -29,7 +29,12 @@ public:
     virtual void Start();
     virtual void Controller();
 
-    void BaseStart() {
+    void BaseStart(int h) {
+        hemisphere = h;
+        gfx_offset = h * 65;
+        io_offset = h * 2;
+
+        // Initialize some things for startup
         for (int ch = 0; ch < 2; ch++)
         {
             clock_countdown[ch]  = 0;
@@ -40,6 +45,7 @@ public:
         help_active = 0;
         cursor_countdown = HEMISPHERE_CURSOR_TICKS;
 
+        // Maintain previous app state by skipping Start
         if (!applet_started) {
             Start();
             applet_started = true;
@@ -75,13 +81,6 @@ public:
             View();
             DrawNotifications();
         }
-    }
-
-    /* Assign the child class instance to a left or right hemisphere */
-    void SetHemisphere(int h) {
-        hemisphere = h;
-        gfx_offset = h * 65;
-        io_offset = h * 2;
     }
 
     /* Help Screen Toggle */
@@ -173,6 +172,10 @@ public:
 
     void gfxCircle(int x, int y, int r) {
         graphics.drawCircle(x + gfx_offset, y, r);
+    }
+
+    void gfxBitmap(int x, int y, int w, const uint8_t *data) {
+        graphics.drawBitmap8(x + gfx_offset, y, w, data);
     }
 
     //////////////// Hemisphere-specific graphics methods
