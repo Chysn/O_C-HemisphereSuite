@@ -95,12 +95,11 @@ Brancher Brancher_instance[2];
 
 void Brancher_Start(int hemisphere) {
     Brancher_instance[hemisphere].SetHemisphere(hemisphere);
-    Brancher_instance[hemisphere].Start();
+    Brancher_instance[hemisphere].BaseStart();
 }
 
 void Brancher_Controller(int hemisphere, bool forwarding) {
-	Brancher_instance[hemisphere].IO(forwarding);
-    Brancher_instance[hemisphere].Controller();
+	Brancher_instance[hemisphere].BaseController(forwarding);
 }
 
 void Brancher_View(int hemisphere) {

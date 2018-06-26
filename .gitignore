@@ -1,3 +1,8 @@
+.cproject
+.gitignore.swp
+.settings/
+Hemisphere.ino
+sloeber.ino.cpp
 .gitignore
 bin
 software/test/build

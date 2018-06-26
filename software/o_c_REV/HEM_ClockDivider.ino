@@ -116,7 +116,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
         help[HEMISPHERE_HELP_CVS] = "";
         help[HEMISPHERE_HELP_OUTS] = "Clk A=Ch1 B=Ch2";
-        help[HEMISPHERE_HELP_ENCODER] = "T=Set div P=Set Ch";
+        help[HEMISPHERE_HELP_ENCODER] = "T=Set div P=Sel Ch";
     }
 
 private:
@@ -141,12 +141,11 @@ ClockDivider ClockDivider_instance[2];
 
 void ClockDivider_Start(int hemisphere) {
     ClockDivider_instance[hemisphere].SetHemisphere(hemisphere);
-    ClockDivider_instance[hemisphere].Start();
+    ClockDivider_instance[hemisphere].BaseStart();
 }
 
 void ClockDivider_Controller(int hemisphere, bool forwarding) {
-    ClockDivider_instance[hemisphere].IO(forwarding);
-    ClockDivider_instance[hemisphere].Controller();
+    ClockDivider_instance[hemisphere].BaseController(forwarding);
 }
 
 void ClockDivider_View(int hemisphere) {

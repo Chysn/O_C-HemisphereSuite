@@ -26,8 +26,27 @@ public:
 
     virtual const char* applet_name(); // Maximum of 10 characters
     virtual void View();
+    virtual void Start();
+    virtual void Controller();
 
-    void IO(bool forwarding) {
+    void BaseStart() {
+        for (int ch = 0; ch < 2; ch++)
+        {
+            clock_countdown[ch]  = 0;
+            inputs[ch] = 0;
+            outputs[ch] = 0;
+
+        }
+        help_active = 0;
+        cursor_countdown = HEMISPHERE_CURSOR_TICKS;
+
+        if (!applet_started) {
+            Start();
+            applet_started = true;
+        }
+    }
+
+    void BaseController(bool forwarding) {
         forwarding_on = (forwarding && hemisphere == RIGHT_HEMISPHERE);
         int fwd = forwarding_on ? io_offset : 0;
         for (int ch = 0; ch < 2; ch++)
@@ -44,6 +63,18 @@ public:
 
         // Cursor countdown. See CursorBlink(), ResetCursor(), and gfxCursor()
         if (--cursor_countdown < -HEMISPHERE_CURSOR_TICKS) cursor_countdown = HEMISPHERE_CURSOR_TICKS;
+
+        Controller();
+    }
+
+    void BaseView() {
+        if (help_active) {
+            // If help is active, draw the help screen instead of the application screen
+            DrawHelpScreen();
+        } else {
+            View();
+            DrawNotifications();
+        }
     }
 
     /* Assign the child class instance to a left or right hemisphere */
@@ -51,10 +82,6 @@ public:
         hemisphere = h;
         gfx_offset = h * 65;
         io_offset = h * 2;
-        forwarding_on = false;
-        clock_countdown[0] = 0;
-        clock_countdown[1] = 0;
-        help_active = 0;
     }
 
     /* Help Screen Toggle */
@@ -68,16 +95,6 @@ public:
 
     void ResetCursor() {
         cursor_countdown = HEMISPHERE_CURSOR_TICKS;
-    }
-
-    void BaseView() {
-        if (help_active) {
-            // If help is active, draw the help screen instead of the application screen
-            DrawHelpScreen();
-        } else {
-            View();
-            DrawNotifications();
-        }
     }
 
     //////////////// Notifications from the base class regarding manager state(s)
@@ -296,6 +313,7 @@ private:
     int clock_countdown[2];
     int cursor_countdown;
     bool forwarding_on; // Forwarding was on during the last ISR cycle
+    bool applet_started; // Allow the app to maintain state during switching
 
     int help_active;
 };

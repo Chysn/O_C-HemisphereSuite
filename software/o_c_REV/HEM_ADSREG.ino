@@ -99,9 +99,9 @@ public:
 protected:
     /* Set help text. Each help section can have up to 18 characters. Be concise! */
     void SetHelp() {
-        help[HEMISPHERE_HELP_DIGITALS] = "Gate 1,2";
+        help[HEMISPHERE_HELP_DIGITALS] = "Gate 1=Ch1 2=Ch2";
         help[HEMISPHERE_HELP_CVS] = "";
-        help[HEMISPHERE_HELP_OUTS] = "1,2=Amplitude";
+        help[HEMISPHERE_HELP_OUTS] = "Amp 1=Ch1 2=Ch2";
         help[HEMISPHERE_HELP_ENCODER] = "T=Set Stage P=Sel";
     }
     
@@ -238,12 +238,11 @@ ADSREG ADSREG_instance[2];
 
 void ADSREG_Start(int hemisphere) {
     ADSREG_instance[hemisphere].SetHemisphere(hemisphere);
-    ADSREG_instance[hemisphere].Start();
+    ADSREG_instance[hemisphere].BaseStart();
 }
 
 void ADSREG_Controller(int hemisphere, bool forwarding) {
-    ADSREG_instance[hemisphere].IO(forwarding);
-    ADSREG_instance[hemisphere].Controller();
+    ADSREG_instance[hemisphere].BaseController(forwarding);
 }
 
 void ADSREG_View(int hemisphere) {

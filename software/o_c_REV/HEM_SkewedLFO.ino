@@ -138,12 +138,11 @@ SkewedLFO SkewedLFO_instance[2];
 
 void SkewedLFO_Start(int hemisphere) {
     SkewedLFO_instance[hemisphere].SetHemisphere(hemisphere);
-    SkewedLFO_instance[hemisphere].Start();
+    SkewedLFO_instance[hemisphere].BaseStart();
 }
 
 void SkewedLFO_Controller(int hemisphere, bool forwarding) {
-    SkewedLFO_instance[hemisphere].IO(forwarding);
-    SkewedLFO_instance[hemisphere].Controller();
+    SkewedLFO_instance[hemisphere].BaseController(forwarding);
 }
 
 void SkewedLFO_View(int hemisphere) {

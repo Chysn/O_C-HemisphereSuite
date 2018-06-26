@@ -67,12 +67,11 @@ Switch Switch_instance[2];
 
 void Switch_Start(int hemisphere) {
     Switch_instance[hemisphere].SetHemisphere(hemisphere);
-    Switch_instance[hemisphere].Start();
+    Switch_instance[hemisphere].BaseStart();
 }
 
 void Switch_Controller(int hemisphere, bool forwarding) {
-    Switch_instance[hemisphere].IO(forwarding);
-    Switch_instance[hemisphere].Controller();
+    Switch_instance[hemisphere].BaseController(forwarding);
 }
 
 void Switch_View(int hemisphere) {

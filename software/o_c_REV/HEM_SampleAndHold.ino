@@ -54,12 +54,11 @@ SampleAndHold SampleAndHold_instance[2];
 
 void SampleAndHold_Start(int hemisphere) {
     SampleAndHold_instance[hemisphere].SetHemisphere(hemisphere);
-    SampleAndHold_instance[hemisphere].Start();
+    SampleAndHold_instance[hemisphere].BaseStart();
 }
 
 void SampleAndHold_Controller(int hemisphere, bool forwarding) {
-    SampleAndHold_instance[hemisphere].IO(forwarding);
-    SampleAndHold_instance[hemisphere].Controller();
+    SampleAndHold_instance[hemisphere].BaseController(forwarding);
 }
 
 void SampleAndHold_View(int hemisphere) {

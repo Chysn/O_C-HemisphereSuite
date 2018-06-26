@@ -71,12 +71,11 @@ ClassName ClassName_instance[2];
 
 void ClassName_Start(int hemisphere) {
     ClassName_instance[hemisphere].SetHemisphere(hemisphere);
-    ClassName_instance[hemisphere].Start();
+    ClassName_instance[hemisphere].BaseStart();
 }
 
 void ClassName_Controller(int hemisphere, bool forwarding) {
-    ClassName_instance[hemisphere].IO(forwarding);
-    ClassName_instance[hemisphere].Controller();
+    ClassName_instance[hemisphere].BaseController(forwarding);
 }
 
 void ClassName_View(int hemisphere) {
