@@ -19,7 +19,9 @@ const int HEMISPHERE_HELP_ENCODER = 3;
 #define simfloat2int(x) (x >> 14)
 typedef int32_t simfloat;
 
+// Hemisphere-specific macros
 #define BottomAlign(h) (62 - h)
+#define ForEachChannel(ch) for(int ch = 0; ch < 2; ch++)
 
 class HemisphereApplet {
 public:
@@ -249,19 +251,6 @@ public:
         return clocked;
     }
 
-    int Gate(int ch) {
-        bool gated = 0;
-        if (hemisphere == 0) {
-            if (ch == 0) gated = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_1>();
-            if (ch == 1) gated = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_2>();
-        }
-        if (hemisphere == 1) {
-            if (ch == 0) gated = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_3>();
-            if (ch == 1) gated = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_4>();
-        }
-        return gated;
-    }
-
     void ClockOut(int ch, int ticks) {
         clock_countdown[ch] = ticks;
         Out(ch, 0, 5);
@@ -269,6 +258,23 @@ public:
 
     void ClockOut(int ch) {
         ClockOut(ch, HEMISPHERE_CLOCK_TICKS);
+    }
+
+    bool Gate(int ch) {
+        bool high = 0;
+        if (hemisphere == 0) {
+            if (ch == 0) high = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_1>();
+            if (ch == 1) high = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_2>();
+        }
+        if (hemisphere == 1) {
+            if (ch == 0) high = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_3>();
+            if (ch == 1) high = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_4>();
+        }
+        return high;
+    }
+
+    void GateOut(int ch, bool high) {
+        Out(ch, 0, (high ? 5 : 0));
     }
 
 protected:

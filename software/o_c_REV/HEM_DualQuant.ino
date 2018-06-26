@@ -17,7 +17,8 @@ public:
             scale[ch] = ch + 5;
             quantizer[ch].Configure(OC::Scales::GetScale(scale[ch]), 0xffff);
             last_note[ch] = 0;
-            MoveLittleNote(ch);
+            note_y[ch] = random(15, 54);
+            last_dir[ch] = note_y[ch] > 35 ? -1 : 1;
         }
     }
 
@@ -29,8 +30,7 @@ public:
                 int32_t quantized = quantizer[ch].Process(pitch, 0, 0);
                 Out(ch, quantized);
                 last_note[ch] = quantized;
-                note_y[ch] = random(15, 54);
-                last_dir[ch] = note_y[ch] > 35 ? -1 : 1;
+                MoveLittleNote(ch); // For the screensaver
             }
         }
     }
@@ -40,12 +40,14 @@ public:
         DrawSelector();
     }
 
+    /* This screensaver is totes adorbs!!!!!! */
     void ScreensaverView() {
         DrawLittleNotes();
     }
 
     void OnButtonPress() {
         selected = 1 - selected;
+        ResetCursor();
     }
 
     void OnEncoderMove(int direction) {
