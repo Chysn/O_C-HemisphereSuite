@@ -11,7 +11,7 @@ public:
     }
 
     void Controller() {
-        // Channel 1 is the gated switch - When gate is high, use channel 1, otherwise channel 2
+        // Channel 1 is the gated switch - When gate is high, use channel 2, otherwise channel 1
         if (Gate(0)) {
             active[0] = 2;
             Out(0, In(1));
