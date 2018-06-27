@@ -93,14 +93,14 @@ private:
         {
             gfxCircle(9, 21 + (16 * d), 8); // Dendrite
             gfxPrint(6, 18 + (16 * d), dendrite_weight[d]);
-            if (selected == d) gfxCursor(7, 26 + (16 * d), 5);
+            if (selected == d && CursorBlink()) gfxCircle(9, 21 + (16 * d), 7);
         }
     }
 
     void DrawAxon() {
         gfxCircle(48, 37, 12);
         gfxPrint(41, 34, threshold);
-        if (selected == 3) gfxCursor(42, 42, 10);
+        if (selected == 3 && CursorBlink()) gfxCircle(48, 37, 11);
     }
 
     void DrawStates() {
