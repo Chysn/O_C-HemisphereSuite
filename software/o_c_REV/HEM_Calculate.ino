@@ -93,7 +93,7 @@ private:
             gfxFrame(23 + (10 * ch), BottomAlign(height), 6, 63);
 
             height = ProportionCV(ViewOut(ch), 36);
-            gfxRect(1 + (48 * ch), BottomAlign(height), 12, 63);
+            gfxRect(3 + (46 * ch), BottomAlign(height), 12, 63);
         }
     }
 };
