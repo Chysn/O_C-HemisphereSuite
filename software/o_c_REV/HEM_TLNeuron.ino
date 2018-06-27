@@ -63,9 +63,9 @@ public:
 
     void OnEncoderMove(int direction) {
         if (selected < 3) {
-            dendrite_weight[selected] = constrain(dendrite_weight[selected] + direction, 0, 9);
+            dendrite_weight[selected] = constrain(dendrite_weight[selected] + direction, -9, 9);
         } else {
-            threshold = constrain(threshold + direction, 0, 27);
+            threshold = constrain(threshold + direction, -27, 27);
         }
     }
 
@@ -91,15 +91,19 @@ private:
     void DrawDendrites() {
         for (int d = 0; d < 3; d++)
         {
+            int weight = dendrite_weight[d];
             gfxCircle(9, 21 + (16 * d), 8); // Dendrite
-            gfxPrint(6, 18 + (16 * d), dendrite_weight[d]);
+            gfxPrint(weight < 0 ? 1 : 6 , 18 + (16 * d), weight);
             if (selected == d && CursorBlink()) gfxCircle(9, 21 + (16 * d), 7);
         }
     }
 
     void DrawAxon() {
         gfxCircle(48, 37, 12);
-        gfxPrint(41, 34, threshold);
+        int x = 41; // Starting x position for number
+        if (threshold < 10 && threshold > -10) x += 5; // Shove over a bit if a one-digit number
+        if (threshold < 0) x -= 5; // Pull back if a sign is necessary
+        gfxPrint(x, 34, threshold);
         if (selected == 3 && CursorBlink()) gfxCircle(48, 37, 11);
     }
 
