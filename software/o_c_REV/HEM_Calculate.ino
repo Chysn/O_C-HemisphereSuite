@@ -47,7 +47,7 @@ public:
     }
 
     void ScreensaverView() {
-        gfxButterfly(1);
+        gfxButterfly();
     }
 
     void OnButtonPress() {

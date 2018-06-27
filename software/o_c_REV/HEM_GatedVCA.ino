@@ -27,13 +27,13 @@ public:
         gfxPrint(0, 15, "Offset:");
         gfxPrint(amp_offset_pct);
 
-        gfxInputBar(0, 25, 0);
-        gfxInputBar(1, 35, 0);
-        gfxOutputBar(1, 45, 0);
+        gfxInputBar(0, 25);
+        gfxInputBar(1, 35);
+        gfxOutputBar(1, 45);
     }
 
     void ScreensaverView() {
-        gfxButterfly_Channel(1);
+        gfxButterfly_Channel();
     }
 
     void OnButtonPress() {

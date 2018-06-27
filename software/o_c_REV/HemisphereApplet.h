@@ -185,40 +185,38 @@ public:
     /* Output bars are 12 pixels tall; there should be 15 pixels from the top of an
      * output bar to the top of the next vertical element.
      */
-    void gfxOutputBar(int ch, int y, bool screensaver) {
+    void gfxOutputBar(int ch, int y) {
         int width = ProportionCV(outputs[ch], 60);
         if (width < 0) {width = 0;}
-        int height = screensaver ? 2 : 12;
         int x = (hemisphere == 0) ? 64 - width : 0;
-        gfxRect(x, y, width, height);
+        gfxRect(x, y, width, 12);
     }
 
     /* Input bars are 6 pixels tall; there should be 10 pixels from the top of an
      * input bar to the top of the next vertical element.
      */
-    void gfxInputBar(int ch, int y, bool screensaver) {
+    void gfxInputBar(int ch, int y) {
         int width = ProportionCV(inputs[ch], 63);
         if (width < 0) {width = 0;}
-        int height = screensaver ? 1 : 6;
         int x = (hemisphere == 0) ? 63 - width : 0;
-        gfxFrame(x, y, width, height);
+        gfxFrame(x, y, width, 6);
     }
 
     /* Original butterfly: functional grouping (ins with outs) */
-    void gfxButterfly(bool screensaver) {
+    void gfxButterfly() {
         ForEachChannel(ch)
         {
-            gfxInputBar(ch, 15 + (ch * 10), screensaver);
-            gfxOutputBar(ch, 35 + (ch * 15), screensaver);
+            gfxInputBar(ch, 15 + (ch * 10));
+            gfxOutputBar(ch, 35 + (ch * 15));
         }
     }
 
     /* Alternate butterfly: Channel grouping (Ch1 with Ch2) */
-    void gfxButterfly_Channel(bool screensaver) {
+    void gfxButterfly_Channel() {
         ForEachChannel(ch)
         {
-            gfxInputBar(ch, 15 + (ch * 25), screensaver);
-            gfxOutputBar(ch, 25 + (ch * 25), screensaver);
+            gfxInputBar(ch, 15 + (ch * 25));
+            gfxOutputBar(ch, 25 + (ch * 25));
         }
     }
 
