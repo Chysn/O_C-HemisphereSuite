@@ -5,13 +5,11 @@ public:
         return "Gated VCA";
     }
 
-	/* Run when the Applet is selected */
     void Start() {
         amp_offset_pct = 0;
         amp_offset_cv = 0;
     }
 
-	/* Run during the interrupt service routine */
     void Controller() {
         int signal = In(0);
         int amplitude = In(1);
@@ -24,7 +22,6 @@ public:
         else Out(0, 0);
     }
 
-	/* Draw the screen */
     void View() {
         gfxHeader(applet_name());
         gfxPrint(0, 15, "Offset:");
@@ -35,26 +32,19 @@ public:
         gfxOutputBar(1, 45, 0);
     }
 
-	/* Draw the screensaver */
     void ScreensaverView() {
         gfxButterfly_Channel(1);
     }
 
-	/* Called when the encoder button for this hemisphere is pressed */
     void OnButtonPress() {
     }
 
-	/* Called when the encoder for this hemisphere is rotated
-	 * direction 1 is clockwise
-	 * direction -1 is counterclockwise
-	 */
     void OnEncoderMove(int direction) {
         amp_offset_pct = constrain(amp_offset_pct += direction, 0, 100);
         amp_offset_cv = Proportion(amp_offset_pct, 100, HEMISPHERE_MAX_CV);
     }
 
 protected:
-    /* Set help text. Each help section can have up to 18 characters. Be concise! */
     void SetHelp() {
         help[HEMISPHERE_HELP_DIGITALS] = "1=Gate Out1";
         help[HEMISPHERE_HELP_CVS] = "1=CV signal 2=Amp";

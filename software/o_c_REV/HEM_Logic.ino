@@ -98,8 +98,8 @@ private:
     {
         ForEachChannel(ch)
         {
-            gfxPrint(0 + (31 * ch), 25, op_name[operation[ch]]);
-            if (ch == selected) gfxCursor(0 + (31 * ch), 33, 30);
+            gfxPrint(0 + (31 * ch), 15, op_name[operation[ch]]);
+            if (ch == selected) gfxCursor(0 + (31 * ch), 23, 30);
         }
     }    
     

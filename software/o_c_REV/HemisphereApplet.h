@@ -283,6 +283,10 @@ public:
         Out(ch, 0, (high ? 5 : 0));
     }
 
+    // Buffered I/O functions for use in Views
+    int ViewIn(int ch) {return inputs[ch];}
+    int ViewOut(int ch) {return outputs[ch];}
+
 protected:
     const char* help[4];
     virtual void SetHelp();
