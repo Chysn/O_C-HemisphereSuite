@@ -19,18 +19,23 @@ public:
             last_note[ch] = 0;
             note_y[ch] = random(15, 54);
             last_dir[ch] = note_y[ch] > 35 ? -1 : 1;
+            continuous[ch] = 1;
         }
     }
 
     void Controller() {
         ForEachChannel(ch)
         {
-            if (Clock(ch)) {
+            bool clocked = Clock(ch);
+            if (continuous[ch] || clocked) {
+                if (clocked) continuous[ch] = 0; // Turn off continuous mode if there's a clock
                 int32_t pitch = In(ch);
                 int32_t quantized = quantizer[ch].Process(pitch, 0, 0);
                 Out(ch, quantized);
-                last_note[ch] = quantized;
-                MoveLittleNote(ch); // For the screensaver
+                if (last_note[ch] != quantized) {
+                    last_note[ch] = quantized;
+                    MoveLittleNote(ch); // For the screensaver
+                }
             }
         }
     }
@@ -55,12 +60,13 @@ public:
         if (scale[selected] == OC::Scales::NUM_SCALES) scale[selected] = 0;
         if (scale[selected] < 0) scale[selected] = OC::Scales::NUM_SCALES - 1;
         quantizer[selected].Configure(OC::Scales::GetScale(scale[selected]), 0xffff);
+        continuous[selected] = 1; // Re-enable continuous mode when scale is changed
     }
 
 protected:
     /* Set help text. Each help section can have up to 18 characters. Be concise! */
     void SetHelp() {
-        help[HEMISPHERE_HELP_DIGITALS] = "Clk 1=Ch1 2=Ch2";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Ch1 Clk (2=cont)";
         help[HEMISPHERE_HELP_CVS] = "CV 1=Ch1 2=Ch2";
         help[HEMISPHERE_HELP_OUTS] = "Pitch 1=Ch1 2=Ch2";
         help[HEMISPHERE_HELP_ENCODER] = "T=Scale P=Sel Ch";
@@ -70,17 +76,21 @@ private:
     braids::Quantizer quantizer[2];
     int scale[2]; // Scale per channel
     int last_note[2]; // Last quantized note
+    bool continuous[2]; // Each channel starts as continuous and becomes clocked when a clock is received
     int note_y[2]; // Last location of graphic
     int last_dir[2]; // Last direction of graphic
     int selected;
     const uint8_t notes[2][8] = {{0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08},
                                  {0xc0, 0xa0, 0xa0, 0xa0, 0x7f, 0x00, 0x00, 0x00}};
+    const uint8_t clock[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
 
     void DrawSelector()
     {
         ForEachChannel(ch)
         {
             gfxBitmap(0 + (31 * ch), 15, 8, notes[ch]);
+            if (!continuous[ch]) gfxBitmap(10 + (31 * ch), 15,  8, clock); // Display icon if clocked
+
             gfxPrint(0 + (31 * ch), 25, OC::scale_names_short[scale[ch]]);
             if (ch == selected) gfxCursor(0 + (31 * ch), 33, 30);
 
