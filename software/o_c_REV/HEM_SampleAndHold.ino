@@ -2,35 +2,39 @@ class SampleAndHold : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "Dual S&H";
+        return "S&H/Rand";
     }
 
     void Start() {
-        held_values[0] = 0;
-        held_values[1] = 0;
     }
 
     void Controller() {
         ForEachChannel(ch)
         {
-            if (Clock(ch)) {
-                int cv = In(ch);
+            if (Clock(ch) || (ch == 1 && ch1_normalize_ch2 && Clock(0))) {
+                int cv = ch == 0 ? In(ch) : random(0, HEMISPHERE_MAX_CV);
                 Out(ch, cv);
-                held_values[ch] = cv;
             }
         }
     }
 
     void View() {
         gfxHeader(applet_name());
-        gfxButterfly_Channel();
+        gfxPrint(1, 15, "S&H");
+        gfxPrint(39, 15, "Rand");
+        if (ch1_normalize_ch2) gfxPrint(28, 15, ">");
+        gfxSkyline();
     }
 
     void ScreensaverView() {
         gfxButterfly_Channel();
     }
 
+    /* Toggles the normalization of the channel 1 trigger to channel 2. This allows the
+     * random output (B) to be sampled and held with the channel 1 digital input.
+     */
     void OnButtonPress() {
+        ch1_normalize_ch2 = 1 - ch1_normalize_ch2;
     }
 
     void OnEncoderMove(int direction) {
@@ -39,13 +43,13 @@ public:
 protected:
     void SetHelp() {
         help[HEMISPHERE_HELP_DIGITALS] = "Clk 1=Ch1 2=Ch2";
-        help[HEMISPHERE_HELP_CVS] = "Sample 1=Ch1 2=Ch2";
-        help[HEMISPHERE_HELP_OUTS] = "Hold A=Ch1 B=Ch2";
-        help[HEMISPHERE_HELP_ENCODER] = "";
+        help[HEMISPHERE_HELP_CVS] = "Sample 1=Ch1";
+        help[HEMISPHERE_HELP_OUTS] = "Hold A=Ch1 B=Rnd";
+        help[HEMISPHERE_HELP_ENCODER] = "P=Clk Ch1 -> Ch2";
     }
 
 private:
-    int held_values[2];
+    int ch1_normalize_ch2 = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

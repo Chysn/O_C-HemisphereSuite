@@ -33,6 +33,7 @@ public:
         gfxPrint(1, 15, "Gate");
         gfxPrint(44, 15, "Seq");
         DrawIndicator();
+        gfxSkyline();
     }
 
     void ScreensaverView() {
@@ -64,12 +65,6 @@ private:
         {
             // Selected input indicator
             gfxPrint(5 + (46 * ch), 40, active[ch]);
-
-            int height = ProportionCV(ViewIn(ch), 36);
-            gfxFrame(23 + (10 * ch), BottomAlign(height), 6, 63);
-
-            height = ProportionCV(ViewOut(ch), 36);
-            gfxInvert(3 + (46 * ch), BottomAlign(height), 12, 63);
         }
     }
 };

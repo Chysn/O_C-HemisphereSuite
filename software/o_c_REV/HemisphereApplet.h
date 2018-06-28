@@ -186,7 +186,7 @@ public:
      * output bar to the top of the next vertical element.
      */
     void gfxOutputBar(int ch, int y) {
-        int width = ProportionCV(outputs[ch], 60);
+        int width = ProportionCV(ViewOut(ch), 60);
         if (width < 0) {width = 0;}
         int x = (hemisphere == 0) ? 64 - width : 0;
         gfxRect(x, y, width, 12);
@@ -196,7 +196,7 @@ public:
      * input bar to the top of the next vertical element.
      */
     void gfxInputBar(int ch, int y) {
-        int width = ProportionCV(inputs[ch], 63);
+        int width = ProportionCV(ViewIn(ch), 63);
         if (width < 0) {width = 0;}
         int x = (hemisphere == 0) ? 63 - width : 0;
         gfxFrame(x, y, width, 6);
@@ -217,6 +217,18 @@ public:
         {
             gfxInputBar(ch, 15 + (ch * 25));
             gfxOutputBar(ch, 25 + (ch * 25));
+        }
+    }
+
+    /* Show channel-grouped bi-lateral display */
+    void gfxSkyline() {
+        ForEachChannel(ch)
+        {
+            int height = ProportionCV(ViewIn(ch), 36);
+            gfxFrame(23 + (10 * ch), BottomAlign(height), 6, 63);
+
+            height = ProportionCV(ViewOut(ch), 36);
+            gfxInvert(3 + (46 * ch), BottomAlign(height), 12, 63);
         }
     }
 

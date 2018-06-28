@@ -43,7 +43,7 @@ public:
     void View() {
         gfxHeader(applet_name());
         DrawSelector();
-        DrawIndicator();
+        gfxSkyline();
     }
 
     void ScreensaverView() {
@@ -82,18 +82,6 @@ private:
         {
             gfxPrint(0 + (31 * ch), 15, op_name[operation[ch]]);
             if (ch == selected) gfxCursor(0 + (31 * ch), 23, 30);
-        }
-    }    
-    
-    void DrawIndicator()
-    {
-        ForEachChannel(ch)
-        {
-            int height = ProportionCV(ViewIn(ch), 36);
-            gfxFrame(23 + (10 * ch), BottomAlign(height), 6, 63);
-
-            height = ProportionCV(ViewOut(ch), 36);
-            gfxRect(3 + (46 * ch), BottomAlign(height), 12, 63);
         }
     }
 };
