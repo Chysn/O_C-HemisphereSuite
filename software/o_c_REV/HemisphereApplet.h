@@ -264,6 +264,7 @@ public:
             if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_3>();
             if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_4>();
         }
+        if (clocked) last_clock[ch] = OC::CORE::ticks;
         return clocked;
     }
 
@@ -296,6 +297,8 @@ public:
     // Buffered I/O functions for use in Views
     int ViewIn(int ch) {return inputs[ch];}
     int ViewOut(int ch) {return outputs[ch];}
+    int TicksSinceClock(int ch) {return OC::CORE::ticks - last_clock[ch];} // in ticks
+    int TimeSinceClock(int ch) {return TicksSinceClock(ch) / 167;} // in approx. ms
 
 protected:
     const char* help[4];
@@ -339,6 +342,7 @@ private:
     int io_offset; // Input/Output offset, based on the side
     int inputs[2];
     int outputs[2];
+    int last_clock[2]; // Tick number of the last clock observed by the child class
     int clock_countdown[2];
     int cursor_countdown;
     bool forwarding_on; // Forwarding was on during the last ISR cycle
