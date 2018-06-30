@@ -42,12 +42,14 @@ public:
                     if (count[ch] == div[ch]) {
                         count[ch] = 0; // Reset
                         ClockOut(ch);
+                        clock_out_tick[ch] = this_tick;
                     }
                 } else {
                     // Calculate next clock for multiplication on each clock
                     int clock_every = (cycle_time / -div[ch]);
                     next_clock[ch] = this_tick + clock_every;
                     ClockOut(ch); // Sync
+                    clock_out_tick[ch] = this_tick;
                 }
             }
 
@@ -62,6 +64,7 @@ public:
                     int clock_every = (cycle_time / -div[ch]);
                     next_clock[ch] += clock_every;
                     ClockOut(ch);
+                    clock_out_tick[ch] = this_tick;
                 }
             }
         }
@@ -89,12 +92,7 @@ public:
     }
 
     void ScreensaverView() {
-        int this_tick = OC::CORE::ticks;
-        int ticks_since_clock = this_tick - last_clock;
-        if (ticks_since_clock < 5000) {
-            int r = 24 - (ticks_since_clock / 500);
-            gfxCircle(31, 31, r);
-        }
+        DrawClockIndicator();
     }
 
     void OnButtonPress() {
@@ -126,6 +124,19 @@ private:
     int last_clock; // The tick number of the last received clock
     int selected; // Which output is currently being edited
     int cycle_time; // Cycle time between the last two clock inputs
+    int clock_out_tick[2]; // Tick number of the most recent clock out on each channel
+
+    void DrawClockIndicator()
+    {
+        ForEachChannel(ch)
+        {
+            int t = OC::CORE::ticks - clock_out_tick[ch];
+            if (t < 6000) {
+                int r = t / 350;
+                gfxCircle(20 + (20 * ch), 31, r);
+            }
+        }
+    }
 };
 
 

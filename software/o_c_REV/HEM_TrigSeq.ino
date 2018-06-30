@@ -88,7 +88,7 @@ private:
     int cursor; // 0=ch1 low, 1=ch1 hi, 2=c1 end_step,  3=ch2 low, 4=ch3 hi, 5=ch2 end_step
     int ss_x[2]; // X and Y locatons of randomly-placed indicators for screensaver
     int ss_y[2];
-    int clock_out_tick[2]; // Tick number of the most recent clock out
+    int clock_out_tick[2]; // Tick number of the most recent clock out on each channel
     
     void DrawDisplay() {
         ForEachChannel(ch)

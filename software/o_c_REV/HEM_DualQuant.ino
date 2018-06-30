@@ -104,6 +104,7 @@ private:
         ForEachChannel(ch)
         {
             int x = ProportionCV(last_note[ch], 54);
+            x = constrain(x, 0, 54);
             gfxBitmap(x, note_y[ch], 8, notes[ch]);
         }
     }
