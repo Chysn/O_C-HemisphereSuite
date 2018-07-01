@@ -4,7 +4,7 @@
 
 const int LEFT_HEMISPHERE = 0;
 const int RIGHT_HEMISPHERE = 1;
-const int HEMISPHERE_MAX_CV = 7800;
+const int HEMISPHERE_MAX_CV = 7677; // Experimentally-estimated by observing pitch value at 5V
 const int HEMISPHERE_CLOCK_TICKS = 100; // 6ms
 const int HEMISPHERE_CURSOR_TICKS = 12000;
 
