@@ -65,23 +65,13 @@ public:
 
     void View() {
         gfxHeader(applet_name());
+        DrawIndicator();
         DrawADSR();
-
-        ForEachChannel(ch)
-        {
-            int w = Proportion(GetAmplitudeOf(ch), HEMISPHERE_MAX_CV, 62);
-            gfxRect(0, 15 + (ch * 10), w, 6);
-        }
     }
 
     void ScreensaverView() {
-        int h[2];
-        ForEachChannel(ch)
-        {
-            h[ch] = Proportion(GetAmplitudeOf(ch), HEMISPHERE_MAX_CV, 40);
-            gfxLine(0 + (37 * ch), BottomAlign(h[ch]), 25 + (37 * ch), BottomAlign(h[ch]));
-        }
-        gfxLine(25, BottomAlign(h[0]), 37, BottomAlign(h[1]));
+        DrawIndicator();
+        DrawADSR();
     }
 
     void OnButtonPress() {
@@ -95,6 +85,22 @@ public:
         decay = adsr[HEM_EG_DECAY];
         sustain = adsr[HEM_EG_SUSTAIN];
         release = adsr[HEM_EG_RELEASE];
+    }
+
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        Pack(data, PackLocation {0,8}, attack);
+        Pack(data, PackLocation {8,8}, decay);
+        Pack(data, PackLocation {16,8}, sustain);
+        Pack(data, PackLocation {24,8}, release);
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+        attack = Unpack(data, PackLocation {0,8});
+        decay = Unpack(data, PackLocation {8,8});
+        sustain = Unpack(data, PackLocation {16,8});
+        release = Unpack(data, PackLocation {24,8});
     }
 
 protected:
@@ -121,6 +127,14 @@ private:
 
     int GetAmplitudeOf(int ch) {
         return simfloat2int(amplitude[ch]);
+    }
+
+    void DrawIndicator() {
+        ForEachChannel(ch)
+        {
+            int w = Proportion(GetAmplitudeOf(ch), HEMISPHERE_MAX_CV, 62);
+            gfxRect(0, 15 + (ch * 10), w, 6);
+        }
     }
 
     void DrawADSR() {
@@ -264,4 +278,12 @@ void ADSREG_OnEncoderMove(int hemisphere, int direction) {
 
 void ADSREG_ToggleHelpScreen(int hemisphere) {
     ADSREG_instance[hemisphere].HelpScreen();
+}
+
+uint32_t ADSREG_OnDataRequest(int hemisphere) {
+    return ADSREG_instance[hemisphere].OnDataRequest();
+}
+
+void ADSREG_OnDataReceive(int hemisphere, uint32_t data) {
+    ADSREG_instance[hemisphere].OnDataReceive(data);
 }

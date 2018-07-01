@@ -3,7 +3,8 @@
 
 #define DECLARE_APPLET(id, prefix) \
 { id, prefix ## _Start, prefix ## _Controller, prefix ## _View, prefix ## _Screensaver, \
-  prefix ## _OnButtonPress, prefix ## _OnEncoderMove, prefix ## _ToggleHelpScreen \
+  prefix ## _OnButtonPress, prefix ## _OnEncoderMove, prefix ## _ToggleHelpScreen, \
+  prefix ## _OnDataRequest, prefix ## _OnDataReceive \
 }
 
 typedef struct Applet {
@@ -15,13 +16,24 @@ typedef struct Applet {
   void (*OnButtonPress)(int); // Encoder button has been pressed
   void (*OnEncoderMove)(int, int); // Encoder has been rotated
   void (*ToggleHelpScreen)(int); // Help Screen has been requested
+  uint32_t (*OnDataRequest)(int); // Get a data int from the applet
+  void (*OnDataReceive)(int, uint32_t); // Send a data int to the applet
 } Applet;
+
+// The settings specify the selected applets, and 32 bits of data for each applet
+enum HEMISPHERE_SETTINGS {
+    HEMISPHERE_SELECTED_LEFT_ID,
+    HEMISPHERE_SELECTED_RIGHT_ID,
+    HEMISPHERE_LEFT_DATA,
+    HEMISPHERE_RIGHT_DATA,
+    HEMISPHERE_SETTING_LAST
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 //// Hemisphere Manager
 ////////////////////////////////////////////////////////////////////////////////
 
-class HemisphereManager {
+class HemisphereManager : public settings::SettingsBase<HemisphereManager, HEMISPHERE_SETTING_LAST> {
 public:
     void Init() {
         select_mode = -1; // Not selecting
@@ -35,11 +47,18 @@ public:
     }
 
     void Resume() {
+        for (int h = 0; h < 2; h++)
+        {
+            int index = GetAppletIndexByID(values_[h]);
+            SetApplet(h, index);
+            available_applets[index].OnDataReceive(h, values_[2 + h]);
+        }
     }
 
-    void SetApplet(int hemisphere, int applet_index) {
-        my_applets[hemisphere] = applet_index;
-        available_applets[applet_index].Start(hemisphere);
+    void SetApplet(int hemisphere, int index) {
+        my_applets[hemisphere] = index;
+        available_applets[index].Start(hemisphere);
+        apply_value(hemisphere, available_applets[index].id);
     }
 
     void ChangeApplet(int dir) {
@@ -67,20 +86,20 @@ public:
     void ExecuteControllers() {
         for (int h = 0; h < 2; h++)
         {
-            int idx = my_applets[h];
-            available_applets[idx].Controller(h, (bool)forwarding);
+            int index = my_applets[h];
+            available_applets[index].Controller(h, (bool)forwarding);
         }
     }
 
     void DrawViews() {
         if (help_hemisphere > -1) {
-            int idx = my_applets[help_hemisphere];
-            available_applets[idx].View(help_hemisphere);
+            int index = my_applets[help_hemisphere];
+            available_applets[index].View(help_hemisphere);
         } else {
             for (int h = 0; h < 2; h++)
             {
-                int idx = my_applets[h];
-                available_applets[idx].View(h);
+                int index = my_applets[h];
+                available_applets[index].View(h);
             }
 
             if (select_mode == LEFT_HEMISPHERE) {
@@ -96,23 +115,23 @@ public:
     void DrawScreensavers() {
         for (int h = 0; h < 2; h++)
         {
-            int idx = my_applets[h];
-            available_applets[idx].Screensaver(h);
+            int index = my_applets[h];
+            available_applets[index].Screensaver(h);
         }
     }
 
     void DelegateButtonPush(const UI::Event &event) {
         int h = (event.control == OC::CONTROL_BUTTON_L) ? 0 : 1;
-        int idx = my_applets[h];
+        int index = my_applets[h];
         if (event.type == UI::EVENT_BUTTON_PRESS) {
-            available_applets[idx].OnButtonPress(h);
+            available_applets[index].OnButtonPress(h);
         }
     }
 
     void DelegateEncoderMovement(const UI::Event &event) {
         int h = (event.control == OC::CONTROL_ENCODER_L) ? LEFT_HEMISPHERE : RIGHT_HEMISPHERE;
-        int idx = my_applets[h];
-        available_applets[idx].OnEncoderMove(h, event.value > 0 ? 1 : -1);
+        int index = my_applets[h];
+        available_applets[index].OnEncoderMove(h, event.value > 0 ? 1 : -1);
     }
 
     void ToggleForwarding() {
@@ -121,16 +140,25 @@ public:
 
     void ToggleHelpScreen() {
         if (help_hemisphere > -1) { // Turn off the previous help screen
-            int idx = my_applets[help_hemisphere];
-            available_applets[idx].ToggleHelpScreen(help_hemisphere);
+            int index = my_applets[help_hemisphere];
+            available_applets[index].ToggleHelpScreen(help_hemisphere);
         }
 
         help_hemisphere++; // Move to the next help screen
         if (help_hemisphere > 1) help_hemisphere = -1; // Turn them all off
 
         if (help_hemisphere > -1) { // Turn on the next hemisphere's screen
-            int idx = my_applets[help_hemisphere];
-            available_applets[idx].ToggleHelpScreen(help_hemisphere);
+            int index = my_applets[help_hemisphere];
+            available_applets[index].ToggleHelpScreen(help_hemisphere);
+        }
+    }
+
+    void RequestAppletData() {
+        for (int h = 0; h < 2; h++)
+        {
+            int index = my_applets[h];
+            uint32_t applet_data = available_applets[index].OnDataRequest(h);
+            apply_value(2 + h, applet_data);
         }
     }
 
@@ -140,6 +168,23 @@ private:
     int select_mode;
     int forwarding;
     int help_hemisphere; // Which of the hemispheres (if any) is in help mode, or -1 if none
+
+    int GetAppletIndexByID(int id)
+    {
+        int index = 0;
+        for (int i = 0; i < HEMISPHERE_AVAILABLE_APPLETS; i++)
+        {
+            if (available_applets[i].id == id) index = i;
+        }
+        return index;
+    }
+};
+
+SETTINGS_DECLARE(HemisphereManager, HEMISPHERE_SETTING_LAST) {
+    {0, 0, 255, "Applet ID L", NULL, settings::STORAGE_TYPE_U8},
+    {1, 0, 255, "Applet ID R", NULL, settings::STORAGE_TYPE_U8},
+    {0, 0, 2147483647, "Data L", NULL, settings::STORAGE_TYPE_U32},
+    {0, 0, 2147483647, "Data R", NULL, settings::STORAGE_TYPE_U32},
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -154,15 +199,16 @@ void HEMISPHERE_init() {
 }
 
 size_t HEMISPHERE_storageSize() {
-    return 0;
+    return HemisphereManager::storageSize();
 }
 
 size_t HEMISPHERE_save(void *storage) {
-    return 0;
+    manager.RequestAppletData();
+    return manager.Save(storage);
 }
 
 size_t HEMISPHERE_restore(const void *storage) {
-    return 0;
+    return manager.Restore(storage);
 }
 
 void HEMISPHERE_isr() {

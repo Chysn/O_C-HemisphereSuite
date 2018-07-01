@@ -38,6 +38,14 @@ public:
         value[selected] = constrain(value[selected] += direction, -1, 135);
     }
 
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+    }
+
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
@@ -129,4 +137,12 @@ void Sequence5_OnEncoderMove(int hemisphere, int direction) {
 
 void Sequence5_ToggleHelpScreen(int hemisphere) {
     Sequence5_instance[hemisphere].HelpScreen();
+}
+
+uint32_t Sequence5_OnDataRequest(int hemisphere) {
+    return Sequence5_instance[hemisphere].OnDataRequest();
+}
+
+void Sequence5_OnDataReceive(int hemisphere, uint32_t data) {
+    Sequence5_instance[hemisphere].OnDataReceive(data);
 }

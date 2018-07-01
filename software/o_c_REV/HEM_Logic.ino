@@ -69,6 +69,18 @@ public:
         if (operation[selected] < 0) operation[selected] = HEMISPHERE_NUMBER_OF_LOGIC - 1;
     }
 
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        Pack(data, PackLocation {0, 8}, operation[0]);
+        Pack(data, PackLocation {8, 8}, operation[1]);
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+        operation[0] = Unpack(data, PackLocation {0, 8});
+        operation[1] = Unpack(data, PackLocation {8, 8});
+    }
+
 protected:
     /* Set help text. Each help section can have up to 18 characters. Be concise! */
     void SetHelp() {
@@ -150,4 +162,12 @@ void Logic_OnEncoderMove(int hemisphere, int direction) {
 
 void Logic_ToggleHelpScreen(int hemisphere) {
     Logic_instance[hemisphere].HelpScreen();
+}
+
+uint32_t Logic_OnDataRequest(int hemisphere) {
+    return Logic_instance[hemisphere].OnDataRequest();
+}
+
+void Logic_OnDataReceive(int hemisphere, uint32_t data) {
+    Logic_instance[hemisphere].OnDataReceive(data);
 }

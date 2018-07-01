@@ -46,6 +46,14 @@ public:
     void OnEncoderMove(int direction) {
     }
 
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+    }
+
 protected:
     void SetHelp() {
         // Each help section can have up to 18 characters. Be concise!
@@ -106,4 +114,12 @@ void Switch_OnEncoderMove(int hemisphere, int direction) {
 
 void Switch_ToggleHelpScreen(int hemisphere) {
     Switch_instance[hemisphere].HelpScreen();
+}
+
+uint32_t Switch_OnDataRequest(int hemisphere) {
+    return Switch_instance[hemisphere].OnDataRequest();
+}
+
+void Switch_OnDataReceive(int hemisphere, uint32_t data) {
+    Switch_instance[hemisphere].OnDataReceive(data);
 }

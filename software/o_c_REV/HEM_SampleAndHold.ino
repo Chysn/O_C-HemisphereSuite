@@ -40,6 +40,16 @@ public:
     void OnEncoderMove(int direction) {
     }
 
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        Pack(data, PackLocation {0,1}, ch1_normalize_ch2);
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+        ch1_normalize_ch2 = Unpack(data, PackLocation {0,1});
+    }
+
 protected:
     void SetHelp() {
         help[HEMISPHERE_HELP_DIGITALS] = "Clk 1=Ch1 2=Ch2";
@@ -82,4 +92,12 @@ void SampleAndHold_OnEncoderMove(int hemisphere, int direction) {
 
 void SampleAndHold_ToggleHelpScreen(int hemisphere) {
     SampleAndHold_instance[hemisphere].HelpScreen();
+}
+
+uint32_t SampleAndHold_OnDataRequest(int hemisphere) {
+    return SampleAndHold_instance[hemisphere].OnDataRequest();
+}
+
+void SampleAndHold_OnDataReceive(int hemisphere, uint32_t data) {
+    SampleAndHold_instance[hemisphere].OnDataReceive(data);
 }

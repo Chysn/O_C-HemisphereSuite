@@ -63,6 +63,18 @@ public:
         }
     }
 
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        Pack(data, PackLocation {0, 8}, skew);
+        Pack(data, PackLocation {8, 8}, rate);
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+        skew = Unpack(data, PackLocation {0,8});
+        rate = Unpack(data, PackLocation {8,8});
+    }
+
 protected:
     void SetHelp() {
         help[HEMISPHERE_HELP_DIGITALS] = "1=Reset";
@@ -162,4 +174,12 @@ void SkewedLFO_OnEncoderMove(int hemisphere, int direction) {
 
 void SkewedLFO_ToggleHelpScreen(int hemisphere) {
     SkewedLFO_instance[hemisphere].HelpScreen();
+}
+
+uint32_t SkewedLFO_OnDataRequest(int hemisphere) {
+    return SkewedLFO_instance[hemisphere].OnDataRequest();
+}
+
+void SkewedLFO_OnDataReceive(int hemisphere, uint32_t data) {
+    SkewedLFO_instance[hemisphere].OnDataReceive(data);
 }

@@ -63,6 +63,18 @@ public:
         continuous[selected] = 1; // Re-enable continuous mode when scale is changed
     }
 
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        Pack(data, PackLocation {0,16}, scale[0]);
+        Pack(data, PackLocation {16,16}, scale[1]);
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+        scale[0] = Unpack(data, PackLocation {0,16});
+        scale[1] = Unpack(data, PackLocation {16,16});
+    }
+
 protected:
     /* Set help text. Each help section can have up to 18 characters. Be concise! */
     void SetHelp() {
@@ -157,4 +169,12 @@ void DualQuant_OnEncoderMove(int hemisphere, int direction) {
 
 void DualQuant_ToggleHelpScreen(int hemisphere) {
     DualQuant_instance[hemisphere].HelpScreen();
+}
+
+uint32_t DualQuant_OnDataRequest(int hemisphere) {
+    return DualQuant_instance[hemisphere].OnDataRequest();
+}
+
+void DualQuant_OnDataReceive(int hemisphere, uint32_t data) {
+    DualQuant_instance[hemisphere].OnDataReceive(data);
 }

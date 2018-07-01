@@ -23,6 +23,12 @@ typedef int32_t simfloat;
 #define BottomAlign(h) (62 - h)
 #define ForEachChannel(ch) for(int ch = 0; ch < 2; ch++)
 
+// Specifies where data goes in flash storage for each selcted applet, and how big it is
+typedef struct PackLocation {
+    int location;
+    int size;
+} PackLocation;
+
 class HemisphereApplet {
 public:
 
@@ -335,6 +341,19 @@ protected:
     int ProportionCV(int cv_value, int max_pixels) {
         return Proportion(cv_value, HEMISPHERE_MAX_CV, max_pixels);
     }
+
+    /* Add value to a 32-bit storage unit at the specified location */
+    void Pack(uint32_t &data, PackLocation p, int value) {
+        data |= (value << p.location);
+    }
+
+    /* Retrieve value from a 32-bit storage unit at the specified location and of the specified bit size */
+    int Unpack(uint32_t data, PackLocation p) {
+        int mask = 1;
+        for (int i = 1; i < p.size; i++) mask |= (0x01 << i);
+        return (data >> p.location) & mask;
+    }
+
 
 private:
     int hemisphere; // Which hemisphere (0, 1) this applet uses

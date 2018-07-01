@@ -61,6 +61,18 @@ public:
         if (operation[selected] < 0) operation[selected] = HEMISPHERE_NUMBER_OF_CALC - 1;
     }
 
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        Pack(data, PackLocation {0, 8}, operation[0]);
+        Pack(data, PackLocation {8, 8}, operation[1]);
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+        operation[0] = Unpack(data, PackLocation {0, 8});
+        operation[1] = Unpack(data, PackLocation {8, 8});
+    }
+
 protected:
     /* Set help text. Each help section can have up to 18 characters. Be concise! */
     void SetHelp() {
@@ -123,4 +135,12 @@ void Calculate_OnEncoderMove(int hemisphere, int direction) {
 
 void Calculate_ToggleHelpScreen(int hemisphere) {
     Calculate_instance[hemisphere].HelpScreen();
+}
+
+uint32_t Calculate_OnDataRequest(int hemisphere) {
+    return Calculate_instance[hemisphere].OnDataRequest();
+}
+
+void Calculate_OnDataReceive(int hemisphere, uint32_t data) {
+    Calculate_instance[hemisphere].OnDataReceive(data);
 }

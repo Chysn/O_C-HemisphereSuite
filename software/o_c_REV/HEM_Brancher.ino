@@ -68,6 +68,16 @@ public:
         if (prob < 0) prob = 0;
     }
 
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        Pack(data, PackLocation {0,8}, prob);
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+        prob = Unpack(data, PackLocation {0,8});
+    }
+
 protected:
     void SetHelp() {
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock, choose CV";
@@ -119,4 +129,12 @@ void Brancher_OnEncoderMove(int hemisphere, int direction) {
 
 void Brancher_ToggleHelpScreen(int hemisphere) {
     Brancher_instance[hemisphere].HelpScreen();
+}
+
+uint32_t Brancher_OnDataRequest(int hemisphere) {
+    return Brancher_instance[hemisphere].OnDataRequest();
+}
+
+void Brancher_OnDataReceive(int hemisphere, uint32_t data) {
+    Brancher_instance[hemisphere].OnDataReceive(data);
 }

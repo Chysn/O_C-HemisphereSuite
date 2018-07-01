@@ -69,6 +69,22 @@ public:
         }
     }
 
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        Pack(data, PackLocation {0,5}, dendrite_weight[0] + 9);
+        Pack(data, PackLocation {5,5}, dendrite_weight[1] + 9);
+        Pack(data, PackLocation {10,5}, dendrite_weight[2] + 9);
+        Pack(data, PackLocation {15,6}, threshold + 27);
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+        dendrite_weight[0] = Unpack(data, PackLocation {0,5}) - 9;
+        dendrite_weight[1] = Unpack(data, PackLocation {5,5}) - 9;
+        dendrite_weight[2] = Unpack(data, PackLocation {10,5}) - 9;
+        threshold = Unpack(data, PackLocation {15,6}) - 27;
+    }
+
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
@@ -157,4 +173,12 @@ void TLNeuron_OnEncoderMove(int hemisphere, int direction) {
 
 void TLNeuron_ToggleHelpScreen(int hemisphere) {
     TLNeuron_instance[hemisphere].HelpScreen();
+}
+
+uint32_t TLNeuron_OnDataRequest(int hemisphere) {
+    return TLNeuron_instance[hemisphere].OnDataRequest();
+}
+
+void TLNeuron_OnDataReceive(int hemisphere, uint32_t data) {
+    TLNeuron_instance[hemisphere].OnDataReceive(data);
 }

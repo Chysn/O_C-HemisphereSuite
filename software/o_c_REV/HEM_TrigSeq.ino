@@ -71,6 +71,22 @@ public:
         }
     }
 
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        Pack(data, PackLocation {0,8}, pattern[0]);
+        Pack(data, PackLocation {8,8}, pattern[1]);
+        Pack(data, PackLocation {16,3}, end_step[0]);
+        Pack(data, PackLocation {19,3}, end_step[1]);
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+        pattern[0] = Unpack(data, PackLocation {0,8});
+        pattern[1] = Unpack(data, PackLocation {8,8});
+        end_step[0] = Unpack(data, PackLocation {16,3});
+        end_step[1] = Unpack(data, PackLocation {19,3});
+    }
+
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
@@ -185,4 +201,12 @@ void TrigSeq_OnEncoderMove(int hemisphere, int direction) {
 
 void TrigSeq_ToggleHelpScreen(int hemisphere) {
     TrigSeq_instance[hemisphere].HelpScreen();
+}
+
+uint32_t TrigSeq_OnDataRequest(int hemisphere) {
+    return TrigSeq_instance[hemisphere].OnDataRequest();
+}
+
+void TrigSeq_OnDataReceive(int hemisphere, uint32_t data) {
+    TrigSeq_instance[hemisphere].OnDataReceive(data);
 }

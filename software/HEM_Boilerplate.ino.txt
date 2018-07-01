@@ -19,7 +19,7 @@ public:
     void Start() {
     }
 
-	/* Run during the interrupt service routine */
+	/* Run during the interrupt service routine, 16667 times per second */
     void Controller() {
     }
 
@@ -27,6 +27,7 @@ public:
     void View() {
         gfxHeader(applet_name());
         gfxButterfly();
+        // Add other view code as private methods
     }
 
 	/* Draw the screensaver */
@@ -43,6 +44,27 @@ public:
 	 * direction -1 is counterclockwise
 	 */
     void OnEncoderMove(int direction) {
+    }
+        
+    /* Each applet may save up to 32 bits of data. When data is requested from
+     * the manager, OnDataRequest() packs it up (see HemisphereApplet::Pack()) and
+     * returns it.
+     */
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        // example: pack property_name at bit 0, with size of 8 bits
+        // Pack(data, PackLocation {0,8}, property_name); 
+        return data;
+    }
+
+    /* When the applet is restored (from power-down state, etc.), the manager may
+     * send data to the applet via OnDataReceive(). The applet should take the data
+     * and unpack it (see HemisphereApplet::Unpack()) into zero or more of the applet's
+     * properties.
+     */
+    void OnDataReceive(uint32_t data) {
+        // example: unpack value at bit 0 with size of 8 bits to property_name
+        // property_name = Unpack(data, PackLocation {0,8}); 
     }
 
 protected:
@@ -97,4 +119,12 @@ void ClassName_OnEncoderMove(int hemisphere, int direction) {
 
 void ClassName_ToggleHelpScreen(int hemisphere) {
     ClassName_instance[hemisphere].HelpScreen();
+}
+
+uint32_t ClassName_OnDataRequest(int hemisphere) {
+    return ClassName_instance[hemisphere].OnDataRequest();
+}
+
+void ClassName_OnDataReceive(int hemisphere, uint32_t data) {
+    ClassName_instance[hemisphere].OnDataReceive(data);
 }
