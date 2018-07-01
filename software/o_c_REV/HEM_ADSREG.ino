@@ -38,6 +38,7 @@ public:
                     stage_ticks[ch] = 0;
                     if (stage[ch] != HEM_EG_RELEASE) amplitude[ch] = 0;
                     stage[ch] = HEM_EG_ATTACK;
+                    if (attack == 1) amplitude[ch] = int2simfloat(HEMISPHERE_MAX_CV); // Snappy!
                 } else { // The gate is STILL on, so process the appopriate stage
                     stage_ticks[ch]++;
                     if (stage[ch] == HEM_EG_ATTACK) AttackAmplitude(ch);
@@ -138,7 +139,7 @@ private:
             gfxLine(x, BottomAlign(1), xA, BottomAlign(HEM_EG_DISPLAY_HEIGHT + 1));
             gfxLine(x, BottomAlign(2), xA, BottomAlign(HEM_EG_DISPLAY_HEIGHT + 2));
             gfxLine(x + 1, BottomAlign(0), xA + 1, BottomAlign(HEM_EG_DISPLAY_HEIGHT));
-    }
+        }
         return xA;
     }
 
@@ -158,6 +159,7 @@ private:
     int DrawSustain(int x, int length) {
         int xS = x + Proportion(HEM_SUSTAIN_CONST, length, 62);
         int yS = Proportion(sustain, 100, HEM_EG_DISPLAY_HEIGHT);
+        if (yS < 3) yS = 3;
         if (xS < 0) xS = 0;
         gfxLine(x, BottomAlign(yS), xS, BottomAlign(yS));
         if (edit_stage == HEM_EG_SUSTAIN) {
