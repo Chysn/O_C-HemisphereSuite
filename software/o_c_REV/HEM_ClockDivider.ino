@@ -72,26 +72,11 @@ public:
 
     void View() {
         gfxHeader(applet_name());
-        ForEachChannel(ch)
-        {
-            int y = 16 + (ch * 25);
-            if (ch == selected) {
-                gfxCursor(0, y + 9, 63);
-            }
-            if (div[ch] > 0) {
-                gfxPrint(2, y, "1/");
-                gfxPrint(div[ch]);
-                gfxPrint(" Div");
-            }
-            if (div[ch] < 0) {
-                gfxPrint(2, y, -div[ch]);
-                gfxPrint("/1");
-                gfxPrint(" Mult");
-            }
-        }
+        DrawSelector();
     }
 
     void ScreensaverView() {
+        DrawSelector();
         DrawClockIndicator();
     }
 
@@ -138,8 +123,27 @@ private:
     int cycle_time; // Cycle time between the last two clock inputs
     int clock_out_tick[2]; // Tick number of the most recent clock out on each channel
 
-    void DrawClockIndicator()
-    {
+    void DrawSelector() {
+        ForEachChannel(ch)
+        {
+            int y = 16 + (ch * 25);
+            if (ch == selected) {
+                gfxCursor(0, y + 9, 63);
+            }
+            if (div[ch] > 0) {
+                gfxPrint(2, y, "1/");
+                gfxPrint(div[ch]);
+                gfxPrint(" Div");
+            }
+            if (div[ch] < 0) {
+                gfxPrint(2, y, -div[ch]);
+                gfxPrint("/1");
+                gfxPrint(" Mult");
+            }
+        }
+    }
+
+    void DrawClockIndicator() {
         ForEachChannel(ch)
         {
             int t = OC::CORE::ticks - clock_out_tick[ch];
@@ -175,7 +179,7 @@ void ClockDivider_View(int hemisphere) {
 }
 
 void ClockDivider_Screensaver(int hemisphere) {
-    ClockDivider_instance[hemisphere].ScreensaverView();
+    ClockDivider_instance[hemisphere].BaseScreensaverView();
 }
 
 void ClockDivider_OnButtonPress(int hemisphere) {

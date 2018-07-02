@@ -55,6 +55,7 @@ public:
     }
 
     void ScreensaverView() {
+        DrawSelector();
         DrawIndicator();
     }
 
@@ -149,7 +150,7 @@ void Logic_View(int hemisphere) {
 }
 
 void Logic_Screensaver(int hemisphere) {
-    Logic_instance[hemisphere].ScreensaverView();
+    Logic_instance[hemisphere].BaseScreensaverView();
 }
 
 void Logic_OnButtonPress(int hemisphere) {

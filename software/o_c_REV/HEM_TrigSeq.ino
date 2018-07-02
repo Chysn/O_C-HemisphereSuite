@@ -40,6 +40,7 @@ public:
     }
 
     void ScreensaverView() {
+        DrawDisplay();
         DrawClockIndicator();
     }
 
@@ -188,7 +189,7 @@ void TrigSeq_View(int hemisphere) {
 }
 
 void TrigSeq_Screensaver(int hemisphere) {
-    TrigSeq_instance[hemisphere].ScreensaverView();
+    TrigSeq_instance[hemisphere].BaseScreensaverView();
 }
 
 void TrigSeq_OnButtonPress(int hemisphere) {

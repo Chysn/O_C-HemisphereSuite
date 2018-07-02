@@ -23,37 +23,12 @@ public:
 	/* Draw the screen */
     void View() {
         gfxHeader("Brancher");
-        
-        // Show the probability in the middle
-        gfxPrint(26, 25, "p=");
-        gfxPrint(26, 33, prob);
-        
-        // Show the choices along the right side,
-        // with the chosen one
-        ForEachChannel(ch)
-        {
-            int height = ProportionCV(choices[ch], 48);
-            int y = (52 - height) / 2; // To put it in the center
-            if (ch == last_index) {
-                gfxRect(4 + (46 * ch), 12 + y, 10, height);
-            } else {
-                gfxFrame(4 + (46 * ch), 12 + y, 10, height);
-            }
-        }
+        DrawInterface();
     }
 
 	/* Draw the screensaver */
     void ScreensaverView() {
-        ForEachChannel(ch)
-        {
-            int height = ProportionCV(choices[ch], 48);
-            int y = (52 - height) / 2; // To put it in the center
-            if (ch == last_index) {
-                gfxRect(8 + (41 * ch), 12 + y, 3, height);
-            } else {
-                gfxFrame(8 + (41 * ch), 12 + y, 1, height);
-            }
-        }
+        DrawInterface();
     }
 
     /* On button press, flip the last index to the opposite */
@@ -90,6 +65,25 @@ private:
 	int prob;
 	int choices[2];
 	int last_index;
+
+	void DrawInterface() {
+        // Show the probability in the middle
+        gfxPrint(26, 25, "p=");
+        gfxPrint(26, 33, prob);
+
+        // Show the choices along the right side,
+        // with the chosen one
+        ForEachChannel(ch)
+        {
+            int height = ProportionCV(choices[ch], 48);
+            int y = (52 - height) / 2; // To put it in the center
+            if (ch == last_index) {
+                gfxRect(4 + (46 * ch), 12 + y, 10, height);
+            } else {
+                gfxFrame(4 + (46 * ch), 12 + y, 10, height);
+            }
+        }
+	}
 };
 
 
@@ -116,7 +110,7 @@ void Brancher_View(int hemisphere) {
 }
 
 void Brancher_Screensaver(int hemisphere) {
-    Brancher_instance[hemisphere].ScreensaverView();
+    Brancher_instance[hemisphere].BaseScreensaverView();
 }
 
 void Brancher_OnButtonPress(int hemisphere) {

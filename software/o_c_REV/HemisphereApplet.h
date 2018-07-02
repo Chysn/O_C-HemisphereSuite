@@ -7,6 +7,7 @@ const int RIGHT_HEMISPHERE = 1;
 const int HEMISPHERE_MAX_CV = 7677; // Experimentally-estimated by observing pitch value at 5V
 const int HEMISPHERE_CLOCK_TICKS = 100; // 6ms
 const int HEMISPHERE_CURSOR_TICKS = 12000;
+const int HEMISPHERE_SCREEN_BLANK_TICKS = 30000000; // 30 minutes
 
 // Codes for help system sections
 const int HEMISPHERE_HELP_DIGITALS = 0;
@@ -34,6 +35,7 @@ public:
 
     virtual const char* applet_name(); // Maximum of 10 characters
     virtual void View();
+    virtual void ScreensaverView();
     virtual void Start();
     virtual void Controller();
 
@@ -41,6 +43,7 @@ public:
         hemisphere = h;
         gfx_offset = h * 65;
         io_offset = h * 2;
+        screensaver_on = 0;
 
         // Initialize some things for startup
         ForEachChannel(ch)
@@ -89,6 +92,15 @@ public:
             View();
             DrawNotifications();
         }
+        last_view_tick = OC::CORE::ticks;
+        screensaver_on = 0;
+    }
+
+    void BaseScreensaverView() {
+        screensaver_on = 1;
+        if (OC::CORE::ticks - last_view_tick < HEMISPHERE_SCREEN_BLANK_TICKS) {
+            ScreensaverView();
+        }
     }
 
     /* Help Screen Toggle */
@@ -96,8 +108,9 @@ public:
         help_active = 1 - help_active;
     }
 
+    /* Suppress cursor when screensaver is on */
     bool CursorBlink() {
-        return cursor_countdown > 0;
+        return (cursor_countdown > 0 && !screensaver_on);
     }
 
     void ResetCursor() {
@@ -206,24 +219,6 @@ public:
         if (width < 0) {width = 0;}
         int x = (hemisphere == 0) ? 63 - width : 0;
         gfxFrame(x, y, width, 6);
-    }
-
-    /* Original butterfly: functional grouping (ins with outs) */
-    void gfxButterfly() {
-        ForEachChannel(ch)
-        {
-            gfxInputBar(ch, 15 + (ch * 10));
-            gfxOutputBar(ch, 35 + (ch * 15));
-        }
-    }
-
-    /* Alternate butterfly: Channel grouping (Ch1 with Ch2) */
-    void gfxButterfly_Channel() {
-        ForEachChannel(ch)
-        {
-            gfxInputBar(ch, 15 + (ch * 25));
-            gfxOutputBar(ch, 25 + (ch * 25));
-        }
     }
 
     /* Show channel-grouped bi-lateral display */
@@ -366,6 +361,8 @@ private:
     int cursor_countdown;
     bool forwarding_on; // Forwarding was on during the last ISR cycle
     bool applet_started; // Allow the app to maintain state during switching
+    int last_view_tick; // Tick number of the most recent view
+    bool screensaver_on; // Is the screensaver active?
 
     int help_active;
 };

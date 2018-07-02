@@ -47,7 +47,8 @@ public:
     }
 
     void ScreensaverView() {
-        gfxButterfly();
+        DrawSelector();
+        gfxSkyline();
     }
 
     void OnButtonPress() {
@@ -122,7 +123,7 @@ void Calculate_View(int hemisphere) {
 }
 
 void Calculate_Screensaver(int hemisphere) {
-    Calculate_instance[hemisphere].ScreensaverView();
+    Calculate_instance[hemisphere].BaseScreensaverView();
 }
 
 void Calculate_OnButtonPress(int hemisphere) {

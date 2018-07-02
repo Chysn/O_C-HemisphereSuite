@@ -265,7 +265,7 @@ void ADSREG_View(int hemisphere) {
 }
 
 void ADSREG_Screensaver(int hemisphere) {
-    ADSREG_instance[hemisphere].ScreensaverView();
+    ADSREG_instance[hemisphere].BaseScreensaverView();
 }
 
 void ADSREG_OnButtonPress(int hemisphere) {

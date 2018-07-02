@@ -53,6 +53,8 @@ public:
     }
 
     void ScreensaverView() {
+        DrawDendrites();
+        DrawAxon();
         DrawStates();
     }
 
@@ -160,7 +162,7 @@ void TLNeuron_View(int hemisphere) {
 }
 
 void TLNeuron_Screensaver(int hemisphere) {
-    TLNeuron_instance[hemisphere].ScreensaverView();
+    TLNeuron_instance[hemisphere].BaseScreensaverView();
 }
 
 void TLNeuron_OnButtonPress(int hemisphere) {

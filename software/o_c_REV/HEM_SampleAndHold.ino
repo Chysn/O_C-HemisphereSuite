@@ -27,7 +27,8 @@ public:
     }
 
     void ScreensaverView() {
-        gfxButterfly_Channel();
+        if (ch1_normalize_ch2) gfxPrint(28, 15, ">");
+        gfxSkyline();
     }
 
     /* Toggles the normalization of the channel 1 trigger to channel 2. This allows the
@@ -79,7 +80,7 @@ void SampleAndHold_View(int hemisphere) {
 }
 
 void SampleAndHold_Screensaver(int hemisphere) {
-    SampleAndHold_instance[hemisphere].ScreensaverView();
+    SampleAndHold_instance[hemisphere].BaseScreensaverView();
 }
 
 void SampleAndHold_OnButtonPress(int hemisphere) {

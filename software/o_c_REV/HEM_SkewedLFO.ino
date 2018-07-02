@@ -48,6 +48,8 @@ public:
     }
 
     void ScreensaverView() {
+        DrawSkewedWaveform(0);
+        DrawRateIndicator();
         DrawWaveformPosition();
     }
 
@@ -161,7 +163,7 @@ void SkewedLFO_View(int hemisphere) {
 }
 
 void SkewedLFO_Screensaver(int hemisphere) {
-    SkewedLFO_instance[hemisphere].ScreensaverView();
+    SkewedLFO_instance[hemisphere].BaseScreensaverView();
 }
 
 void SkewedLFO_OnButtonPress(int hemisphere) {

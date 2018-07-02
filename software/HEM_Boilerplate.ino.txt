@@ -26,13 +26,13 @@ public:
 	/* Draw the screen */
     void View() {
         gfxHeader(applet_name());
-        gfxButterfly();
+        gfxSkyline();
         // Add other view code as private methods
     }
 
 	/* Draw the screensaver */
     void ScreensaverView() {
-        gfxButterfly();
+        gfxSkyline();
     }
 
 	/* Called when the encoder button for this hemisphere is pressed */
@@ -106,7 +106,7 @@ void ClassName_View(int hemisphere) {
 }
 
 void ClassName_Screensaver(int hemisphere) {
-    ClassName_instance[hemisphere].ScreensaverView();
+    ClassName_instance[hemisphere].BaseScreensaverView();
 }
 
 void ClassName_OnButtonPress(int hemisphere) {

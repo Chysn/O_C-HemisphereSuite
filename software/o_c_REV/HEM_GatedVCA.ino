@@ -24,16 +24,11 @@ public:
 
     void View() {
         gfxHeader(applet_name());
-        gfxPrint(0, 15, "Offset:");
-        gfxPrint(amp_offset_pct);
-
-        gfxInputBar(0, 25);
-        gfxInputBar(1, 35);
-        gfxOutputBar(1, 45);
+        DrawInterface();
     }
 
     void ScreensaverView() {
-        gfxButterfly_Channel();
+        DrawInterface();
     }
 
     void OnButtonPress() {
@@ -63,6 +58,15 @@ protected:
 private:
     int amp_offset_pct; // Offset as percentage of max cv
     int amp_offset_cv; // Raw CV offset; calculated on encoder move
+
+    void DrawInterface() {
+        gfxPrint(0, 15, "Offset:");
+        gfxPrint(amp_offset_pct);
+
+        gfxInputBar(0, 25);
+        gfxInputBar(1, 35);
+        gfxOutputBar(1, 45);
+    }
 };
 
 
@@ -89,7 +93,7 @@ void GatedVCA_View(int hemisphere) {
 }
 
 void GatedVCA_Screensaver(int hemisphere) {
-    GatedVCA_instance[hemisphere].ScreensaverView();
+    GatedVCA_instance[hemisphere].BaseScreensaverView();
 }
 
 void GatedVCA_OnButtonPress(int hemisphere) {

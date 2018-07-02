@@ -17,8 +17,6 @@ public:
             scale[ch] = ch + 5;
             quantizer[ch].Configure(OC::Scales::GetScale(scale[ch]), 0xffff);
             last_note[ch] = 0;
-            note_y[ch] = random(15, 54);
-            last_dir[ch] = note_y[ch] > 35 ? -1 : 1;
             continuous[ch] = 1;
         }
     }
@@ -34,7 +32,6 @@ public:
                 Out(ch, quantized);
                 if (last_note[ch] != quantized) {
                     last_note[ch] = quantized;
-                    MoveLittleNote(ch); // For the screensaver
                 }
             }
         }
@@ -45,9 +42,8 @@ public:
         DrawSelector();
     }
 
-    /* This screensaver is totes adorbs!!!!!! */
     void ScreensaverView() {
-        DrawLittleNotes();
+        DrawSelector();
     }
 
     void OnButtonPress() {
@@ -89,8 +85,6 @@ private:
     int scale[2]; // Scale per channel
     int last_note[2]; // Last quantized note
     bool continuous[2]; // Each channel starts as continuous and becomes clocked when a clock is received
-    int note_y[2]; // Last location of graphic
-    int last_dir[2]; // Last direction of graphic
     int selected;
     const uint8_t notes[2][8] = {{0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08},
                                  {0xc0, 0xa0, 0xa0, 0xa0, 0x7f, 0x00, 0x00, 0x00}};
@@ -109,26 +103,6 @@ private:
             // Little notes
             gfxBitmap(ProportionCV(last_note[ch], 54), 41 + (10 * ch), 8, notes[ch]);
         }
-    }
-
-    void DrawLittleNotes()
-    {
-        ForEachChannel(ch)
-        {
-            int x = ProportionCV(last_note[ch], 54);
-            x = constrain(x, 0, 54);
-            gfxBitmap(x, note_y[ch], 8, notes[ch]);
-        }
-    }
-
-    void MoveLittleNote(int ch) {
-        if (random(0, 100) > 85) {
-            // Randomly change direction
-            last_dir[ch] = -last_dir[ch];
-        }
-        note_y[ch] += last_dir[ch];
-        if (note_y[ch] >= 53) last_dir[ch] = -1;
-        if (note_y[ch] <= 15) last_dir[ch] = 1;
     }
 };
 
@@ -156,7 +130,7 @@ void DualQuant_View(int hemisphere) {
 }
 
 void DualQuant_Screensaver(int hemisphere) {
-    DualQuant_instance[hemisphere].ScreensaverView();
+    DualQuant_instance[hemisphere].BaseScreensaverView();
 }
 
 void DualQuant_OnButtonPress(int hemisphere) {

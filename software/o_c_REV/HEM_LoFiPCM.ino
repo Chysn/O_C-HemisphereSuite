@@ -49,6 +49,7 @@ public:
     }
 
     void ScreensaverView() {
+        DrawTransportBar(15);
         DrawWaveform();
     }
 
@@ -174,7 +175,7 @@ void LoFiPCM_View(int hemisphere) {
 }
 
 void LoFiPCM_Screensaver(int hemisphere) {
-    LoFiPCM_instance[hemisphere].ScreensaverView();
+    LoFiPCM_instance[hemisphere].BaseScreensaverView();
 }
 
 void LoFiPCM_OnButtonPress(int hemisphere) {

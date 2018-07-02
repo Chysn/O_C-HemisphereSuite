@@ -27,7 +27,7 @@ public:
     }
 
     void ScreensaverView() {
-        DrawSkeleton();
+        DrawPanel();
     }
 
     void OnButtonPress() {
@@ -87,17 +87,6 @@ private:
             }
         }
     }
-
-    void DrawSkeleton() {
-        for (int s = 0; s < 5; s++)
-        {
-            if (value[s] > -1) {
-                int x = 6 + (12 * s);
-                int p = Proportion(value[s], 135, 42);
-                if (s == step) gfxRect(x - 4, BottomAlign(p), 9, 4);
-            }
-        }
-    }
 };
 
 
@@ -124,7 +113,7 @@ void Sequence5_View(int hemisphere) {
 }
 
 void Sequence5_Screensaver(int hemisphere) {
-    Sequence5_instance[hemisphere].ScreensaverView();
+    Sequence5_instance[hemisphere].BaseScreensaverView();
 }
 
 void Sequence5_OnButtonPress(int hemisphere) {
