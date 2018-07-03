@@ -184,8 +184,8 @@ private:
 SETTINGS_DECLARE(HemisphereManager, HEMISPHERE_SETTING_LAST) {
     {0, 0, 255, "Applet ID L", NULL, settings::STORAGE_TYPE_U8},
     {1, 0, 255, "Applet ID R", NULL, settings::STORAGE_TYPE_U8},
-    {0, 0, 2147483647, "Data L", NULL, settings::STORAGE_TYPE_U32},
-    {0, 0, 2147483647, "Data R", NULL, settings::STORAGE_TYPE_U32},
+    {0x00001f1f, 0, 2147483647, "Data L", NULL, settings::STORAGE_TYPE_U32},
+    {0x0f1e0f0a, 0, 2147483647, "Data R", NULL, settings::STORAGE_TYPE_U32},
 };
 
 ////////////////////////////////////////////////////////////////////////////////

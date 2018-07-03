@@ -41,14 +41,13 @@ public:
     void View() {
         gfxHeader(applet_name());
 
-        DrawCursor();
-        DrawSkewedWaveform(0);
+        DrawSkewedWaveform();
         DrawRateIndicator();
         DrawWaveformPosition();
     }
 
     void ScreensaverView() {
-        DrawSkewedWaveform(0);
+        DrawSkewedWaveform();
         DrawRateIndicator();
         DrawWaveformPosition();
     }
@@ -91,22 +90,17 @@ private:
     int selected; // Whether knob is editing rate (0) or skew (1)
     int cycle_tick; // The current tick number within the cycle
 
-    void DrawCursor() {
-        if (selected == 0) {
-            gfxRect(1, 16, rate, 4);
-        } else {
-            DrawSkewedWaveform(-1);
-        }
-    }
-
     void DrawRateIndicator() {
         gfxFrame(1, 15, 62, 6);
         gfxLine(rate, 15, rate, 20);
+        if (selected == 0) gfxRect(1, 16, rate, 4);
     }
 
-    void DrawSkewedWaveform(int y_offset) {
-        gfxLine(0, 62 + y_offset, skew, 33 + y_offset);
-        gfxLine(skew, 33 + y_offset, 62, 62 + y_offset);
+    void DrawSkewedWaveform() {
+        if (selected == 1 || LineSegmentCursor()) {
+            gfxLine(0, 62, skew, 33);
+            gfxLine(skew, 33, 62, 62);
+        }
     }
 
     void DrawWaveformPosition() {

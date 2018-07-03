@@ -20,13 +20,13 @@ public:
 
     void View() {
         gfxHeader(applet_name());
-        gfxPrint(1, 15, "S&H");
-        gfxPrint(39, 15, "Rand");
+        DrawCaptions();
         if (ch1_normalize_ch2) gfxPrint(28, 15, ">");
         gfxSkyline();
     }
 
     void ScreensaverView() {
+        DrawCaptions();
         if (ch1_normalize_ch2) gfxPrint(28, 15, ">");
         gfxSkyline();
     }
@@ -61,6 +61,11 @@ protected:
 
 private:
     int ch1_normalize_ch2 = 0;
+
+    void DrawCaptions() {
+        gfxPrint(1, 15, "S&H");
+        gfxPrint(39, 15, "Rand");
+    }
 };
 
 ////////////////////////////////////////////////////////////////////////////////

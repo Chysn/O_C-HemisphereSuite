@@ -30,13 +30,14 @@ public:
 
     void View() {
         gfxHeader(applet_name());
-        gfxPrint(1, 15, "Gate");
-        gfxPrint(44, 15, "Seq");
+        DrawCaptions();
         DrawIndicator();
         gfxSkyline();
     }
 
     void ScreensaverView() {
+        DrawCaptions();
+        DrawIndicator();
         gfxSkyline();
     }
 
@@ -74,6 +75,12 @@ private:
             // Selected input indicator
             gfxPrint(5 + (46 * ch), 40, active[ch]);
         }
+    }
+
+    void DrawCaptions()
+    {
+        gfxPrint(1, 15, "Gate");
+        gfxPrint(44, 15, "Seq");
     }
 };
 

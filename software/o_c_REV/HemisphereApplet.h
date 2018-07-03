@@ -78,8 +78,9 @@ public:
             }
         }
 
-        // Cursor countdown. See CursorBlink(), ResetCursor(), and gfxCursor()
+        // Cursor countdowns. See CursorBlink(), ResetCursor(), gfxCursor(), LineSegmentCursor()
         if (--cursor_countdown < -HEMISPHERE_CURSOR_TICKS) cursor_countdown = HEMISPHERE_CURSOR_TICKS;
+        if (--ls_cursor_countdown < -16) ls_cursor_countdown = 8;
 
         Controller();
     }
@@ -108,9 +109,14 @@ public:
         help_active = 1 - help_active;
     }
 
-    /* Suppress cursor when screensaver is on */
+    /* Check cursor blink cycle. Suppress cursor when screensaver is on */
     bool CursorBlink() {
         return (cursor_countdown > 0 && !screensaver_on);
+    }
+
+    /* Show the normal line segment when screensaver is on */
+    bool LineSegmentCursor() {
+        return (ls_cursor_countdown > 0 || screensaver_on);
     }
 
     void ResetCursor() {
@@ -304,6 +310,7 @@ public:
 protected:
     const char* help[4];
     virtual void SetHelp();
+    bool screensaver_on; // Is the screensaver active?
 
     //////////////// Calculation methods
     ////////////////////////////////////////////////////////////////////////////////
@@ -334,7 +341,9 @@ protected:
      *              HEMISPHERE_MAX_CV   max_pixels
      */
     int ProportionCV(int cv_value, int max_pixels) {
-        return Proportion(cv_value, HEMISPHERE_MAX_CV, max_pixels);
+        int prop = Proportion(cv_value, HEMISPHERE_MAX_CV, max_pixels);
+        if (prop < 0) prop = 0; // Zeroing because this is a display-specific method
+        return prop;
     }
 
     /* Add value to a 32-bit storage unit at the specified location */
@@ -359,10 +368,10 @@ private:
     int last_clock[2]; // Tick number of the last clock observed by the child class
     int clock_countdown[2];
     int cursor_countdown;
+    int ls_cursor_countdown; // Cursor for line segment drawing
     bool forwarding_on; // Forwarding was on during the last ISR cycle
     bool applet_started; // Allow the app to maintain state during switching
     int last_view_tick; // Tick number of the most recent view
-    bool screensaver_on; // Is the screensaver active?
 
     int help_active;
 };
