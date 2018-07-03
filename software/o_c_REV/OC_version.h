@@ -3,5 +3,5 @@
 //
 // GENERATED FILE, DO NOT EDIT
 //
-#define OC_VERSION "v1.3.4 / Hemisphere"
+#define OC_VERSION "1.3.4/Hemisphere b1"
 #endif

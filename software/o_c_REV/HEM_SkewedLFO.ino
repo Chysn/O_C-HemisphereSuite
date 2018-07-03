@@ -34,7 +34,7 @@ public:
             cycle_tick = 0;
             ClockOut(1);
         }
-        int cv = AmplitudeAtPosition(cycle_tick, HEMISPHERE_MAX_CV);
+        int cv = AmplitudeAtPosition(cycle_tick, HEMISPHERE_MAX_CV) - (HEMISPHERE_MAX_CV / 2); // subtract for bipolar
         Out(0, cv);
     }
 
@@ -100,6 +100,11 @@ private:
         if (selected == 1 || LineSegmentCursor()) {
             gfxLine(0, 62, skew, 33);
             gfxLine(skew, 33, 62, 62);
+        }
+
+        // Draw zero-crossing line
+        if (LineSegmentCursor()) {
+            for (int x = 0; x <= 60; x += 10) gfxLine(x, 48, x + 2, 48);
         }
     }
 
