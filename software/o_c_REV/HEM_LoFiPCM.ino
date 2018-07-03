@@ -20,24 +20,23 @@ public:
 
         countdown--;
         if (countdown == 0) {
-            if (record || play || gated_record) {
-                head++;
-                if (head > length) {
-                    head = 0;
-                    record = 0;
-                    ClockOut(1);
-                }
-                
-                if (record || gated_record) {
-                    uint32_t s = (In(0) + 32767) >> 8;
-                    pcm[head] = (char)s;
-                }
-                
-                if (play) {
-                    uint32_t s = LOFI_PCM2CV(pcm[head]);
-                    Out(0, s);
-                }
+            if (play || record || gated_record) head++;
+            if (head > length) {
+                head = 0;
+                record = 0;
+                ClockOut(1);
             }
+
+            if (record || gated_record) {
+                uint32_t s = (In(0) + 32767) >> 8;
+                pcm[head] = (char)s;
+            }
+
+            uint32_t s = LOFI_PCM2CV(pcm[head]);
+            int SOS = In(1); // Sound-on-sound
+            int live = Proportion(SOS, HEMISPHERE_MAX_CV, In(0));
+            int loop = play ? Proportion(HEMISPHERE_MAX_CV - SOS, HEMISPHERE_MAX_CV, s) : 0;
+            Out(0, live + loop);
             countdown = LOFI_PCM_SPEED;
         }
     }
