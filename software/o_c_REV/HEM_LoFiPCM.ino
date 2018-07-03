@@ -11,11 +11,11 @@ public:
 
     void Start() {
         countdown = LOFI_PCM_SPEED;
-        for (int i = 0; i < LOFI_PCM_BUFFER_SIZE; i++) pcm[i] = 128;
+        for (int i = 0; i < LOFI_PCM_BUFFER_SIZE; i++) pcm[i] = 127;
     }
 
     void Controller() {
-        play = Gate(0);
+        play = !Gate(0); // Continuously play unless gated
         gated_record = Gate(1);
 
         countdown--;
@@ -25,12 +25,12 @@ public:
                 if (head > length) {
                     head = 0;
                     record = 0;
+                    ClockOut(1);
                 }
                 
                 if (record || gated_record) {
                     uint32_t s = (In(0) + 32767) >> 8;
                     pcm[head] = (char)s;
-                    if (record) Out(0, In(0));
                 }
                 
                 if (play) {
@@ -74,9 +74,9 @@ public:
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "Gate 1=Loop 2=Rec";
+        help[HEMISPHERE_HELP_DIGITALS] = "Gate 1=Pause 2=Rec";
         help[HEMISPHERE_HELP_CVS]      = "1=Audio";
-        help[HEMISPHERE_HELP_OUTS]     = "A=Audio";
+        help[HEMISPHERE_HELP_OUTS]     = "A=Audio B=EOC Trg";
         help[HEMISPHERE_HELP_ENCODER]  = "P=Record T=End Pt";
         //                               "------------------" <-- Size Guide
     }
@@ -100,7 +100,7 @@ private:
         int inc = LOFI_PCM_BUFFER_SIZE / 256;
         int disp[32];
         int high = 1;
-        int pos = head - (inc * 15) - random(1,6); // Try to center the head
+        int pos = head - (inc * 15) - random(1,3); // Try to center the head
         if (head < 0) head += length;
         for (int i = 0; i < 32; i++)
         {
