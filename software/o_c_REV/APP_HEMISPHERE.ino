@@ -145,6 +145,9 @@ public:
             available_applets[index].ToggleHelpScreen(help_hemisphere);
         }
 
+        // If the same applet is in both hemispheres, skip the second help screen
+        if (my_applets[help_hemisphere] == my_applets[1 - help_hemisphere]) help_hemisphere = 1;
+
         help_hemisphere++; // Move to the next help screen
         if (help_hemisphere > 1) help_hemisphere = -1; // Turn them all off
 
