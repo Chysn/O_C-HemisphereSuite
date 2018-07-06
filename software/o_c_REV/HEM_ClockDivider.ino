@@ -5,7 +5,7 @@
 //     Encoder: Set division between 1/8 and 8/1
 //     Encoder Push: Toggle encoder function between Clock Output 1 and 2
 
-#define HEMISPHERE_CLOCKDIV_MAX 8
+#define HEM_CLOCKDIV_MAX 8
 
 class ClockDivider : public HemisphereApplet {
 public:
@@ -77,7 +77,6 @@ public:
 
     void ScreensaverView() {
         DrawSelector();
-        DrawClockIndicator();
     }
 
     void OnButtonPress() {
@@ -87,8 +86,8 @@ public:
 
     void OnEncoderMove(int direction) {
         div[selected] += direction;
-        if (div[selected] > HEMISPHERE_CLOCKDIV_MAX) div[selected] = HEMISPHERE_CLOCKDIV_MAX;
-        if (div[selected] < -HEMISPHERE_CLOCKDIV_MAX) div[selected] = -HEMISPHERE_CLOCKDIV_MAX;
+        if (div[selected] > HEM_CLOCKDIV_MAX) div[selected] = HEM_CLOCKDIV_MAX;
+        if (div[selected] < -HEM_CLOCKDIV_MAX) div[selected] = -HEM_CLOCKDIV_MAX;
         if (div[selected] == 0) div[selected] = direction > 0 ? 1 : -2; // No such thing as 1/1 Multiple
         if (div[selected] == -1) div[selected] = 1; // Must be moving up to hit -1 (see previous line)
         count[selected] = 0; // Start the count over so things aren't missed
@@ -139,17 +138,6 @@ private:
                 gfxPrint(2, y, -div[ch]);
                 gfxPrint("/1");
                 gfxPrint(" Mult");
-            }
-        }
-    }
-
-    void DrawClockIndicator() {
-        ForEachChannel(ch)
-        {
-            int t = OC::CORE::ticks - clock_out_tick[ch];
-            if (t < 6000) {
-                int r = t / 350;
-                gfxCircle(20 + (20 * ch), 31, r);
             }
         }
     }

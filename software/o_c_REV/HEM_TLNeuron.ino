@@ -1,4 +1,5 @@
-int const HEMISPHERE_ACTIVE_TICKS = 1500;
+// How fast the axon pulses when active
+#define HEM_TLN_ACTIVE_TICKS 1500
 
 class TLNeuron : public HemisphereApplet {
 public:
@@ -39,7 +40,7 @@ public:
 
         // Increase the axon radius via timer
         if (--axon_countdown < 0) {
-            axon_countdown = HEMISPHERE_ACTIVE_TICKS;
+            axon_countdown = HEM_TLN_ACTIVE_TICKS;
             ++axon_radius;
             if (axon_radius > 14) axon_radius = 5;
         }

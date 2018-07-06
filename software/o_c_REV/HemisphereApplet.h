@@ -2,18 +2,18 @@
 //// Hemisphere Applet Base Class
 ////////////////////////////////////////////////////////////////////////////////
 
-const int LEFT_HEMISPHERE = 0;
-const int RIGHT_HEMISPHERE = 1;
-const int HEMISPHERE_MAX_CV = 7677; // Experimentally-estimated by observing pitch value at 5V
-const int HEMISPHERE_CLOCK_TICKS = 100; // 6ms
-const int HEMISPHERE_CURSOR_TICKS = 12000;
-const int HEMISPHERE_SCREEN_BLANK_TICKS = 30000000; // 30 minutes
+#define LEFT_HEMISPHERE 0
+#define RIGHT_HEMISPHERE 1
+#define HEMISPHERE_MAX_CV 7677
+#define HEMISPHERE_CLOCK_TICKS 100
+#define HEMISPHERE_CURSOR_TICKS 12000
+#define HEMISPHERE_SCREEN_BLANK_TICKS 30000000
 
 // Codes for help system sections
-const int HEMISPHERE_HELP_DIGITALS = 0;
-const int HEMISPHERE_HELP_CVS = 1;
-const int HEMISPHERE_HELP_OUTS = 2;
-const int HEMISPHERE_HELP_ENCODER = 3;
+#define HEMISPHERE_HELP_DIGITALS 0
+#define HEMISPHERE_HELP_CVS 1
+#define HEMISPHERE_HELP_OUTS 2
+#define HEMISPHERE_HELP_ENCODER 3
 
 // Simulated fixed floats by multiplying and dividing by powers of 2
 #define int2simfloat(x) (x << 14)
@@ -86,10 +86,9 @@ public:
     }
 
     void BaseView() {
-        if (help_active) {
-            // If help is active, draw the help screen instead of the application screen
-            DrawHelpScreen();
-        } else {
+        // If help is active, draw the help screen instead of the application screen
+        if (help_active) DrawHelpScreen();
+        else {
             View();
             DrawNotifications();
         }
@@ -100,7 +99,9 @@ public:
     void BaseScreensaverView() {
         screensaver_on = 1;
         if (OC::CORE::ticks - last_view_tick < HEMISPHERE_SCREEN_BLANK_TICKS) {
-            ScreensaverView();
+            // If help is active, keep the help screen on during screensaver
+            if (help_active) DrawHelpScreen();
+            else ScreensaverView();
         }
     }
 
@@ -207,25 +208,6 @@ public:
 
     //////////////// Hemisphere-specific graphics methods
     ////////////////////////////////////////////////////////////////////////////////
-    /* Output bars are 12 pixels tall; there should be 15 pixels from the top of an
-     * output bar to the top of the next vertical element.
-     */
-    void gfxOutputBar(int ch, int y) {
-        int width = ProportionCV(ViewOut(ch), 60);
-        if (width < 0) {width = 0;}
-        int x = (hemisphere == 0) ? 64 - width : 0;
-        gfxRect(x, y, width, 12);
-    }
-
-    /* Input bars are 6 pixels tall; there should be 10 pixels from the top of an
-     * input bar to the top of the next vertical element.
-     */
-    void gfxInputBar(int ch, int y) {
-        int width = ProportionCV(ViewIn(ch), 63);
-        if (width < 0) {width = 0;}
-        int x = (hemisphere == 0) ? 63 - width : 0;
-        gfxFrame(x, y, width, 6);
-    }
 
     /* Show channel-grouped bi-lateral display */
     void gfxSkyline() {

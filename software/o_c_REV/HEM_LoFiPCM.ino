@@ -1,5 +1,5 @@
-int const LOFI_PCM_BUFFER_SIZE = 2048;
-int const LOFI_PCM_SPEED = 8;
+#define HEM_LOFI_PCM_BUFFER_SIZE 2048
+#define HEM_LOFI_PCM_SPEED 8
 #define LOFI_PCM2CV(S) ((uint32_t)S << 8) - 32767;
 
 class LoFiPCM : public HemisphereApplet {
@@ -10,8 +10,8 @@ public:
     }
 
     void Start() {
-        countdown = LOFI_PCM_SPEED;
-        for (int i = 0; i < LOFI_PCM_BUFFER_SIZE; i++) pcm[i] = 127;
+        countdown = HEM_LOFI_PCM_SPEED;
+        for (int i = 0; i < HEM_LOFI_PCM_BUFFER_SIZE; i++) pcm[i] = 127;
     }
 
     void Controller() {
@@ -21,7 +21,7 @@ public:
         countdown--;
         if (countdown == 0) {
             if (play || record || gated_record) head++;
-            if (head > length) {
+            if (head >= length) {
                 head = 0;
                 record = 0;
                 ClockOut(1);
@@ -37,7 +37,7 @@ public:
             int live = Proportion(SOS, HEMISPHERE_MAX_CV, In(0));
             int loop = play ? Proportion(HEMISPHERE_MAX_CV - SOS, HEMISPHERE_MAX_CV, s) : 0;
             Out(0, live + loop);
-            countdown = LOFI_PCM_SPEED;
+            countdown = HEM_LOFI_PCM_SPEED;
         }
     }
 
@@ -59,7 +59,7 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        length = constrain(length += (direction * 32), 32, LOFI_PCM_BUFFER_SIZE);
+        length = constrain(length += (direction * 32), 32, HEM_LOFI_PCM_BUFFER_SIZE);
     }
 
     uint32_t OnDataRequest() {
@@ -81,13 +81,13 @@ protected:
     }
     
 private:
-    char pcm[LOFI_PCM_BUFFER_SIZE];
+    char pcm[HEM_LOFI_PCM_BUFFER_SIZE];
     bool record = 0; // Record activated via button
     bool gated_record = 0; // Record gated via digital in
     bool play = 0;
     int head = 0; // Locatioon of play/record head
-    int countdown = LOFI_PCM_SPEED;
-    int length = LOFI_PCM_BUFFER_SIZE;
+    int countdown = HEM_LOFI_PCM_SPEED;
+    int length = HEM_LOFI_PCM_BUFFER_SIZE;
     
     void DrawTransportBar(int y) {
         DrawStop(3, 15);
@@ -96,7 +96,7 @@ private:
     }
     
     void DrawWaveform() {
-        int inc = LOFI_PCM_BUFFER_SIZE / 256;
+        int inc = HEM_LOFI_PCM_BUFFER_SIZE / 256;
         int disp[32];
         int high = 1;
         int pos = head - (inc * 15) - random(1,3); // Try to center the head
@@ -107,7 +107,7 @@ private:
             if (v < 0) v = 0;
             if (v > high) high = v;
             pos += inc;
-            if (pos >= LOFI_PCM_BUFFER_SIZE) pos -= length;
+            if (pos >= HEM_LOFI_PCM_BUFFER_SIZE) pos -= length;
             disp[i] = v;
         }
         

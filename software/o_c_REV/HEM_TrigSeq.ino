@@ -23,12 +23,7 @@ public:
             {
                 step[ch]++;
                 if (step[ch] > end_step[ch]) step[ch] = 0;
-                if ((pattern[ch] >> step[ch]) & 0x01) {
-                    ClockOut(ch);
-                    clock_out_tick[ch] = OC::CORE::ticks;
-                    ss_x[ch] = random(10, 53); // Get a new location for the indicator
-                    ss_y[ch] = random(20, 53);
-                }
+                if ((pattern[ch] >> step[ch]) & 0x01) ClockOut(ch);
             }
 
         }
@@ -41,7 +36,6 @@ public:
 
     void ScreensaverView() {
         DrawDisplay();
-        DrawClockIndicator();
     }
 
     void OnButtonPress() {
@@ -103,9 +97,6 @@ private:
     uint8_t pattern[2];
     int end_step[2];
     int cursor; // 0=ch1 low, 1=ch1 hi, 2=c1 end_step,  3=ch2 low, 4=ch3 hi, 5=ch2 end_step
-    int ss_x[2]; // X and Y locatons of randomly-placed indicators for screensaver
-    int ss_y[2];
-    int clock_out_tick[2]; // Tick number of the most recent clock out on each channel
     
     void DrawDisplay() {
         ForEachChannel(ch)
@@ -150,19 +141,6 @@ private:
             }
         }
     }
-
-    void DrawClockIndicator()
-    {
-        ForEachChannel(ch)
-        {
-            int t = OC::CORE::ticks - clock_out_tick[ch];
-            if (t < 6000) {
-                int r = t / 600 + 1;
-                gfxCircle(ss_x[ch], ss_y[ch], r);
-            }
-        }
-    }
-
 };
 
 

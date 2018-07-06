@@ -102,13 +102,8 @@ public:
                 available_applets[index].View(h);
             }
 
-            if (select_mode == LEFT_HEMISPHERE) {
-                graphics.drawFrame(0, 0, 64, 64);
-            }
-
-            if (select_mode == RIGHT_HEMISPHERE) {
-                graphics.drawFrame(64, 0, 64, 64);
-            }
+            if (select_mode == LEFT_HEMISPHERE) graphics.drawFrame(0, 0, 64, 64);
+            if (select_mode == RIGHT_HEMISPHERE) graphics.drawFrame(64, 0, 64, 64);
         }
     }
 
@@ -121,18 +116,23 @@ public:
     }
 
     void DelegateButtonPush(const UI::Event &event) {
-        select_mode = -1; // Pressing a button takes us out of select mode
         int h = (event.control == OC::CONTROL_BUTTON_L) ? 0 : 1;
-        int index = my_applets[h];
-        if (event.type == UI::EVENT_BUTTON_PRESS) {
-            available_applets[index].OnButtonPress(h);
+        if (select_mode == h) select_mode = -1; // Pushing a button for the selected side turns off select mode
+        else {
+            int index = my_applets[h];
+            if (event.type == UI::EVENT_BUTTON_PRESS) {
+                available_applets[index].OnButtonPress(h);
+            }
         }
     }
 
     void DelegateEncoderMovement(const UI::Event &event) {
         int h = (event.control == OC::CONTROL_ENCODER_L) ? LEFT_HEMISPHERE : RIGHT_HEMISPHERE;
-        int index = my_applets[h];
-        available_applets[index].OnEncoderMove(h, event.value > 0 ? 1 : -1);
+        if (select_mode == h) ChangeApplet(event.value);
+        else {
+            int index = my_applets[h];
+            available_applets[index].OnEncoderMove(h, event.value);
+        }
     }
 
     void ToggleForwarding() {
@@ -184,9 +184,10 @@ private:
 SETTINGS_DECLARE(HemisphereManager, HEMISPHERE_SETTING_LAST) {
     {0, 0, 255, "Applet ID L", NULL, settings::STORAGE_TYPE_U8},
     {1, 0, 255, "Applet ID R", NULL, settings::STORAGE_TYPE_U8},
-    {0x00001f1f, 0, 2147483647, "Data L", NULL, settings::STORAGE_TYPE_U32},
-    {0x0f1e0f0a, 0, 2147483647, "Data R", NULL, settings::STORAGE_TYPE_U32},
+    {0x00003c3c, 0, 2147483647, "Data L", NULL, settings::STORAGE_TYPE_U32},
+    {0x0f2e0f0a, 0, 2147483647, "Data R", NULL, settings::STORAGE_TYPE_U32},
 };
+
 
 ////////////////////////////////////////////////////////////////////////////////
 //// O_C App Functions
@@ -249,9 +250,5 @@ void HEMISPHERE_handleButtonEvent(const UI::Event &event) {
 }
 
 void HEMISPHERE_handleEncoderEvent(const UI::Event &event) {
-    if (manager.SelectModeEnabled()) {
-        manager.ChangeApplet(event.value > 0 ? 1 : -1);
-    } else {
-        manager.DelegateEncoderMovement(event);
-    }
+    manager.DelegateEncoderMovement(event);
 }
