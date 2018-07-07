@@ -108,10 +108,13 @@ public:
     }
 
     void DrawScreensavers() {
-        for (int h = 0; h < 2; h++)
-        {
-            int index = my_applets[h];
-            available_applets[index].Screensaver(h);
+        if (help_hemisphere > -1) DrawViews();
+        else {
+            for (int h = 0; h < 2; h++)
+            {
+                int index = my_applets[h];
+                available_applets[index].Screensaver(h);
+            }
         }
     }
 

@@ -98,11 +98,7 @@ public:
 
     void BaseScreensaverView() {
         screensaver_on = 1;
-        if (OC::CORE::ticks - last_view_tick < HEMISPHERE_SCREEN_BLANK_TICKS) {
-            // If help is active, keep the help screen on during screensaver
-            if (help_active) DrawHelpScreen();
-            else ScreensaverView();
-        }
+        if (OC::CORE::ticks - last_view_tick < HEMISPHERE_SCREEN_BLANK_TICKS) ScreensaverView();
     }
 
     /* Help Screen Toggle */
@@ -287,7 +283,7 @@ public:
     int ViewIn(int ch) {return inputs[ch];}
     int ViewOut(int ch) {return outputs[ch];}
     int TicksSinceClock(int ch) {return OC::CORE::ticks - last_clock[ch];} // in ticks
-    int TimeSinceClock(int ch) {return TicksSinceClock(ch) / 167;} // in approx. ms
+    int TimeSinceClock(int ch) {return TicksSinceClock(ch) / 17;} // in approx. ms
 
 protected:
     const char* help[4];
@@ -323,8 +319,7 @@ protected:
      *              HEMISPHERE_MAX_CV   max_pixels
      */
     int ProportionCV(int cv_value, int max_pixels) {
-        int prop = Proportion(cv_value, HEMISPHERE_MAX_CV, max_pixels);
-        if (prop < 0) prop = 0; // Zeroing because this is a display-specific method
+        int prop = constrain(Proportion(cv_value, HEMISPHERE_MAX_CV, max_pixels), 0, max_pixels);
         return prop;
     }
 
