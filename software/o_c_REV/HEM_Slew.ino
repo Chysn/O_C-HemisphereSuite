@@ -9,34 +9,38 @@ public:
     }
 
     void Start() {
-        signal = 0;
+        ForEachChannel(ch) signal[ch] = 0;
         rise = 50;
         fall = 50;
     }
 
     void Controller() {
-        simfloat input = int2simfloat(In(0));
-        if (input != signal) {
+        ForEachChannel(ch)
+        {
+            simfloat input = int2simfloat(In(ch));
+            if (input != signal[ch]) {
 
-            int segment = (input > signal) ? rise : fall;
-            simfloat remaining = input - signal;
+                int segment = (input > signal[ch]) ? rise : fall;
+                simfloat remaining = input - signal[ch];
 
-            // The number of ticks it would take to get from 0 to HEMISPHERE_MAX_CV
-            int max_change = Proportion(segment, HEM_SLEW_MAX_VALUE, HEM_SLEW_MAX_TICKS);
+                // The number of ticks it would take to get from 0 to HEMISPHERE_MAX_CV
+                int max_change = Proportion(segment, HEM_SLEW_MAX_VALUE, HEM_SLEW_MAX_TICKS);
 
-            // The number of ticks it would take to move the remaining amount at max_change
-            int ticks_to_remaining = Proportion(simfloat2int(remaining), HEMISPHERE_MAX_CV, max_change);
-            if (ticks_to_remaining < 0) ticks_to_remaining = -ticks_to_remaining;
+                // The number of ticks it would take to move the remaining amount at max_change
+                int ticks_to_remaining = Proportion(simfloat2int(remaining), HEMISPHERE_MAX_CV, max_change);
+                if (ticks_to_remaining < 0) ticks_to_remaining = -ticks_to_remaining;
 
-            simfloat delta;
-            if (ticks_to_remaining <= 0) {
-                delta = remaining;
-            } else {
-                delta = remaining / ticks_to_remaining;
+                simfloat delta;
+                if (ticks_to_remaining <= 0) {
+                    delta = remaining;
+                } else {
+                    if (ch == 1) ticks_to_remaining /= 2;
+                    delta = remaining / ticks_to_remaining;
+                }
+                signal[ch] += delta;
             }
-            signal += delta;
+            Out(ch, simfloat2int(signal[ch]));
         }
-        Out(0, simfloat2int(signal));
     }
 
     void View() {
@@ -79,9 +83,9 @@ public:
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
-        help[HEMISPHERE_HELP_CVS]      = "1=Signal";
-        help[HEMISPHERE_HELP_OUTS]     = "A=Prop B=Fixed";
+        help[HEMISPHERE_HELP_DIGITALS] = "";
+        help[HEMISPHERE_HELP_CVS]      = "Input 1=Ch1 2=Ch2";
+        help[HEMISPHERE_HELP_OUTS]     = "A=Linear B=Exp";
         help[HEMISPHERE_HELP_ENCODER]  = "Rise/Fall";
         //                               "------------------" <-- Size Guide
     }
@@ -89,7 +93,7 @@ protected:
 private:
     int rise; // Time to reach signal level if signal < 5V
     int fall; // Time to reach signal level if signal > 0V
-    simfloat signal; // Current signal level
+    simfloat signal[2]; // Current signal level for each channel
     int cursor; // 0 = Rise, 1 = Fall
     int last_ms_value;
     int last_change_ticks;
@@ -107,8 +111,10 @@ private:
         if (f_x > r_x && LineSegmentCursor()) gfxLine(r_x, 33, f_x, 33);
 
         // Output indicators
-        gfxFrame(1, 15, ProportionCV(ViewIn(0), 62), 6);
-        gfxRect(1, 23, ProportionCV(ViewOut(0), 62), 6);
+        ForEachChannel(ch)
+        {
+            gfxRect(1, 15 + (ch * 8), ProportionCV(ViewOut(ch), 62), 6);
+        }
 
         // Change indicator, if necessary
         if (OC::CORE::ticks - last_change_ticks < 20000) {
