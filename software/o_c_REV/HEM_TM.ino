@@ -11,7 +11,7 @@
 class TM : public HemisphereApplet {
 public:
 
-    const char* applet_name() { // Maximum 10 characters
+    const char* applet_name() {
         return "Turing";
     }
 
@@ -20,19 +20,23 @@ public:
         p = 0;
         length = 16;
         cursor = 0;
-        step = 0;
         quantizer.Init();
         quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
     }
 
     void Controller() {
         if (Clock(0)) {
-            AdvanceRegister(p * cursor); // If cursor is at length, do not change bits
-            if (++step == length) {
-                // Advance back to the beginning without changing the register
-                for (int s = step; s < 16; s++) AdvanceRegister(0);
-                step = 0;
-            }
+            // If the cursor is not on the p value, the sequence remains the same
+            int prob = (cursor == 1) ? p : 0;
+
+            // Grab the bit that's about to be shifted away
+            int last = (reg >> (length - 1)) & 0x01;
+
+            // Does it change?
+            if (random(0, 99) < prob) last = 1 - last;
+
+            // Shift left, then potentially add the bit from the other side
+            reg = (reg << 1) + last;
         }
 
         // Send 5-bit quantized CV
@@ -61,45 +65,30 @@ public:
 
     void OnEncoderMove(int direction) {
         if (cursor == 1) p = constrain(p += direction, 0, 100);
-        else {
-            length = constrain(length += direction, 1, 16);
-            step = 0;
-        }
+        else length = constrain(length += direction, 2, 16);
     }
         
-    /* Each applet may save up to 32 bits of data. When data is requested from
-     * the manager, OnDataRequest() packs it up (see HemisphereApplet::Pack()) and
-     * returns it.
-     */
     uint32_t OnDataRequest() {
         uint32_t data = 0;
         Pack(data, PackLocation {0,16}, reg);
         Pack(data, PackLocation {16,7}, p);
         Pack(data, PackLocation {23,4}, length - 1);
-        Pack(data, PackLocation {27,4}, step);
         return data;
     }
 
-    /* When the applet is restored (from power-down state, etc.), the manager may
-     * send data to the applet via OnDataReceive(). The applet should take the data
-     * and unpack it (see HemisphereApplet::Unpack()) into zero or more of the applet's
-     * properties.
-     */
     void OnDataReceive(uint32_t data) {
         reg = Unpack(data, PackLocation {0,16});
         p = Unpack(data, PackLocation {16,7});
         length = Unpack(data, PackLocation {23,4}) + 1;
-        step = Unpack(data, PackLocation {27,4});
     }
 
 protected:
-    /* Set help text. Each help section can have up to 18 characters. Be concise! */
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
         help[HEMISPHERE_HELP_CVS]      = "";
         help[HEMISPHERE_HELP_OUTS]     = "1=Quant5-bit 2=CV8";
-        help[HEMISPHERE_HELP_ENCODER]  = "Probability/Length";
+        help[HEMISPHERE_HELP_ENCODER]  = "Length/Probability";
         //                               "------------------" <-- Size Guide
     }
     
@@ -108,7 +97,6 @@ private:
     int p; // Probability of bit 15 changing on each cycle
     int length; // Sequence length
     int cursor;  // 0 = length, 1 = p
-    int step; // Step advance; for keeping track of the register when the legnth < 16
     braids::Quantizer quantizer;
 
     void DrawSelector() {
