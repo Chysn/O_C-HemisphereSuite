@@ -1,0 +1,214 @@
+#define GOL_ABS(X) (X < 0 ? -X : X)
+
+class GameOfLife : public HemisphereApplet {
+public:
+
+    const char* applet_name() {
+        return "GameOfLife";
+    }
+
+    void Start() {
+        for (int i = 0; i < 80; i++) board[i] = 0;
+        weight = 30;
+    }
+
+    void Controller() {
+        int x = ProportionCV(In(0), 63);
+        int y = ProportionCV(In(1), 39);
+
+        if (Clock(0)) ProcessGameBoard(x, y);
+
+        if (Gate(1)) AddToBoard(x, y);
+
+        int global_cv = constrain(global_count * weight, 0, HEMISPHERE_MAX_CV);
+        int local_cv = constrain(local_count * (2 * weight), 0, HEMISPHERE_MAX_CV);
+        Out(0, global_cv);
+        Out(1, local_cv);
+    }
+
+    void View() {
+        gfxHeader(applet_name());
+        DrawBoard();
+        DrawIndicator();
+    }
+
+    void ScreensaverView() {
+        DrawBoard();
+        DrawIndicator();
+    }
+
+    void OnButtonPress() {
+        for (int i = 0; i < 80; i++) board[i] = 0;
+    }
+
+    void OnEncoderMove(int direction) {
+        weight = constrain(weight += direction, 0, 40);
+    }
+        
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        Pack(data, PackLocation {0,6}, weight);
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+        weight = Unpack(data, PackLocation {0,6});
+    }
+
+protected:
+    void SetHelp() {
+        //                               "------------------" <-- Size Guide
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Draw";
+        help[HEMISPHERE_HELP_CVS]      = "1=X pos 2=Y pos";
+        help[HEMISPHERE_HELP_OUTS]     = "A=Global B=Local";
+        help[HEMISPHERE_HELP_ENCODER]  = "T=Weight P=Clear";
+        //                               "------------------" <-- Size Guide
+    }
+    
+private:
+    uint32_t board[80]; // 64x40 board
+    int weight; // Weight of each cell
+    int global_count; // Count of all live cells
+    int local_count; // Count of live cells in local area
+ 
+    void DrawBoard() {
+        for (int y = 0; y < 40; y++)
+        {
+            for (int b = 0; b < 2; b++)
+            {
+                for (int c = 0; c < 32; c++)
+                {
+                    if ((board[(y * 2) + b] >> c) & 0x01) gfxPixel(c + (32 * b), y + 22);
+                }
+            }
+        }
+    }
+    
+    void DrawIndicator() {
+        // Output indicators
+        ForEachChannel(ch)
+        {
+            gfxRect(1, 15 + (ch * 4), ProportionCV(ViewOut(ch), 62), 2);
+        }
+    }
+
+    void ProcessGameBoard(int tx, int ty) {
+        uint32_t next_gen[80];
+        global_count = 0;
+        local_count = 0;
+        for (int y = 0; y < 40; y++)
+        {
+            next_gen[y * 2] = 0; // Clear next generation board
+            next_gen[y * 2 + 1] = 0;
+            for (int x= 0; x < 64; x++)
+            {
+                bool live = ValueAtCell(x, y);
+                int ln = CountLiveNeighborsAt(x, y);
+
+                // 1: Any live cell with fewer than two live neighbours dies (referred to as underpopulation or exposure).
+                // 2: Any live cell with more than three live neighbours dies (referred to as overpopulation or overcrowding).
+                // Nothing to do to observe these rules, since we start with an empty board
+
+                // 3: Any live cell with two or three live neighbours lives, unchanged, to the next generation.
+                // 4: Any dead cell with exactly three live neighbours will come to life.
+                if ((ln == 2 && live) || (ln == 3 && !live)) {
+                    int i = y * 2;
+                    int xb = x;
+                    if (x > 31) {
+                        i += 1;
+                        xb -= 32;
+                    }
+                    next_gen[i] = next_gen[i] | (0x01 << xb);
+                    global_count++;
+                    if (GOL_ABS(x - tx) < 5 && GOL_ABS(y - ty) < 5) local_count++;
+                }
+            }
+        }
+
+        memcpy(&board, &next_gen, sizeof(next_gen));
+    }
+    
+    int CountLiveNeighborsAt(int x, int y) {
+        int count = 0;
+        for (int nx = -1; nx < 2; nx++)
+        {
+            for (int ny = -1; ny < 2; ny++)
+            {
+                if (!(nx == 0 && ny == 0)) count += ValueAtCell(x + nx, y + ny);
+            }
+         }
+        return count;
+    }
+    
+    uint8_t ValueAtCell(int x, int y) {
+        // Edgeless operation
+        if (x > 63) x -= 64;
+        if (x < 0) x += 64;
+        if (y > 39) y -= 40;
+        if (y < 0) y += 40;
+
+        int i = y * 2;
+        if (x > 31) {
+            i += 1;
+            x -= 32;
+        }
+        return ((board[i] >> x) & 0x01);
+    }
+    
+    void AddToBoard(int x, int y) {
+        int i = y * 2;
+        int xb = x;
+        if (x > 31) {
+            i += 1;
+            xb -= 32;
+        }
+        board[i] = board[i] | (0x01 << xb);
+    }
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+//// Hemisphere Applet Functions
+///
+///  Once you run the find-and-replace to make these refer to GameOfLife,
+///  it's usually not necessary to do anything with these functions. You
+///  should prefer to handle things in the HemisphereApplet child class
+///  above.
+////////////////////////////////////////////////////////////////////////////////
+GameOfLife GameOfLife_instance[2];
+
+void GameOfLife_Start(int hemisphere) {
+    GameOfLife_instance[hemisphere].BaseStart(hemisphere);
+}
+
+void GameOfLife_Controller(int hemisphere, bool forwarding) {
+    GameOfLife_instance[hemisphere].BaseController(forwarding);
+}
+
+void GameOfLife_View(int hemisphere) {
+    GameOfLife_instance[hemisphere].BaseView();
+}
+
+void GameOfLife_Screensaver(int hemisphere) {
+    GameOfLife_instance[hemisphere].BaseScreensaverView();
+}
+
+void GameOfLife_OnButtonPress(int hemisphere) {
+    GameOfLife_instance[hemisphere].OnButtonPress();
+}
+
+void GameOfLife_OnEncoderMove(int hemisphere, int direction) {
+    GameOfLife_instance[hemisphere].OnEncoderMove(direction);
+}
+
+void GameOfLife_ToggleHelpScreen(int hemisphere) {
+    GameOfLife_instance[hemisphere].HelpScreen();
+}
+
+uint32_t GameOfLife_OnDataRequest(int hemisphere) {
+    return GameOfLife_instance[hemisphere].OnDataRequest();
+}
+
+void GameOfLife_OnDataReceive(int hemisphere, uint32_t data) {
+    GameOfLife_instance[hemisphere].OnDataReceive(data);
+}

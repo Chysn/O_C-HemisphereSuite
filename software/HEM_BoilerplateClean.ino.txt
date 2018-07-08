@@ -11,7 +11,7 @@
 class ClassName : public HemisphereApplet {
 public:
 
-    const char* applet_name() { // Maximum 10 characters
+    const char* applet_name() {
         return "ClassName";
     }
 
