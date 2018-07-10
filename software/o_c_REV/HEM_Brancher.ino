@@ -69,7 +69,8 @@ private:
 	void DrawInterface() {
         // Show the probability in the middle
         gfxPrint(26, 25, "p=");
-        gfxPrint(26, 33, prob);
+        gfxPrint(23, 33, prob);
+        gfxPrint("%");
 
         // Show the choices along the right side,
         // with the chosen one

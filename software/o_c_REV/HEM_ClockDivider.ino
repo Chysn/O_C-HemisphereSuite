@@ -30,6 +30,16 @@ public:
     void Controller() {
         int this_tick = OC::CORE::ticks;
 
+        // Set division via CV
+        ForEachChannel(ch)
+        {
+            if (DetentedIn(ch)) {
+                div[ch] = Proportion(In(ch), HEMISPHERE_MAX_CV / 2, 8);
+                div[ch] = constrain(div[ch], -8, 8);
+                if (div[ch] == 0 || div[ch] == -1) div[ch] = 1;
+            }
+        }
+
         if (Clock(0)) {
             // The input was clocked; set timing info
             cycle_time = this_tick - last_clock;
@@ -39,7 +49,7 @@ public:
             {
                 count[ch]++;
                 if (div[ch] > 0) { // Positive value indicates clock division
-                    if (count[ch] == div[ch]) {
+                    if (count[ch] >= div[ch]) {
                         count[ch] = 0; // Reset
                         ClockOut(ch);
                         clock_out_tick[ch] = this_tick;
@@ -108,7 +118,7 @@ public:
 protected:
     void SetHelp() {
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
-        help[HEMISPHERE_HELP_CVS] = "";
+        help[HEMISPHERE_HELP_CVS] = "Div/Mult Ch1,Ch2";
         help[HEMISPHERE_HELP_OUTS] = "Clk A=Ch1 B=Ch2";
         help[HEMISPHERE_HELP_ENCODER] = "T=Set div P=Sel Ch";
     }

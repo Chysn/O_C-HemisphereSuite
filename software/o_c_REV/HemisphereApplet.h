@@ -229,6 +229,11 @@ public:
         return inputs[ch];
     }
 
+    // Apply small center detent to input, so it reads zero before a threshold
+    int DetentedIn(int ch) {
+        return (In(ch) > 300 || In(ch) < -300) ? In(ch) : 0;
+    }
+
     void Out(int ch, int value, int octave) {
         DAC_CHANNEL channel = (DAC_CHANNEL)(ch + io_offset);
         OC::DAC::set_pitch(channel, value, octave);

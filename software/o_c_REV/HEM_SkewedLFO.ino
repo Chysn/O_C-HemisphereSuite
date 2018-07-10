@@ -147,9 +147,7 @@ private:
 
     int get_modification_with_input(int in) {
         int mod = 0;
-        if (In(in) > 300 || In(in) < 300) { // Center detent
-            mod = Proportion(In(in), HEMISPHERE_MAX_CV, HEM_LFO_MAX_VALUE / 2);
-        }
+        mod = Proportion(DetentedIn(in), HEMISPHERE_MAX_CV, HEM_LFO_MAX_VALUE / 2);
         return mod;
     }
 };
