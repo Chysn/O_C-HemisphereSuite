@@ -118,7 +118,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "Gate 1=Ch1 2=Ch2";
         help[HEMISPHERE_HELP_CVS] = "Mod 1=Att 2=Rel";
         help[HEMISPHERE_HELP_OUTS] = "Amp A=Ch1 B=Ch2";
-        help[HEMISPHERE_HELP_ENCODER] = "T=Set Stage P=Sel";
+        help[HEMISPHERE_HELP_ENCODER] = "A/D/S/R";
     }
     
 private:

@@ -74,7 +74,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
         help[HEMISPHERE_HELP_CVS]      = "";
         help[HEMISPHERE_HELP_OUTS]     = "A=CV B=Clk Step 1";
-        help[HEMISPHERE_HELP_ENCODER]  = "T=Set P=Sel Step";
+        help[HEMISPHERE_HELP_ENCODER]  = "Note";
         //                               "------------------" <-- Size Guide
     }
     

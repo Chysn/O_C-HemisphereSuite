@@ -84,7 +84,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Reset";
         help[HEMISPHERE_HELP_CVS] = "Mod 1=Rate 2=Skew";
         help[HEMISPHERE_HELP_OUTS] = "A=CV B=Clock";
-        help[HEMISPHERE_HELP_ENCODER] = "T=Rate,Skew P=Set";
+        help[HEMISPHERE_HELP_ENCODER] = "Rate/Skew";
     }
 
 private:

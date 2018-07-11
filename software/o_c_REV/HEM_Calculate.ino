@@ -22,8 +22,10 @@ public:
             rand_clocked[ch] = 0;
         }
         const char * op_name_list[] = {"Min", "Max", "Sum", "Diff", "Mean", "S&H", "Rnd"};
-        // 0 goes in the Rand and S&H slots, because those are handled in Controller()
-        CalcFunction calc_fn_list[] = {hem_MIN, hem_MAX, hem_SUM, hem_DIFF, hem_MEAN, 0, 0};
+        // hem_MIN goes in the Rand and S&H slots, because those are handled in Controller() and
+        // don't need functions. But providing 0 isn't safe because the encoder change can
+        // happen any time and cause the system to try to run one of those null functions.
+        CalcFunction calc_fn_list[] = {hem_MIN, hem_MAX, hem_SUM, hem_DIFF, hem_MEAN, hem_MIN, hem_MIN};
         for(int i = 0; i < HEMISPHERE_NUMBER_OF_CALC; i++)
         {
             op_name[i] = op_name_list[i];
@@ -32,9 +34,6 @@ public:
     }
 
     void Controller() {
-        int v1 = In(0); // Set CV in values
-        int v2 = In(1);
-        
         ForEachChannel(ch)
         {
             int idx = operation[ch];
@@ -51,7 +50,7 @@ public:
                 }
                 else if (!rand_clocked[ch]) Out(ch, random(0, HEMISPHERE_MAX_CV));
             } else {
-                int result = calc_fn[idx](v1, v2);
+                int result = calc_fn[idx](In(0), In(1));
                 Out(ch, result);
             }
         }
@@ -74,9 +73,7 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        operation[selected] += direction;
-        if (operation[selected] == HEMISPHERE_NUMBER_OF_CALC) operation[selected] = 0;
-        if (operation[selected] < 0) operation[selected] = HEMISPHERE_NUMBER_OF_CALC - 1;
+        operation[selected] = constrain(operation[selected] += direction, 0, HEMISPHERE_NUMBER_OF_CALC - 1);
         rand_clocked[selected] = 0;
     }
 
@@ -119,7 +116,7 @@ private:
 
             // Show the icon if this random calculator is clocked
             if (operation[ch] == 6 && rand_clocked[ch])
-                gfxBitmap(24 + (31 * ch), 15, 8, clock);
+                gfxBitmap(22 + (31 * ch), 15, 8, clock);
         }
     }
 };

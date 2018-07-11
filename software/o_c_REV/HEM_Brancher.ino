@@ -57,8 +57,8 @@ protected:
     void SetHelp() {
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock, choose CV";
         help[HEMISPHERE_HELP_CVS] = "1,2=CV";
-        help[HEMISPHERE_HELP_OUTS] = "1=CV based on p";
-        help[HEMISPHERE_HELP_ENCODER] = "T:Set probability";
+        help[HEMISPHERE_HELP_OUTS] = "A=CV based on p";
+        help[HEMISPHERE_HELP_ENCODER] = "Probability";
     }
 
 private:

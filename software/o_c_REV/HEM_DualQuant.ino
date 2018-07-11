@@ -77,7 +77,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Ch1 Clk (2=cont)";
         help[HEMISPHERE_HELP_CVS] = "CV 1=Ch1 2=Ch2";
         help[HEMISPHERE_HELP_OUTS] = "Pitch 1=Ch1 2=Ch2";
-        help[HEMISPHERE_HELP_ENCODER] = "T=Scale P=Sel Ch";
+        help[HEMISPHERE_HELP_ENCODER] = "Scale";
     }
     
 private:

@@ -118,6 +118,7 @@ void setup() {
   GRAPHICS_END_FRAME();
 
   calibration_load();
+  
   display::AdjustOffset(OC::calibration_data.display_offset);
 
   OC::menu::Init();

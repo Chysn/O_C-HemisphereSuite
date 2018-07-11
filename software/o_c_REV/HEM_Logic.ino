@@ -88,7 +88,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=In1, 2=In2";
         help[HEMISPHERE_HELP_CVS] = "-CV-:1=Op1, 2=Op2";
         help[HEMISPHERE_HELP_OUTS] = "A=Result1 B=Res2";
-        help[HEMISPHERE_HELP_ENCODER] = "T=Set Op P=Sel Ch";
+        help[HEMISPHERE_HELP_ENCODER] = "Operation";
     }
     
 private:
