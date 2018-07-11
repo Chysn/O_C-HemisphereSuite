@@ -17,7 +17,6 @@ public:
         {
             length[ch] = 16;
             beats[ch] = 4 + (ch * 4);
-            rotation[ch] = 0;
             pattern[ch] = 0;
         }
         step = 0;
@@ -32,8 +31,10 @@ public:
         if (Clock(0)) {
             ForEachChannel(ch)
             {
+                int rotation = Proportion(DetentedIn(ch), HEMISPHERE_MAX_CV, length[ch]);
+
                 // Store the pattern for display
-                pattern[ch] = EuclideanPattern(length[ch], beats[ch], rotation[ch]);
+                pattern[ch] = EuclideanPattern(length[ch], beats[ch], rotation);
                 int sb = step % length[ch];
                 if ((pattern[ch] >> sb) & 0x01) {
                     ClockOut(ch);
@@ -102,7 +103,6 @@ protected:
 private:
     int length[2];
     int beats[2];
-    int rotation[2];
     int step;
     int cursor = 0; // Ch1: 0=Length, 1=Hits; Ch2: 2=Length 3=Hits
     uint8_t x_note[8] = {0x00, 0xa0, 0x40, 0xa0, 0x1f, 0x02, 0x0c, 0x00};
