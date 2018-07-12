@@ -9,7 +9,7 @@ class AnnularFusion : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "AnnularFus";
+        return "AnnularFu";
     }
 
     void Start() {

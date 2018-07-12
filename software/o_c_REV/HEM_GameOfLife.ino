@@ -4,7 +4,7 @@ class GameOfLife : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "GameOfLife";
+        return "Game/Life";
     }
 
     void Start() {
