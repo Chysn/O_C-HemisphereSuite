@@ -87,7 +87,7 @@ protected:
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
         help[HEMISPHERE_HELP_CVS]      = "";
-        help[HEMISPHERE_HELP_OUTS]     = "1=Quant5-bit 2=CV8";
+        help[HEMISPHERE_HELP_OUTS]     = "A=Quant5-bit B=CV8";
         help[HEMISPHERE_HELP_ENCODER]  = "Length/Probability";
         //                               "------------------" <-- Size Guide
     }

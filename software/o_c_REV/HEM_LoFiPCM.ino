@@ -74,7 +74,7 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "Gate 1=Pause 2=Rec";
-        help[HEMISPHERE_HELP_CVS]      = "1=Audio";
+        help[HEMISPHERE_HELP_CVS]      = "1=Audio 2=SOS";
         help[HEMISPHERE_HELP_OUTS]     = "A=Audio B=EOC Trg";
         help[HEMISPHERE_HELP_ENCODER]  = "T=End Pt P=Rec";
         //                               "------------------" <-- Size Guide
