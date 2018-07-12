@@ -41,7 +41,7 @@ public:
 
     void BaseStart(int h) {
         hemisphere = h;
-        gfx_offset = h * 65;
+        gfx_offset = h * 64;
         io_offset = h * 2;
         screensaver_on = 0;
 
