@@ -11,21 +11,21 @@ public:
     }
 
     void Controller() {
-        // Channel 1 is the gated switch - When gate is high, use channel 2, otherwise channel 1
-        if (Gate(0)) {
-            active[0] = 2;
-            Out(0, In(1));
-        } else {
-            active[0] = 1;
-            Out(0, In(0));
-        }
-
-        // Channel 2 is the sequential switch - When clocked, step between channel 1 and 2
-        if (Clock(1)) {
+        // Channel 1 is the sequential switch - When clocked, step between channel 1 and 2
+        if (Clock(0)) {
             step = 1 - step;
-            active[1] = step + 1;
+            active[0] = step + 1;
         }
-        Out(1, In(step));
+        Out(0, In(step));
+
+        // Channel 2 is the gated switch - When gate is high, use channel 2, otherwise channel 1
+        if (Gate(1)) {
+            active[1] = 2;
+            Out(1, In(1));
+        } else {
+            active[1] = 1;
+            Out(1, In(0));
+        }
     }
 
     void View() {
@@ -58,9 +58,9 @@ public:
 protected:
     void SetHelp() {
         // Each help section can have up to 18 characters. Be concise!
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Gate 2=Advance";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Gate";
         help[HEMISPHERE_HELP_CVS] = "1,2=CV";
-        help[HEMISPHERE_HELP_OUTS] = "A=Gated Out B=Seq";
+        help[HEMISPHERE_HELP_OUTS] = "A=Seq B=Gated Out";
         help[HEMISPHERE_HELP_ENCODER] = "";
     }
 
@@ -79,8 +79,8 @@ private:
 
     void DrawCaptions()
     {
-        gfxPrint(1, 15, "Gate");
-        gfxPrint(44, 15, "Seq");
+        gfxPrint(1, 15, "Seq");
+        gfxPrint(36, 15, "Gate");
     }
 };
 

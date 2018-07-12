@@ -34,7 +34,7 @@ public:
                 int rotation = Proportion(DetentedIn(ch), HEMISPHERE_MAX_CV, length[ch]);
 
                 // Store the pattern for display
-                pattern[ch] = EuclideanPattern(length[ch], beats[ch], rotation);
+                pattern[ch] = EuclideanPattern(length[ch] - 1, beats[ch], rotation);
                 int sb = step % length[ch];
                 if ((pattern[ch] >> sb) & 0x01) {
                     ClockOut(ch);
@@ -130,7 +130,10 @@ private:
     void DrawPatternPoints(int ch) {
         for (int p = 0; p < length[ch]; p++)
         {
-            if ((pattern[ch] >> p) & 0x01) gfxPixel(disp_coord[ch][p].x, disp_coord[ch][p].y);
+            if ((pattern[ch] >> p) & 0x01) {
+                gfxPixel(disp_coord[ch][p].x, disp_coord[ch][p].y);
+                gfxPixel(disp_coord[ch][p].x + 1, disp_coord[ch][p].y);
+            }
         }
     }
 
@@ -163,7 +166,8 @@ private:
         int cy = 39;
         int di = 0; // Display index (positions actually used in the display)
         int c_count = 0; // Count of pixels along the circumference
-        int save_every = (r * 4) / length[ch];
+        int x_per_step = (r * 4) / 32;
+        uint32_t pattern = EuclideanPattern(31, length[ch], 0);
 
         // Sweep across the top of the circle looking for positions within the
         // radius of the circle. Left to right:
@@ -177,8 +181,9 @@ private:
 
                 // Is this point within the radius?
                 if (rx * rx + ry * ry < r * r + 1) {
-                    if (c_count++ % save_every == 0) {
-                        disp_coord[ch][di++] = AFStepCoord {x, y};
+                    if (c_count++ % x_per_step == 0) {
+                        if (pattern & 0x01) disp_coord[ch][di++] = AFStepCoord {x, y};
+                        pattern = pattern >> 0x01;
                     }
                     break; // Only use the first point
                 }
@@ -197,8 +202,9 @@ private:
 
                 // Is this point within the radius?
                 if (rx * rx + ry * ry < r * r + 1) {
-                    if (c_count++ % save_every == 0) {
-                        disp_coord[ch][di++] = AFStepCoord {x, y};
+                    if (c_count++ % x_per_step == 0) {
+                        if (pattern & 0x01) disp_coord[ch][di++] = AFStepCoord {x, y};
+                        pattern = pattern >> 0x01;
                     }
                     break; // Only use the first point
                 }

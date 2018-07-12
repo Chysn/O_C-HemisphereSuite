@@ -5,7 +5,7 @@ class TLNeuron : public HemisphereApplet {
 public:
 
     const char* applet_name() { // Maximum 10 characters
-        return "T.L.Neuron";
+        return "TL Neuron";
     }
 
     void Start() {

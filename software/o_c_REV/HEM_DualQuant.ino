@@ -74,9 +74,9 @@ public:
 protected:
     /* Set help text. Each help section can have up to 18 characters. Be concise! */
     void SetHelp() {
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Ch1 Clk (2=cont)";
+        help[HEMISPHERE_HELP_DIGITALS] = "Clock 1=Ch1 2=Ch2";
         help[HEMISPHERE_HELP_CVS] = "CV 1=Ch1 2=Ch2";
-        help[HEMISPHERE_HELP_OUTS] = "Pitch 1=Ch1 2=Ch2";
+        help[HEMISPHERE_HELP_OUTS] = "Pitch A=Ch1 B=Ch2";
         help[HEMISPHERE_HELP_ENCODER] = "Scale";
     }
     

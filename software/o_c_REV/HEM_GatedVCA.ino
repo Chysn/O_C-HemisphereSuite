@@ -49,7 +49,7 @@ public:
 
 protected:
     void SetHelp() {
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Gate Out1";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Gate Out A";
         help[HEMISPHERE_HELP_CVS] = "1=CV signal 2=Amp";
         help[HEMISPHERE_HELP_OUTS] = "A=Gated out B=Out";
         help[HEMISPHERE_HELP_ENCODER] = "T=Amp CV Offset";

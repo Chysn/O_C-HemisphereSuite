@@ -63,13 +63,12 @@ public:
         }
     }
 
-    void BaseController(bool forwarding) {
-        forwarding_on = (forwarding && hemisphere == RIGHT_HEMISPHERE);
-        int fwd = forwarding_on ? io_offset : 0;
+    void BaseController(bool master_clock_on) {
+        master_clock_bus = (master_clock_on && hemisphere == RIGHT_HEMISPHERE);
         ForEachChannel(ch)
         {
-            // Set or forward CV inputs
-            ADC_CHANNEL channel = (ADC_CHANNEL)(ch + io_offset - fwd);
+            // Set CV inputs
+            ADC_CHANNEL channel = (ADC_CHANNEL)(ch + io_offset);
             inputs[ch] = OC::ADC::raw_pitch_value(channel);
 
             // Handle clock timing
@@ -124,11 +123,8 @@ public:
     ////////////////////////////////////////////////////////////////////////////////
     void DrawNotifications() {
         // CV Forwarding Icon
-        if (forwarding_on) {
-            graphics.setPrintPos(61, 2);
-            graphics.print(">");
-            graphics.setPrintPos(59, 2);
-            graphics.print(">");
+        if (master_clock_bus) {
+            graphics.drawBitmap8(56, 1, 8, fwd_icon);
         }
     }
 
@@ -246,14 +242,16 @@ public:
 
     bool Clock(int ch) {
         bool clocked = 0;
-        if (hemisphere == 0) {
+        if (master_clock_bus && ch == 0) {
+            clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
+        } else if (hemisphere == 0) {
             if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
             if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_2>();
-        }
-        if (hemisphere == 1) {
+        } else if (hemisphere == 1) {
             if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_3>();
             if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_4>();
         }
+
         if (clocked) last_clock[ch] = OC::CORE::ticks;
         return clocked;
     }
@@ -351,9 +349,9 @@ private:
     int clock_countdown[2];
     int cursor_countdown;
     int ls_cursor_countdown; // Cursor for line segment drawing
-    bool forwarding_on; // Forwarding was on during the last ISR cycle
+    bool master_clock_bus; // Clock forwarding was on during the last ISR cycle
     bool applet_started; // Allow the app to maintain state during switching
     int last_view_tick; // Tick number of the most recent view
-
     int help_active;
+    const uint8_t fwd_icon[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
 };
