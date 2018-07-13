@@ -51,7 +51,6 @@ public:
             clock_countdown[ch]  = 0;
             inputs[ch] = 0;
             outputs[ch] = 0;
-
         }
         help_active = 0;
         cursor_countdown = HEMISPHERE_CURSOR_TICKS;
@@ -289,6 +288,7 @@ public:
     int TimeSinceClock(int ch) {return TicksSinceClock(ch) / 17;} // in approx. ms
 
 protected:
+    int hemisphere; // Which hemisphere (0, 1) this applet uses
     const char* help[4];
     virtual void SetHelp();
     bool screensaver_on; // Is the screensaver active?
@@ -340,7 +340,6 @@ protected:
 
 
 private:
-    int hemisphere; // Which hemisphere (0, 1) this applet uses
     int gfx_offset; // Graphics offset, based on the side
     int io_offset; // Input/Output offset, based on the side
     int inputs[2];
