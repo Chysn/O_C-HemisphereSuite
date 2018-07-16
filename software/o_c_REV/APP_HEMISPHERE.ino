@@ -67,6 +67,19 @@ public:
             index += dir;
             if (index >= HEMISPHERE_AVAILABLE_APPLETS) index = 0;
             if (index < 0) index = HEMISPHERE_AVAILABLE_APPLETS - 1;
+
+            // Handle MIDI applets, only one of which may be selected at a time.
+            // If the opposite hemipshere already has a MIDI applet selected,
+            // then skip this applet during selection.
+            if (available_applets[index].id & 0x80) {
+                int opp_index = my_applets[1 - select_mode];
+                if (available_applets[opp_index].id & 0x80) {
+                    index += dir;
+                    if (index >= HEMISPHERE_AVAILABLE_APPLETS) index = 0;
+                    if (index < 0) index = HEMISPHERE_AVAILABLE_APPLETS - 1;
+                }
+            }
+
             SetApplet(select_mode, index);
         }
     }
