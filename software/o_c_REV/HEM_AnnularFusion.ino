@@ -22,6 +22,7 @@ public:
         step = 0;
         SetDisplayPositions(0, 24);
         SetDisplayPositions(1, 16);
+        last_clock = 0;
     }
 
     void Controller() {
@@ -29,6 +30,7 @@ public:
 
         // Advance both rings
         if (Clock(0)) {
+            last_clock = OC::CORE::ticks;
             ForEachChannel(ch)
             {
                 int rotation = Proportion(DetentedIn(ch), HEMISPHERE_MAX_CV, length[ch]);
@@ -109,6 +111,7 @@ private:
     uint8_t meter[8] = {0x7e, 0x10, 0x1c, 0x10, 0x1c, 0x10, 0x7e, 0x00};
     AFStepCoord disp_coord[2][32];
     uint32_t pattern[2];
+    int last_clock;
     
     void DrawSteps() {
         ForEachChannel(ch)
@@ -119,12 +122,14 @@ private:
     }
 
     void DrawActiveSegment(int ch) {
-        int s1 = step % length[ch];
-        int s2 = s1 + 1 == length[ch] ? 0 : s1 + 1;
+        if (last_clock && OC::CORE::ticks - last_clock < 166666) {
+            int s1 = step % length[ch];
+            int s2 = s1 + 1 == length[ch] ? 0 : s1 + 1;
 
-        AFStepCoord s1_c = disp_coord[ch][s1];
-        AFStepCoord s2_c = disp_coord[ch][s2];
-        gfxLine(s1_c.x, s1_c.y, s2_c.x, s2_c.y);
+            AFStepCoord s1_c = disp_coord[ch][s1];
+            AFStepCoord s2_c = disp_coord[ch][s2];
+            gfxLine(s1_c.x, s1_c.y, s2_c.x, s2_c.y);
+        }
     }
 
     void DrawPatternPoints(int ch) {
@@ -152,12 +157,11 @@ private:
         if (f == 1) gfxCursor(1, 33, 20);
 
         // Ring indicator
-        if (ch == 0 || LineSegmentCursor()) {
-            gfxCircle(8, 52, 8);
-        }
-        if (ch == 1 || LineSegmentCursor()) {
-            gfxCircle(8, 52, 4);
-        }
+        gfxCircle(8, 52, 8);
+        gfxCircle(8, 52, 4);
+
+        if (ch == 0) gfxCircle(8, 52, 7);
+        else gfxCircle(8, 52, 5);
     }
 
     /* Get coordinates of circle in two halves, from the top and from the bottom */

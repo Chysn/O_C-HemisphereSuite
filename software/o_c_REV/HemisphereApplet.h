@@ -76,9 +76,8 @@ public:
             }
         }
 
-        // Cursor countdowns. See CursorBlink(), ResetCursor(), gfxCursor(), LineSegmentCursor()
+        // Cursor countdowns. See CursorBlink(), ResetCursor(), gfxCursor()
         if (--cursor_countdown < -HEMISPHERE_CURSOR_TICKS) cursor_countdown = HEMISPHERE_CURSOR_TICKS;
-        if (--ls_cursor_countdown < -16) ls_cursor_countdown = 8;
 
         Controller();
     }
@@ -107,11 +106,6 @@ public:
     /* Check cursor blink cycle. Suppress cursor when screensaver is on */
     bool CursorBlink() {
         return (cursor_countdown > 0 && !screensaver_on);
-    }
-
-    /* Show the normal line segment when screensaver is on */
-    bool LineSegmentCursor() {
-        return (ls_cursor_countdown > 0 || screensaver_on);
     }
 
     void ResetCursor() {
@@ -187,6 +181,14 @@ public:
 
     void gfxLine(int x, int y, int x2, int y2) {
         graphics.drawLine(x + gfx_offset, y, x2 + gfx_offset, y2);
+    }
+
+    void gfxLine(int x, int y, int x2, int y2, bool dotted) {
+        graphics.drawLine(x + gfx_offset, y, x2 + gfx_offset, y2, dotted ? 2 : 1);
+    }
+
+    void gfxDottedLine(int x, int y, int x2, int y2, uint8_t p) {
+        graphics.drawLine(x + gfx_offset, y, x2 + gfx_offset, y2, p);
     }
 
     void gfxCircle(int x, int y, int r) {
@@ -347,7 +349,6 @@ private:
     int last_clock[2]; // Tick number of the last clock observed by the child class
     int clock_countdown[2];
     int cursor_countdown;
-    int ls_cursor_countdown; // Cursor for line segment drawing
     bool master_clock_bus; // Clock forwarding was on during the last ISR cycle
     bool applet_started; // Allow the app to maintain state during switching
     int last_view_tick; // Tick number of the most recent view

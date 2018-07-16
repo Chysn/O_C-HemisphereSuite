@@ -159,9 +159,7 @@ private:
 
     int DrawAttack(int x, int length) {
         int xA = x + Proportion(attack, length, 62);
-        if (edit_stage == HEM_EG_ATTACK || LineSegmentCursor()) {
-            gfxLine(x, BottomAlign(0), xA, BottomAlign(HEM_EG_DISPLAY_HEIGHT));
-        }
+        gfxLine(x, BottomAlign(0), xA, BottomAlign(HEM_EG_DISPLAY_HEIGHT), edit_stage != HEM_EG_ATTACK);
         return xA;
     }
 
@@ -169,9 +167,7 @@ private:
         int xD = x + Proportion(decay, length, 62);
         if (xD < 0) xD = 0;
         int yS = Proportion(sustain, HEM_EG_MAX_VALUE, HEM_EG_DISPLAY_HEIGHT);
-        if (edit_stage == HEM_EG_DECAY || LineSegmentCursor()) {
-            gfxLine(x, BottomAlign(HEM_EG_DISPLAY_HEIGHT), xD, BottomAlign(yS));
-        }
+        gfxLine(x, BottomAlign(HEM_EG_DISPLAY_HEIGHT), xD, BottomAlign(yS), edit_stage != HEM_EG_DECAY);
         return xD;
     }
 
@@ -180,18 +176,14 @@ private:
         int yS = Proportion(sustain, HEM_EG_MAX_VALUE, HEM_EG_DISPLAY_HEIGHT);
         if (yS < 0) yS = 0;
         if (xS < 0) xS = 0;
-        if (edit_stage == HEM_EG_SUSTAIN || LineSegmentCursor()) {
-            gfxLine(x, BottomAlign(yS), xS, BottomAlign(yS));
-        }
+        gfxLine(x, BottomAlign(yS), xS, BottomAlign(yS), edit_stage != HEM_EG_SUSTAIN);
         return xS;
     }
 
     int DrawRelease(int x, int length) {
         int xR = x + Proportion(release, length, 62);
         int yS = Proportion(sustain, HEM_EG_MAX_VALUE, HEM_EG_DISPLAY_HEIGHT);
-        if (edit_stage == HEM_EG_RELEASE || LineSegmentCursor()) {
-            gfxLine(x, BottomAlign(yS), xR, BottomAlign(0));
-        }
+        gfxLine(x, BottomAlign(yS), xR, BottomAlign(0), edit_stage != HEM_EG_RELEASE);
         return xR;
     }
 

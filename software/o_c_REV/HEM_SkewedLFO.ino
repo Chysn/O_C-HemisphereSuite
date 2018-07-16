@@ -103,16 +103,12 @@ private:
     }
 
     void DrawSkewedWaveform() {
-        if (selected == 1 || LineSegmentCursor()) {
-            int x = Proportion(skew, HEM_LFO_MAX_VALUE, 62);
-            gfxLine(0, 62, x, 33);
-            gfxLine(x, 33, 62, 62);
-        }
+        int x = Proportion(skew, HEM_LFO_MAX_VALUE, 62);
+        gfxLine(0, 62, x, 33, selected == 0);
+        gfxLine(x, 33, 62, 62, selected == 0);
 
         // Draw zero-crossing line
-        if (LineSegmentCursor()) {
-            for (int x = 0; x <= 60; x += 10) gfxLine(x, 48, x + 2, 48);
-        }
+        gfxDottedLine(0, 48, 63, 48, 5);
     }
 
     void DrawWaveformPosition() {

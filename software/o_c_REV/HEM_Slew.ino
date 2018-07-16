@@ -101,14 +101,14 @@ private:
     void DrawIndicator() {
         // Rise portion
         int r_x = Proportion(rise, 200, 31);
-        if (cursor == 0 || LineSegmentCursor()) gfxLine(0, 62, r_x, 33);
+        gfxLine(0, 62, r_x, 33, cursor == 1);
 
         // Fall portion
         int f_x = 62 - Proportion(fall, 200, 31);
-        if (cursor == 1 || LineSegmentCursor()) gfxLine(f_x, 33, 62, 62);
+        gfxLine(f_x, 33, 62, 62, cursor == 0);
 
         // Center portion, if necessary
-        if (f_x > r_x && LineSegmentCursor()) gfxLine(r_x, 33, f_x, 33);
+        gfxLine(r_x, 33, f_x, 33, 1);
 
         // Output indicators
         ForEachChannel(ch)

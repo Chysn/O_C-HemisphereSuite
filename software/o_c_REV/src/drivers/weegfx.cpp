@@ -307,6 +307,12 @@ void Graphics::drawBitmap8(coord_t x, coord_t y, coord_t w, const uint8_t *data)
 }
 
 void Graphics::drawLine(coord_t x0, coord_t y0, coord_t x1, coord_t y1) {
+    drawLine(x0, y0, x1, y1, 1);
+}
+
+// p = period. Draw a dotted line with a pixel every p
+void Graphics::drawLine(coord_t x0, coord_t y0, coord_t x1, coord_t y1, uint8_t p) {
+  uint8_t c = 0;
   coord_t dx, dy;
   if (x0 > x1 ) dx = x0-x1; else dx = x1-x0;
   if (y0 > y1 ) dy = y0-y1; else dy = y1-y0;
@@ -331,7 +337,7 @@ void Graphics::drawLine(coord_t x0, coord_t y0, coord_t x1, coord_t y1) {
 
   if (steep) {
     for(coord_t x = x0; x <= x1; x++ ) {
-      setPixel(y, x); 
+      if (++c % p == 0) setPixel(y, x);
       err -= dy;
       if (err < 0) {
         y += ystep;
@@ -340,7 +346,7 @@ void Graphics::drawLine(coord_t x0, coord_t y0, coord_t x1, coord_t y1) {
     }
   } else {
     for(coord_t x = x0; x <= x1; x++ ) {
-      setPixel(x, y); 
+      if (++c % p == 0) setPixel(x, y);
       err -= dy;
       if (err < 0) {
         y += ystep;

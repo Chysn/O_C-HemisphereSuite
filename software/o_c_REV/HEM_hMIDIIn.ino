@@ -46,60 +46,55 @@ public:
     }
 
     void Controller() {
-        if (usbMIDI.read() && usbMIDI.getChannel() == (channel + 1)) {
-            last_tick = OC::CORE::ticks;
-            int message = usbMIDI.getType();
-            int data1 = usbMIDI.getData1();
-            int data2 = usbMIDI.getData2();
+        if (usbMIDI.read()) {
+            if (usbMIDI.getChannel() == (channel + 1)) {
+                last_tick = OC::CORE::ticks;
+                int message = usbMIDI.getType();
+                int data1 = usbMIDI.getData1();
+                int data2 = usbMIDI.getData2();
 
-            if (message == HEM_MIDI_NOTE_ON) { // Note on
-                if (first_note == -1) first_note = data1;
+                if (message == HEM_MIDI_NOTE_ON) { // Note on
+                    if (first_note == -1) first_note = data1;
 
-                // Should this message go out on any channel?
-                ForEachChannel(ch)
-                {
-                    if (function[ch] == HEM_MIDI_NOTE_OUT)
-                        Out(ch, quantizer.Lookup(data1));
+                    // Should this message go out on any channel?
+                    ForEachChannel(ch)
+                    {
+                        if (function[ch] == HEM_MIDI_NOTE_OUT)
+                            Out(ch, quantizer.Lookup(data1));
 
-                    if (function[ch] == HEM_MIDI_TRIG_OUT)
-                        ClockOut(ch);
+                        if (function[ch] == HEM_MIDI_TRIG_OUT)
+                            ClockOut(ch);
 
-                    if (function[ch] == HEM_MIDI_GATE_OUT)
-                        GateOut(ch, 1);
+                        if (function[ch] == HEM_MIDI_GATE_OUT)
+                            GateOut(ch, 1);
 
-                    if (function[ch] == HEM_MIDI_VEL_OUT)
-                        Out(ch, Proportion(data2, 127, HEMISPHERE_MAX_CV));
-                }
-            }
-
-            if (message == HEM_MIDI_NOTE_OFF) { // Note off
-                if (data1 == first_note) first_note = -1;
-
-                // Should this message go out on any channel?
-                ForEachChannel(ch)
-                {
-                    if (function[ch] == HEM_MIDI_GATE_OUT) {
-                        GateOut(ch, 0);
+                        if (function[ch] == HEM_MIDI_VEL_OUT)
+                            Out(ch, Proportion(data2, 127, HEMISPHERE_MAX_CV));
                     }
                 }
-            }
 
-            if (message == HEM_MIDI_CLOCK) { // Clock
-                ForEachChannel(ch)
-                {
-                    if (function[ch] == HEM_MIDI_CLOCK_OUT) {
-                        ClockOut(ch);
+                if (message == HEM_MIDI_NOTE_OFF) { // Note off
+                    if (data1 == first_note) first_note = -1;
+
+                    // Should this message go out on any channel?
+                    ForEachChannel(ch)
+                    {
+                        if (function[ch] == HEM_MIDI_GATE_OUT) {
+                            GateOut(ch, 0);
+                        }
                     }
                 }
-            }
 
-            log[log_index++] = {message, data1, data2};
-            if (log_index == 7) {
-                for (int i = 0; i < 6; i++)
-                {
-                    memcpy(&log[i], &log[i+1], sizeof(log[i+1]));
+                if (message == HEM_MIDI_CLOCK) { // Clock
+                    ForEachChannel(ch)
+                    {
+                        if (function[ch] == HEM_MIDI_CLOCK_OUT) {
+                            ClockOut(ch);
+                        }
+                    }
                 }
-                log_index--;
+
+                UpdateLog(message, data1, data2);
             }
         }
     }
@@ -172,6 +167,17 @@ private:
     
     MIDILogEntry log[7];
     int log_index;
+
+    void UpdateLog(int message, int data1, int data2) {
+        log[log_index++] = {message, data1, data2};
+        if (log_index == 7) {
+            for (int i = 0; i < 6; i++)
+            {
+                memcpy(&log[i], &log[i+1], sizeof(log[i+1]));
+            }
+            log_index--;
+        }
+    }
 
     void DrawMonitor() {
         if (OC::CORE::ticks - last_tick < 4000) {

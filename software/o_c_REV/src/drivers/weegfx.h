@@ -66,6 +66,7 @@ public:
   void drawVLine(coord_t x, coord_t y, coord_t h);
   void drawVLinePattern(coord_t x, coord_t y, coord_t h, uint8_t pattern);
 
+  void drawLine(coord_t x1, coord_t y1, coord_t x2, coord_t y2, uint8_t p);
   void drawLine(coord_t x1, coord_t y1, coord_t x2, coord_t y2);
 
   void drawBitmap8(coord_t x, coord_t y, coord_t w, const uint8_t *data);

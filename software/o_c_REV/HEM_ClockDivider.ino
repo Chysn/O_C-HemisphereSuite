@@ -32,6 +32,10 @@ public:
             }
         }
 
+        if (Clock(1)) { // Reset
+            ForEachChannel(ch) count[ch] = 0;
+        }
+
         if (Clock(0)) {
             // The input was clocked; set timing info
             cycle_time = this_tick - last_clock;
@@ -106,7 +110,7 @@ public:
 
 protected:
     void SetHelp() {
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
         help[HEMISPHERE_HELP_CVS] = "Div/Mult Ch1,Ch2";
         help[HEMISPHERE_HELP_OUTS] = "Clk A=Ch1 B=Ch2";
         help[HEMISPHERE_HELP_ENCODER] = "Div,Mult";
