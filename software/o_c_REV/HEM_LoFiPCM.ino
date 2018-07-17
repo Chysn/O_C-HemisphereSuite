@@ -43,12 +43,12 @@ public:
 
     void View() {
         gfxHeader(applet_name());
-        DrawTransportBar(15);
+        DrawTransportBar();
         DrawWaveform();
     }
 
     void ScreensaverView() {
-        DrawTransportBar(15);
+        DrawTransportBar();
         DrawWaveform();
     }
 
@@ -89,7 +89,7 @@ private:
     int countdown = HEM_LOFI_PCM_SPEED;
     int length = HEM_LOFI_PCM_BUFFER_SIZE;
     
-    void DrawTransportBar(int y) {
+    void DrawTransportBar() {
         DrawStop(3, 15);
         DrawPlay(26, 15);
         DrawRecord(50, 15);

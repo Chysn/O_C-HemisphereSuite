@@ -83,7 +83,7 @@ private:
     int selected = 0;
     char muted = 0; // Bitfield for muted steps; ((muted >> step) & 1) means muted
     int note[5]; // Sequence value (0 - 30)
-    int step = 0; // Current sequencer step
+    uint8_t step = 0; // Current sequencer step
 
     void Advance(int starting_point) {
         if (++step == 5) step = 0;

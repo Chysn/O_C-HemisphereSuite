@@ -13,15 +13,15 @@ public:
     }
 
     void Controller() {
-        int x = ProportionCV(In(0), 63);
-        int y = ProportionCV(In(1), 39);
+        int tx = ProportionCV(In(0), 63);
+        int ty = ProportionCV(In(1), 39);
 
-        if (Clock(0)) ProcessGameBoard(x, y);
+        if (Clock(0)) ProcessGameBoard(tx, ty);
 
-        if (Gate(1)) AddToBoard(x, y);
+        if (Gate(1)) AddToBoard(tx, ty);
 
-        int global_cv = constrain(global_count * weight, 0, HEMISPHERE_MAX_CV);
-        int local_cv = constrain(local_count * (2 * weight), 0, HEMISPHERE_MAX_CV);
+        int global_cv = constrain(global_density * weight, 0, HEMISPHERE_MAX_CV);
+        int local_cv = get_local_density(tx, ty);
         Out(0, global_cv);
         Out(1, local_cv);
     }
@@ -68,8 +68,7 @@ protected:
 private:
     uint32_t board[80]; // 64x40 board
     int weight; // Weight of each cell
-    int global_count; // Count of all live cells
-    int local_count; // Count of live cells in local area
+    int global_density; // Count of all live cells
  
     void DrawBoard() {
         for (int y = 0; y < 40; y++)
@@ -94,8 +93,7 @@ private:
 
     void ProcessGameBoard(int tx, int ty) {
         uint32_t next_gen[80];
-        global_count = 0;
-        local_count = 0;
+        global_density = 0;
         for (int y = 0; y < 40; y++)
         {
             next_gen[y * 2] = 0; // Clear next generation board
@@ -119,8 +117,7 @@ private:
                         xb -= 32;
                     }
                     next_gen[i] = next_gen[i] | (0x01 << xb);
-                    global_count++;
-                    if (GOL_ABS(x - tx) < 5 && GOL_ABS(y - ty) < 5) local_count++;
+                    global_density++;
                 }
             }
         }
@@ -141,7 +138,7 @@ private:
     }
     
     uint8_t ValueAtCell(int x, int y) {
-        // Edgeless operation
+        // Toroid operation
         if (x > 63) x -= 64;
         if (x < 0) x += 64;
         if (y > 39) y -= 40;
@@ -163,6 +160,18 @@ private:
             xb -= 32;
         }
         board[i] = board[i] | (0x01 << xb);
+    }
+
+    int get_local_density(int tx, int ty) {
+        int local_density = 0;
+        for (int x = -5; x <= 5; x++)
+        {
+            for (int y = -5; y <= 5; y++)
+            {
+                if (ValueAtCell(tx + x, ty + y)) local_density++;
+            }
+        }
+        return local_density;
     }
 };
 

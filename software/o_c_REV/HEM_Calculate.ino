@@ -49,7 +49,7 @@ public:
                     rand_clocked[ch] = 1;
                 }
                 else if (!rand_clocked[ch]) Out(ch, random(0, HEMISPHERE_MAX_CV));
-            } else {
+            } else if (idx < 5) {
                 int result = calc_fn[idx](In(0), In(1));
                 Out(ch, result);
             }

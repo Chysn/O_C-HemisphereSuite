@@ -4,14 +4,18 @@
 
 #define HEM_MIDI_NOTE_ON 1
 #define HEM_MIDI_NOTE_OFF 0
-#define HEM_MIDI_CLOCK 8
+#define HEM_MIDI_CC 3
+#define HEM_MIDI_AFTERTOUCH 5
+#define HEM_MIDI_PITCHBEND 6
 
 // The functions available for each output
 #define HEM_MIDI_NOTE_OUT 0
 #define HEM_MIDI_TRIG_OUT 1
 #define HEM_MIDI_GATE_OUT 2
 #define HEM_MIDI_VEL_OUT 3
-#define HEM_MIDI_CLOCK_OUT 4
+#define HEM_MIDI_CC_OUT 4
+#define HEM_MIDI_AT_OUT 5
+#define HEM_MIDI_PB_OUT 6
 
 struct MIDILogEntry {
     int message;
@@ -32,15 +36,14 @@ public:
         first_note = -1;
         channel = 0; // Default channel 1
 
-        const char * fn_name_list[] = {"Note#", "Trig", "Gate", "Veloc", "Clock"};
-        for (int i = 0; i < 5; i++) fn_name[i] = fn_name_list[i];
+        const char * fn_name_list[] = {"Note#", "Trig", "Gate", "Veloc", "Mod", "Aft", "Bend"};
+        for (int i = 0; i < 7; i++) fn_name[i] = fn_name_list[i];
 
         ForEachChannel(ch)
         {
             function[ch] = 0 + (ch * 2);
             Out(ch, 0);
         }
-
 
         log_index = 0;
     }
@@ -52,6 +55,7 @@ public:
                 int message = usbMIDI.getType();
                 int data1 = usbMIDI.getData1();
                 int data2 = usbMIDI.getData2();
+                bool log_this = false;
 
                 if (message == HEM_MIDI_NOTE_ON) { // Note on
                     if (first_note == -1) first_note = data1;
@@ -71,6 +75,8 @@ public:
                         if (function[ch] == HEM_MIDI_VEL_OUT)
                             Out(ch, Proportion(data2, 127, HEMISPHERE_MAX_CV));
                     }
+
+                    log_this = 1; // Log all MIDI notes. Other stuff is conditional.
                 }
 
                 if (message == HEM_MIDI_NOTE_OFF) { // Note off
@@ -81,20 +87,48 @@ public:
                     {
                         if (function[ch] == HEM_MIDI_GATE_OUT) {
                             GateOut(ch, 0);
+                            log_this = 1;
                         }
                     }
                 }
 
-                if (message == HEM_MIDI_CLOCK) { // Clock
+                if (message == HEM_MIDI_CC) { // Modulation wheel
                     ForEachChannel(ch)
                     {
-                        if (function[ch] == HEM_MIDI_CLOCK_OUT) {
-                            ClockOut(ch);
+                        if (function[ch] == HEM_MIDI_CC_OUT && data1 == 1) {
+                            int data = data2 << 8;
+                            Out(ch, Proportion(data, 0x7fff, HEMISPHERE_MAX_CV));
+                            log_this = 1;
+                        }
+                    }
+
+                }
+
+                if (message == HEM_MIDI_AFTERTOUCH) { // Aftertouch
+                    ForEachChannel(ch)
+                    {
+                        if (function[ch] == HEM_MIDI_AT_OUT) {
+                            int data = data2 << 8;
+                            Out(ch, Proportion(data, 0x7fff, HEMISPHERE_MAX_CV));
+                            log_this = 1;
+                        }
+                    }
+
+                    UpdateLog(message, data1, data2);
+                }
+
+                if (message == HEM_MIDI_PITCHBEND) { // Pitch Bend
+                    ForEachChannel(ch)
+                    {
+                        if (function[ch] == HEM_MIDI_PB_OUT) {
+                            int data = (data2 << 8) + data1 - 16384;
+                            Out(ch, Proportion(data, 0x7fff, HEMISPHERE_MAX_CV));
+                            log_this = 1;
                         }
                     }
                 }
 
-                UpdateLog(message, data1, data2);
+                if (log_this) UpdateLog(message, data1, data2);
             }
         }
     }
@@ -118,7 +152,7 @@ public:
         if (cursor == 0) channel = constrain(channel += direction, 0, 15);
         else {
             int ch = cursor - 1;
-            function[ch] = constrain(function[ch] += direction, 0, 4);
+            function[ch] = constrain(function[ch] += direction, 0, 6);
         }
     }
         
@@ -152,8 +186,10 @@ private:
 
     // Icons
     const uint8_t note[8] = {0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08};
+    const uint8_t mod[8]  = {0x30, 0x08, 0x04, 0x08, 0x10, 0x20, 0x10, 0x0c};
+    const uint8_t pb[8]   = {0x20, 0x70, 0x70, 0x3f, 0x20, 0x14, 0x0c, 0x1c};
+    const uint8_t at[8]   = {0x00, 0x00, 0x20, 0x42, 0xf5, 0x48, 0x20, 0x00};
     const uint8_t midi[8] = {0x3c, 0x42, 0x91, 0x45, 0x45, 0x91, 0x42, 0x3c};
-    const uint8_t clock[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
 
     // Settings
     int channel; // MIDI channel number
@@ -163,7 +199,7 @@ private:
     int cursor; // 0=MIDI channel, 1=A/C function, 2=B/D function
     int last_tick; // Tick of last received message
     int first_note; // First note received, for awaiting Note Off
-    const char* fn_name[5];
+    const char* fn_name[7];
     
     MIDILogEntry log[7];
     int log_index;
@@ -181,7 +217,7 @@ private:
 
     void DrawMonitor() {
         if (OC::CORE::ticks - last_tick < 4000) {
-            gfxBitmap(44, 1, 8, midi);
+            gfxBitmap(46, 1, 8, midi);
         }
     }
 
@@ -228,11 +264,22 @@ private:
             gfxPrint(10, y, log[index].data1);
         }
 
-        if (log[index].message == HEM_MIDI_CLOCK) {
-            gfxBitmap(1, y, 8, clock);
+        if (log[index].message == HEM_MIDI_CC) {
+            gfxBitmap(1, y, 8, mod);
+            gfxPrint(10, y, log[index].data2 << 8);
+        }
+
+        if (log[index].message == HEM_MIDI_AFTERTOUCH) {
+            gfxBitmap(1, y, 8, at);
+            gfxPrint(10, y, log[index].data2 << 8);
+        }
+
+        if (log[index].message == HEM_MIDI_PITCHBEND) {
+            int data = (log[index].data2 << 8) + log[index].data1 - 16384;
+            gfxBitmap(1, y, 8, pb);
+            gfxPrint(10, y, data);
         }
     }
-
 };
 
 
