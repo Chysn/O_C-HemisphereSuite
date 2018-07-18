@@ -191,12 +191,13 @@ private:
         int effective_attack = constrain(attack + attack_mod, 1, HEM_EG_MAX_VALUE);
         int total_stage_ticks = Proportion(effective_attack, HEM_EG_MAX_VALUE, HEM_EG_MAX_TICKS_AD);
         int ticks_remaining = total_stage_ticks - stage_ticks[ch];
-        simfloat amplitude_remaining = int2simfloat(HEMISPHERE_MAX_CV) - amplitude[ch];
-
+        if (effective_attack == 1) ticks_remaining = 0;
         if (ticks_remaining <= 0) { // End of attack; move to decay
             stage[ch] = HEM_EG_DECAY;
             stage_ticks[ch] = 0;
+            amplitude[ch] = int2simfloat(HEMISPHERE_MAX_CV);
         } else {
+            simfloat amplitude_remaining = int2simfloat(HEMISPHERE_MAX_CV) - amplitude[ch];
             simfloat increase = amplitude_remaining / ticks_remaining;
             amplitude[ch] += increase;
         }
@@ -206,10 +207,11 @@ private:
         int total_stage_ticks = Proportion(decay, HEM_EG_MAX_VALUE, HEM_EG_MAX_TICKS_AD);
         int ticks_remaining = total_stage_ticks - stage_ticks[ch];
         simfloat amplitude_remaining = amplitude[ch] - int2simfloat(Proportion(sustain, HEM_EG_MAX_VALUE, HEMISPHERE_MAX_CV));
-
+        if (sustain == 1) ticks_remaining = 0;
         if (ticks_remaining <= 0) { // End of decay; move to sustain
             stage[ch] = HEM_EG_SUSTAIN;
             stage_ticks[ch] = 0;
+            amplitude[ch] = int2simfloat(Proportion(sustain, HEM_EG_MAX_VALUE, HEMISPHERE_MAX_CV));
         } else {
             simfloat decrease = amplitude_remaining / ticks_remaining;
             amplitude[ch] -= decrease;
@@ -224,6 +226,7 @@ private:
         int effective_release = constrain(release + release_mod, 1, HEM_EG_MAX_VALUE);
         int total_stage_ticks = Proportion(effective_release, HEM_EG_MAX_VALUE, HEM_EG_MAX_TICKS_R);
         int ticks_remaining = total_stage_ticks - stage_ticks[ch];
+        if (effective_release == 1) ticks_remaining = 0;
         if (ticks_remaining <= 0 || amplitude[ch] <= 0) { // End of release; turn off envelope
             stage[ch] = HEM_EG_NO_STAGE;
             stage_ticks[ch] = 0;
