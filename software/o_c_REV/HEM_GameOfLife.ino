@@ -10,26 +10,38 @@ public:
     void Start() {
         for (int i = 0; i < 80; i++) board[i] = 0;
         weight = 30;
+        tx = 0;
+        ty = 0;
+
+        // Start off with a sweet-looking board
+        for (int x = 0; x < 6; x++)
+        {
+            AddToBoard(x + 26, x + 23);
+            AddToBoard(x + 33, (5 - x) + 23);
+        }
+        AddToBoard(32, 28);
     }
 
     void Controller() {
-        int tx = ProportionCV(In(0), 63);
-        int ty = ProportionCV(In(1), 39);
+        tx = ProportionCV(In(0), 63);
+        ty = ProportionCV(In(1), 39);
 
-        if (Clock(0)) ProcessGameBoard(tx, ty);
-
+        if (Clock(0)) {
+            ProcessGameBoard(tx, ty);
+        }
         if (Gate(1)) AddToBoard(tx, ty);
 
-        int global_cv = constrain(global_density * weight, 0, HEMISPHERE_MAX_CV);
-        int local_cv = get_local_density(tx, ty);
-        Out(0, global_cv);
-        Out(1, local_cv);
+        int global_density_cv = Proportion(global_density, 1200 - (weight * 10), HEMISPHERE_MAX_CV);
+        int local_density_cv = Proportion(local_density, 225, HEMISPHERE_MAX_CV);
+        Out(0, constrain(global_density_cv, 0, HEMISPHERE_MAX_CV));
+        Out(1, constrain(local_density_cv, 0, HEMISPHERE_MAX_CV));
     }
 
     void View() {
         gfxHeader(applet_name());
         DrawBoard();
         DrawIndicator();
+        DrawCrosshairs();
     }
 
     void ScreensaverView() {
@@ -42,7 +54,7 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        weight = constrain(weight += direction, 0, 40);
+        weight = constrain(weight += direction, 0, 100);
     }
         
     uint32_t OnDataRequest() {
@@ -69,6 +81,9 @@ private:
     uint32_t board[80]; // 64x40 board
     int weight; // Weight of each cell
     int global_density; // Count of all live cells
+    int local_density; // Count of cells in the vicinity of the Traveler
+    int tx;
+    int ty;
  
     void DrawBoard() {
         for (int y = 0; y < 40; y++)
@@ -91,14 +106,20 @@ private:
         }
     }
 
+    void DrawCrosshairs() {
+        gfxLine(tx, 23, tx, 63);
+        gfxLine(0, ty + 22, 62, ty + 22);
+    }
+
     void ProcessGameBoard(int tx, int ty) {
         uint32_t next_gen[80];
         global_density = 0;
+        local_density = 0;
         for (int y = 0; y < 40; y++)
         {
             next_gen[y * 2] = 0; // Clear next generation board
             next_gen[y * 2 + 1] = 0;
-            for (int x= 0; x < 64; x++)
+            for (int x = 0; x < 64; x++)
             {
                 bool live = ValueAtCell(x, y);
                 int ln = CountLiveNeighborsAt(x, y);
@@ -109,7 +130,7 @@ private:
 
                 // 3: Any live cell with two or three live neighbours lives, unchanged, to the next generation.
                 // 4: Any dead cell with exactly three live neighbours will come to life.
-                if ((ln == 2 && live) || (ln == 3 && !live)) {
+                if (((ln == 2 || ln == 3) && live) || (ln == 3 && !live)) {
                     int i = y * 2;
                     int xb = x;
                     if (x > 31) {
@@ -118,6 +139,8 @@ private:
                     }
                     next_gen[i] = next_gen[i] | (0x01 << xb);
                     global_density++;
+
+                    if (GOL_ABS(tx - x) < 8 && GOL_ABS(ty - y) < 8) local_density++;
                 }
             }
         }
@@ -137,7 +160,7 @@ private:
         return count;
     }
     
-    uint8_t ValueAtCell(int x, int y) {
+    bool ValueAtCell(int x, int y) {
         // Toroid operation
         if (x > 63) x -= 64;
         if (x < 0) x += 64;
@@ -160,18 +183,6 @@ private:
             xb -= 32;
         }
         board[i] = board[i] | (0x01 << xb);
-    }
-
-    int get_local_density(int tx, int ty) {
-        int local_density = 0;
-        for (int x = -5; x <= 5; x++)
-        {
-            for (int y = -5; y <= 5; y++)
-            {
-                if (ValueAtCell(tx + x, ty + y)) local_density++;
-            }
-        }
-        return local_density;
     }
 };
 

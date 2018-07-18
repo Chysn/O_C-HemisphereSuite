@@ -21,9 +21,9 @@ public:
         if (Clock(0)) {
             ForEachChannel(ch)
             {
+                if ((pattern[ch] >> step[ch]) & 0x01) ClockOut(ch);
                 step[ch]++;
                 if (step[ch] > end_step[ch]) step[ch] = 0;
-                if ((pattern[ch] >> step[ch]) & 0x01) ClockOut(ch);
             }
 
         }

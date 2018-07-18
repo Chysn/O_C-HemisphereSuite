@@ -35,6 +35,10 @@ public:
 
             brush = 0;
             Out(0, accent[step]);
+
+            int threshold = (In(1) + HEMISPHERE_MAX_CV) / 2;
+            if (accent[step] > threshold) ClockOut(1);
+
             if (++step >= length) step = 0;
         } else {
             Out(0, accent[step]);
@@ -83,8 +87,8 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Brush";
-        help[HEMISPHERE_HELP_CVS]      = "";
-        help[HEMISPHERE_HELP_OUTS]     = "A=Output";
+        help[HEMISPHERE_HELP_CVS]      = "2=Trigger Thresh";
+        help[HEMISPHERE_HELP_OUTS]     = "A=Output B=Trigger";
         help[HEMISPHERE_HELP_ENCODER]  = "Comp/Decomp/Length";
         //                               "------------------" <-- Size Guide
     }
