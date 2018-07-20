@@ -6,19 +6,29 @@ public:
     }
 
     void Start() {
-        last_tick = OC::CORE::ticks;
+        last_bpm_tick = OC::CORE::ticks;
         bpm = 0;
         sample_ticks = 320;
         freeze = 0;
+        last_scope_tick = 0;
     }
 
     void Controller() {
         if (Clock(0)) {
             int this_tick = OC::CORE::ticks;
-            int time = this_tick - last_tick;
-            last_tick = this_tick;
+            int time = this_tick - last_bpm_tick;
+            last_bpm_tick = this_tick;
             bpm = 1000000 / time;
             if (bpm > 9999) bpm = 9999;
+        }
+
+        if (Clock(1)) {
+            if (last_scope_tick) {
+                int cycle_ticks = OC::CORE::ticks - last_scope_tick;
+                sample_ticks = cycle_ticks / 64;
+                sample_ticks = constrain(sample_ticks, 2, 64000);
+            }
+            last_scope_tick = OC::CORE::ticks;
         }
 
         if (!freeze) {
@@ -57,7 +67,7 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        sample_ticks = constrain(sample_ticks += (direction * 10), 64, 64000);
+        sample_ticks = constrain(sample_ticks += (direction * 10), 2, 64000);
         last_encoder_move = OC::CORE::ticks;
     }
         
@@ -76,7 +86,7 @@ public:
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock (BPM)";
+        help[HEMISPHERE_HELP_DIGITALS] = "Clk 1=BPM 2=Cycle1";
         help[HEMISPHERE_HELP_CVS]      = "1=CV1 2=CV2";
         help[HEMISPHERE_HELP_OUTS]     = "A=CV1 B=CV2";
         help[HEMISPHERE_HELP_ENCODER]  = "T=SmplRate P=Freez";
@@ -85,7 +95,7 @@ protected:
     
 private:
     // BPM Calcultion
-    int last_tick;
+    int last_bpm_tick;
     int bpm;
 
     // CV monitor
@@ -98,6 +108,7 @@ private:
     int sample_countdown; // Last time a sample was taken
     int sample_num; // Current sample number at the start
     int last_encoder_move; // The last the the sample_ticks value was changed
+    int last_scope_tick; // Used to auto-calculate sample countdown
 
     // Icons
     const uint8_t clock[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
@@ -108,7 +119,7 @@ private:
         gfxPrint(bpm);
         gfxLine(0, 24, 63, 24);
 
-        if (OC::CORE::ticks - last_tick < 1666) gfxBitmap(1, 15, 8, clock);
+        if (OC::CORE::ticks - last_bpm_tick < 1666) gfxBitmap(1, 15, 8, clock);
     }
 
     void DrawInput1() {
