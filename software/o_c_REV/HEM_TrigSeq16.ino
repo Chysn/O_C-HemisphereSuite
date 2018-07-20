@@ -99,6 +99,9 @@ private:
     int cursor; // 0=ch1 low, 1=ch1 hi, 2=ch2 low, 3=ch3 hi, 4=end_step
     
     void DrawDisplay() {
+        // Draw line from step 8 to step 9
+        if (end_step > 7) gfxDottedLine(17, 60, 35, 17, 2);
+
         bool stop = 0; // Stop displaying when end_step is reached
         ForEachChannel(ch)
         {

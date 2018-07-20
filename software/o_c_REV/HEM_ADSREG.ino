@@ -110,6 +110,8 @@ public:
         decay = Unpack(data, PackLocation {8,8});
         sustain = Unpack(data, PackLocation {16,8});
         release = Unpack(data, PackLocation {24,8});
+
+        if (attack == 0) Start(); // If empty data, initialize
     }
 
 protected:

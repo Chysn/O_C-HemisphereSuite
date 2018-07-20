@@ -170,7 +170,7 @@ UiMode Ui::Splashscreen(bool &reset_settings) {
     #ifdef BUCHLA_cOC
       graphics.print("NLM card O_C");
     #else
-      graphics.print("Ornaments & Crimes");
+      graphics.print("Hemisphere Suite");
     #endif
     weegfx::coord_t y = menu::CalcLineY(0);
 

@@ -7,6 +7,7 @@
 #include "braids_quantizer.h"
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
+#include "bjorklund.h"
 
 class TM : public HemisphereApplet {
 public:

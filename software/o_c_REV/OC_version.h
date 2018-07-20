@@ -3,6 +3,6 @@
 //
 // GENERATED FILE, DO NOT EDIT
 //
-#define OC_VERSION "Hemisphere Suite .1"
+#define OC_VERSION "v1.0 (OC1.3.4)"
 #endif
   

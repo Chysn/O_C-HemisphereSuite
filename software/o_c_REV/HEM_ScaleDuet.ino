@@ -53,6 +53,7 @@ public:
     }
 
     void OnEncoderMove(int direction) {
+        if (cursor == 0 && direction == -1) cursor = 1;
         cursor = constrain(cursor += direction, 0, 23);
         ResetCursor();
     }
@@ -67,6 +68,8 @@ public:
     void OnDataReceive(uint32_t data) {
         mask[0] = Unpack(data, PackLocation {0,12});
         mask[1] = Unpack(data, PackLocation {12,12});
+
+        if (mask[0] == 0 && mask[1] == 0) Start(); // If empty data, initialize
     }
 
 protected:
@@ -82,7 +85,7 @@ protected:
 private:
     braids::Quantizer quantizer;
     uint16_t mask[2];
-    uint16_t cursor; // 0-11=Scale 1; 12-23=Scale 2
+    uint8_t cursor; // 0-11=Scale 1; 12-23=Scale 2
     uint8_t last_scale; // The most-recently-used scale (used to set the mask when necessary)
 
     void DrawKeyboard() {
@@ -115,9 +118,12 @@ private:
         uint8_t p[12] = {0, 1,  0,  1,  0,  0,  1,  0,  1,  0,  1,  0};
         for (uint8_t i = 0; i < 12; i++)
         {
-            if ((mask[scale] >> i) & 0x01) gfxInvert(x[i], (p[i] ? 33 : 49), 4 - p[i], 4 - p[i]);
+            if ((mask[scale] >> i) & 0x01) gfxInvert(x[i], (p[i] ? 33 : 47), 4 - p[i], 4 - p[i]);
             if (i == (cursor - (scale * 12))) gfxCursor(x[i], 57, 4);
         }
+
+        // If C is selcted, display a selector on the higher C, too
+        if (mask[scale] & 0x01) gfxInvert(58, 47, 3, 4);
     }
 };
 

@@ -1,3 +1,9 @@
+#include "OC_DAC.h"
+#include "OC_digital_inputs.h"
+#include "OC_visualfx.h"
+#include "OC_patterns.h"
+namespace menu = OC::menu;
+
 #include "hemisphere_config.h"
 #include "HemisphereApplet.h"
 
@@ -202,9 +208,9 @@ private:
 
 SETTINGS_DECLARE(HemisphereManager, HEMISPHERE_SETTING_LAST) {
     {0, 0, 255, "Applet ID L", NULL, settings::STORAGE_TYPE_U8},
-    {1, 0, 255, "Applet ID R", NULL, settings::STORAGE_TYPE_U8},
-    {0x00003c3c, 0, 2147483647, "Data L", NULL, settings::STORAGE_TYPE_U32},
-    {0x0f2e0f0a, 0, 2147483647, "Data R", NULL, settings::STORAGE_TYPE_U32},
+    {0, 0, 255, "Applet ID R", NULL, settings::STORAGE_TYPE_U8},
+    {0, 0, 2147483647, "Data R", NULL, settings::STORAGE_TYPE_U32},
+    {0, 0, 2147483647, "Data L", NULL, settings::STORAGE_TYPE_U32},
 };
 
 
