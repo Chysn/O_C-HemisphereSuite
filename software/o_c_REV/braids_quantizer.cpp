@@ -90,6 +90,7 @@ int32_t Quantizer::Process(int32_t pitch, int32_t root, int32_t transpose) {
     q += transpose;
     if (q < 1) q = 1;
     else if (q > 126) q = 126;
+    note_number_ = (uint8_t)q;
     codeword_ = codebook_[q];
     transpose_ = transpose;
     pitch = codeword_;
@@ -110,6 +111,10 @@ int32_t Quantizer::Lookup(int32_t index) const {
     return codebook_[127];
   else
     return codebook_[index];
+}
+
+int32_t Quantizer::NoteNumber() {
+    return note_number_;
 }
 
 }  // namespace braids

@@ -1,3 +1,5 @@
+// See https://www.pjrc.com/teensy/td_midi.html
+
 #include "braids_quantizer.h"
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
@@ -27,7 +29,7 @@ class hMIDIIn : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "MIDI In";
+        return "MIDIIn";
     }
 
     void Start() {

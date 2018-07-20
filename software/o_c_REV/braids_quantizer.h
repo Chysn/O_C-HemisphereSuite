@@ -66,6 +66,9 @@ class Quantizer {
   // HACK for TM
   int32_t Lookup(int32_t index) const;
 
+  // Reverse of Lookup; gets last codeword used (for MIDI Out, etc.)
+  int32_t NoteNumber();
+
  private:
   bool enabled_;
   int16_t enabled_notes_[16];
@@ -74,6 +77,8 @@ class Quantizer {
   int32_t transpose_;
   int32_t previous_boundary_;
   int32_t next_boundary_;
+  uint8_t note_number_;
+
   inline void Configure(const int16_t* notes, int16_t scale_span, size_t num_notes, uint16_t mask)
   {  
     enabled_ = notes != NULL && num_notes != 0 && scale_span != 0 && (mask & ~(0xffff<<num_notes));
