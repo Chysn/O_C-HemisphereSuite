@@ -10,7 +10,7 @@
 #define HEM_MIDI_PB_IN 2
 #define HEM_MIDI_VEL_IN 3
 
-#define HEM_MIDI_GATE_LAG 24;
+#define HEM_MIDI_GATE_LAG 60;
 
 class hMIDIOut : public HemisphereApplet {
 public:
@@ -68,9 +68,34 @@ public:
         }
 
         gated = read_gate;
-        //last_pitch = In(0);
 
         // Handle other messages
+        if (function != HEM_MIDI_VEL_IN) {
+            int this_cv = In(1);
+            if (cv_has_changed(this_cv, last_cv)) {
+                last_cv = this_cv;
+
+                // Modulation wheel
+                if (function == HEM_MIDI_CC_IN) {
+                    usbMIDI.sendControlChange(1, ProportionCV(this_cv, 127), channel + 1);
+                    usbMIDI.send_now();
+                }
+
+                // Aftertouch
+                if (function == HEM_MIDI_AT_IN) {
+                    usbMIDI.sendAfterTouch(ProportionCV(this_cv, 127), channel + 1);
+                    usbMIDI.send_now();
+                }
+
+                // Pitch Bend
+                if (function == HEM_MIDI_PB_IN) {
+                    uint16_t bend = ProportionCV(this_cv + (HEMISPHERE_MAX_CV / 2), 16383);
+                    bend = constrain(bend, 0, 16383);
+                    usbMIDI.sendPitchBend(bend, channel + 1);
+                    usbMIDI.send_now();
+                }
+            }
+        }
     }
 
     void View() {
@@ -135,6 +160,7 @@ private:
     bool gated; // The most recent gate status
     int last_tick; // Most recent MIDI message sent
     int gate_lag_countdown;
+    int last_cv; // For checking for changes
     const char* fn_name[4];
 
     void DrawMonitor() {
@@ -160,6 +186,11 @@ private:
         gfxPrint(10, 55, last_note);
         gfxPrint(40, 55, last_velocity);
 
+    }
+
+    bool cv_has_changed(int this_cv, int last_cv) {
+        int diff = this_cv - last_cv;
+        return (diff > 50 || diff < -50) ? 1 : 0;
     }
 };
 
