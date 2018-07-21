@@ -235,7 +235,9 @@ size_t HEMISPHERE_save(void *storage) {
 }
 
 size_t HEMISPHERE_restore(const void *storage) {
-    return manager.Restore(storage);
+    size_t s = manager.Restore(storage);
+    manager.Resume();
+    return s;
 }
 
 void HEMISPHERE_isr() {
@@ -243,9 +245,6 @@ void HEMISPHERE_isr() {
 }
 
 void HEMISPHERE_handleAppEvent(OC::AppEvent event) {
-    if (event ==  OC::APP_EVENT_RESUME) {
-        manager.Resume();
-    }
 }
 
 void HEMISPHERE_loop() {} // Essentially deprecated in favor of ISR

@@ -127,17 +127,17 @@ private:
     void DrawSelector() {
         ForEachChannel(ch)
         {
-            int y = 16 + (ch * 25);
+            int y = 15 + (ch * 25);
             if (ch == selected) {
-                gfxCursor(0, y + 9, 63);
+                gfxCursor(0, y + 8, 63);
             }
             if (div[ch] > 0) {
-                gfxPrint(2, y, "1/");
+                gfxPrint(1, y, "1/");
                 gfxPrint(div[ch]);
                 gfxPrint(" Div");
             }
             if (div[ch] < 0) {
-                gfxPrint(2, y, -div[ch]);
+                gfxPrint(1, y, -div[ch]);
                 gfxPrint("/1");
                 gfxPrint(" Mult");
             }

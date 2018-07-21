@@ -5,85 +5,69 @@ public:
         return "Brancher";
     }
 
-	/* Run when the Applet is selected */
     void Start() {
-    	    prob = 50;
-    	    last_index = 0;
+    	    p = 50;
+    	    choice = 0;
     }
 
-	/* Run during the interrupt service routine */
     void Controller() {
-        ForEachChannel(ch) choices[ch] = In(ch);
-    	    if (Clock(0)) {
-    	        last_index = (random(1, 100) > prob) ? 0 : 1;
-    	    }
-	    Out(0, choices[last_index]);
+        if (Clock(0)) {
+            int prob = p + Proportion(DetentedIn(0), HEMISPHERE_MAX_CV, 100);
+            choice = (random(1, 100) <= prob) ? 0 : 1;
+        }
+        GateOut(choice, Gate(0));
     }
 
-	/* Draw the screen */
     void View() {
         gfxHeader("Brancher");
         DrawInterface();
     }
 
-	/* Draw the screensaver */
     void ScreensaverView() {
         DrawInterface();
     }
 
-    /* On button press, flip the last index to the opposite */
     void OnButtonPress() {
-    		last_index = 1 - last_index;
+    		choice = 1 - choice;
     }
 
-    /* Change the probability */
+    /* Change the pability */
     void OnEncoderMove(int direction) {
-        prob += (direction * 5);
-        if (prob > 100) prob = 100;
-        if (prob < 0) prob = 0;
+        p = constrain(p += direction, 0, 100);
     }
 
     uint32_t OnDataRequest() {
         uint32_t data = 0;
-        Pack(data, PackLocation {0,8}, prob);
+        Pack(data, PackLocation {0,7}, p);
         return data;
     }
 
     void OnDataReceive(uint32_t data) {
-        prob = Unpack(data, PackLocation {0,8});
+        p = Unpack(data, PackLocation {0,7});
     }
 
 protected:
     void SetHelp() {
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock, choose CV";
-        help[HEMISPHERE_HELP_CVS] = "1,2=CV";
-        help[HEMISPHERE_HELP_OUTS] = "A=CV based on p";
-        help[HEMISPHERE_HELP_ENCODER] = "Probability";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock/Gate";
+        help[HEMISPHERE_HELP_CVS] = "1=p Mod";
+        help[HEMISPHERE_HELP_OUTS] = "A,B=Clock/Gate";
+        help[HEMISPHERE_HELP_ENCODER] = "Set p";
     }
 
 private:
-	int prob;
-	int choices[2];
-	int last_index;
+	int p;
+	int choice;
 
 	void DrawInterface() {
         // Show the probability in the middle
-        gfxPrint(26, 25, "p=");
-        gfxPrint(23, 33, prob);
-        gfxPrint("%");
+        gfxPrint(1, 15, "p=");
+        gfxPrint(15, 15, p);
+        gfxPrint(33, 15, hemisphere ? "% C" : "% A");
+        gfxCursor(15, 23, 18);
 
-        // Show the choices along the right side,
-        // with the chosen one
-        ForEachChannel(ch)
-        {
-            int height = ProportionCV(choices[ch], 48);
-            int y = (52 - height) / 2; // To put it in the center
-            if (ch == last_index) {
-                gfxRect(4 + (46 * ch), 12 + y, 10, height);
-            } else {
-                gfxFrame(4 + (46 * ch), 12 + y, 10, height);
-            }
-        }
+        gfxPrint(12, 45, hemisphere ? "C" : "A");
+        gfxPrint(44, 45, hemisphere ? "D" : "B");
+        gfxFrame(9 + (32 * choice), 42, 13, 13);
 	}
 };
 

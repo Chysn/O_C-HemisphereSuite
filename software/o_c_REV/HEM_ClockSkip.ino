@@ -17,7 +17,7 @@ public:
         ForEachChannel(ch)
         {
             if (Clock(ch)) {
-                int prob = p[ch] + Proportion(DetentedIn(ch), HEMISPHERE_MAX_CV, 50);
+                int prob = p[ch] + Proportion(DetentedIn(ch), HEMISPHERE_MAX_CV, 100);
                 if (random(1, 100) <= prob) {
                     ClockOut(ch);
                     trigger_countdown[ch] = 1667;
