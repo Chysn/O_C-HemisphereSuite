@@ -117,7 +117,7 @@ public:
     void DrawNotifications() {
         // CV Forwarding Icon
         if (master_clock_bus) {
-            graphics.drawBitmap8(56, 1, 8, fwd_icon);
+            graphics.drawBitmap8(56, 1, 8, clock_icon);
         }
     }
 
@@ -294,6 +294,7 @@ protected:
     const char* help[4];
     virtual void SetHelp();
     bool screensaver_on; // Is the screensaver active?
+    const uint8_t clock_icon[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
 
     //////////////// Calculation methods
     ////////////////////////////////////////////////////////////////////////////////
@@ -353,5 +354,4 @@ private:
     bool applet_started; // Allow the app to maintain state during switching
     int last_view_tick; // Tick number of the most recent view
     int help_active;
-    const uint8_t fwd_icon[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
 };
