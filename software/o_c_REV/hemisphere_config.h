@@ -1,4 +1,4 @@
-#define HEMISPHERE_AVAILABLE_APPLETS 26
+#define HEMISPHERE_AVAILABLE_APPLETS 27
 #define HEMISPHERE_APPLETS { \
     DECLARE_APPLET( 8, ADSREG), \
     DECLARE_APPLET(26, ScaleDuet), \
@@ -12,6 +12,7 @@
     DECLARE_APPLET( 3, Switch), \
     DECLARE_APPLET( 4, Brancher), \
     DECLARE_APPLET(28, ClockSkip), \
+    DECLARE_APPLET(29, GateDelay), \
     DECLARE_APPLET(17, GatedVCA), \
     DECLARE_APPLET(18, TM), \
     DECLARE_APPLET(14, Sequence5), \

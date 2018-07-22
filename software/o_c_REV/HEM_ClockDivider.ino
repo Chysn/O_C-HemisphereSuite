@@ -16,7 +16,7 @@ public:
         }
         last_clock = OC::CORE::ticks;
         cycle_time = 0;
-        selected = 0;
+        cursor = 0;
     }
 
     void Controller() {
@@ -83,17 +83,17 @@ public:
     }
 
     void OnButtonPress() {
-        selected = 1 - selected;
+        cursor = 1 - cursor;
         ResetCursor();
     }
 
     void OnEncoderMove(int direction) {
-        div[selected] += direction;
-        if (div[selected] > HEM_CLOCKDIV_MAX) div[selected] = HEM_CLOCKDIV_MAX;
-        if (div[selected] < -HEM_CLOCKDIV_MAX) div[selected] = -HEM_CLOCKDIV_MAX;
-        if (div[selected] == 0) div[selected] = direction > 0 ? 1 : -2; // No such thing as 1/1 Multiple
-        if (div[selected] == -1) div[selected] = 1; // Must be moving up to hit -1 (see previous line)
-        count[selected] = 0; // Start the count over so things aren't missed
+        div[cursor] += direction;
+        if (div[cursor] > HEM_CLOCKDIV_MAX) div[cursor] = HEM_CLOCKDIV_MAX;
+        if (div[cursor] < -HEM_CLOCKDIV_MAX) div[cursor] = -HEM_CLOCKDIV_MAX;
+        if (div[cursor] == 0) div[cursor] = direction > 0 ? 1 : -2; // No such thing as 1/1 Multiple
+        if (div[cursor] == -1) div[cursor] = 1; // Must be moving up to hit -1 (see previous line)
+        count[cursor] = 0; // Start the count over so things aren't missed
     }
 
     uint32_t OnDataRequest() {
@@ -121,16 +121,15 @@ private:
     int count[2]; // Number of clocks since last output (for clock divide)
     int next_clock[2]; // Tick number for the next output (for clock multiply)
     int last_clock; // The tick number of the last received clock
-    int selected; // Which output is currently being edited
+    int cursor; // Which output is currently being edited
     int cycle_time; // Cycle time between the last two clock inputs
 
     void DrawSelector() {
         ForEachChannel(ch)
         {
             int y = 15 + (ch * 25);
-            if (ch == selected) {
-                gfxCursor(0, y + 8, 63);
-            }
+            if (ch == cursor) gfxCursor(0, y + 8, 63);
+
             if (div[ch] > 0) {
                 gfxPrint(1, y, "1/");
                 gfxPrint(div[ch]);
