@@ -17,10 +17,15 @@ public:
         quantizer.Init();
         quantizer.Configure(OC::Scales::GetScale(5), mask[0]);
         last_scale = 0;
+        adc_lag_countdown = 0;
     }
 
     void Controller() {
-        if (Clock(0)) {
+        // Prepare to read pitch and send gate in the near future; there's a slight
+        // lag between when a gate is read and when the CV can be read.
+        if (Clock(0)) StartADCLag();
+
+        if (EndOfADCLag()) {
             uint8_t scale = Gate(1);
             if (scale != last_scale) {
                 quantizer.Configure(OC::Scales::GetScale(5), mask[scale]);
@@ -87,15 +92,16 @@ private:
     uint16_t mask[2];
     uint8_t cursor; // 0-11=Scale 1; 12-23=Scale 2
     uint8_t last_scale; // The most-recently-used scale (used to set the mask when necessary)
+    int adc_lag_countdown;
 
     void DrawKeyboard() {
         // Border
-        gfxFrame(0, 23, 63, 32);
+        gfxFrame(0, 27, 63, 32);
 
         // White keys
         for (uint8_t x = 0; x < 8; x++)
         {
-            gfxLine(x * 8, 23, x * 8, 54);
+            gfxLine(x * 8, 27, x * 8, 58);
         }
 
         // Black keys
@@ -103,7 +109,7 @@ private:
         {
             if (i != 2) { // Skip the third position
                 uint8_t x = (i * 8) + 6;
-                gfxRect(x, 23, 5, 16);
+                gfxRect(x, 27, 5, 16);
             }
         }
 
@@ -118,12 +124,12 @@ private:
         uint8_t p[12] = {0, 1,  0,  1,  0,  0,  1,  0,  1,  0,  1,  0};
         for (uint8_t i = 0; i < 12; i++)
         {
-            if ((mask[scale] >> i) & 0x01) gfxInvert(x[i], (p[i] ? 33 : 47), 4 - p[i], 4 - p[i]);
-            if (i == (cursor - (scale * 12))) gfxCursor(x[i], 57, 4);
+            if ((mask[scale] >> i) & 0x01) gfxInvert(x[i], (p[i] ? 37 : 51), 4 - p[i], 4 - p[i]);
+            if (i == (cursor - (scale * 12))) gfxCursor(x[i] - 1, p[i] ? 25 : 60, 6);
         }
 
         // If C is selcted, display a selector on the higher C, too
-        if (mask[scale] & 0x01) gfxInvert(58, 47, 3, 4);
+        if (mask[scale] & 0x01) gfxInvert(58, 51, 3, 4);
     }
 };
 

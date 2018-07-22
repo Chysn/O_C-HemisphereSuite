@@ -67,7 +67,7 @@ class Quantizer {
   int32_t Lookup(int32_t index) const;
 
   // Reverse of Lookup; gets last codeword used (for MIDI Out, etc.)
-  int32_t NoteNumber();
+  int8_t NoteNumber();
 
  private:
   bool enabled_;

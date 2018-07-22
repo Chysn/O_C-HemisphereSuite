@@ -10,7 +10,7 @@ public:
     }
 
     void Start() {
-        selected = 0;
+        cursor = 0;
         ForEachChannel(ch)
         {
             quantizer[ch].Init();
@@ -19,14 +19,18 @@ public:
             last_note[ch] = 0;
             continuous[ch] = 1;
         }
+        adc_lag_countdown = 0;
     }
 
     void Controller() {
         ForEachChannel(ch)
         {
-            bool clocked = Clock(ch);
-            if (continuous[ch] || clocked) {
-                if (clocked) continuous[ch] = 0; // Turn off continuous mode if there's a clock
+            if (Clock(ch)) {
+                continuous[ch] = 0; // Turn off continuous mode if there's a clock
+                StartADCLag(ch);
+            }
+
+            if (continuous[ch] || EndOfADCLag(ch)) {
                 int32_t pitch = In(ch);
                 int32_t quantized = quantizer[ch].Process(pitch, 0, 0);
                 Out(ch, quantized);
@@ -47,16 +51,16 @@ public:
     }
 
     void OnButtonPress() {
-        selected = 1 - selected;
+        cursor = 1 - cursor;
         ResetCursor();
     }
 
     void OnEncoderMove(int direction) {
-        scale[selected] += direction;
-        if (scale[selected] == OC::Scales::NUM_SCALES) scale[selected] = 0;
-        if (scale[selected] < 0) scale[selected] = OC::Scales::NUM_SCALES - 1;
-        quantizer[selected].Configure(OC::Scales::GetScale(scale[selected]), 0xffff);
-        continuous[selected] = 1; // Re-enable continuous mode when scale is changed
+        scale[cursor] += direction;
+        if (scale[cursor] == OC::Scales::NUM_SCALES) scale[cursor] = 0;
+        if (scale[cursor] < 0) scale[cursor] = OC::Scales::NUM_SCALES - 1;
+        quantizer[cursor].Configure(OC::Scales::GetScale(scale[cursor]), 0xffff);
+        continuous[cursor] = 1; // Re-enable continuous mode when scale is changed
     }
 
     uint32_t OnDataRequest() {
@@ -85,7 +89,8 @@ private:
     int scale[2]; // Scale per channel
     int last_note[2]; // Last quantized note
     bool continuous[2]; // Each channel starts as continuous and becomes clocked when a clock is received
-    int selected;
+    int cursor;
+    int adc_lag_countdown;
     const uint8_t notes[2][8] = {{0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08},
                                  {0xc0, 0xa0, 0xa0, 0xa0, 0x7f, 0x00, 0x00, 0x00}};
     const uint8_t clock[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
@@ -98,7 +103,7 @@ private:
             if (!continuous[ch]) gfxBitmap(10 + (31 * ch), 15,  8, clock); // Display icon if clocked
 
             gfxPrint(0 + (31 * ch), 25, OC::scale_names_short[scale[ch]]);
-            if (ch == selected) gfxCursor(0 + (31 * ch), 33, 30);
+            if (ch == cursor) gfxCursor(0 + (31 * ch), 33, 30);
 
             // Little notes
             gfxBitmap(ProportionCV(last_note[ch], 54), 41 + (10 * ch), 8, notes[ch]);

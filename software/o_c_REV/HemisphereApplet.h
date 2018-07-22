@@ -8,6 +8,7 @@
 #define HEMISPHERE_CLOCK_TICKS 100
 #define HEMISPHERE_CURSOR_TICKS 12000
 #define HEMISPHERE_SCREEN_BLANK_TICKS 30000000
+#define HEMISPHERE_ADC_LAG 96;
 
 // Codes for help system sections
 #define HEMISPHERE_HELP_DIGITALS 0
@@ -51,6 +52,7 @@ public:
             clock_countdown[ch]  = 0;
             inputs[ch] = 0;
             outputs[ch] = 0;
+            adc_lag_countdown[ch] = 0;
         }
         help_active = 0;
         cursor_countdown = HEMISPHERE_CURSOR_TICKS;
@@ -341,6 +343,27 @@ protected:
         return (data >> p.location) & mask;
     }
 
+    /* ADC Lag: There is a small delay between when a digital input can be read and when an ADC can be
+     * read. The ADC value lags behind a bit in time. So StartADCLag() and EndADCLag() are used to
+     * determine when an ADC can be read. The pattern goes like this
+     *
+     * if (Clock(ch)) StartADCLag(ch);
+     *
+     * if (EndOfADCLog(ch)) {
+     *     int cv = In(ch);
+     *     // etc...
+     * }
+     */
+    void StartADCLag(int ch) {
+        adc_lag_countdown[ch] = HEMISPHERE_ADC_LAG;
+    }
+    void StartADCLag() {StartADCLag(0);}
+
+    bool EndOfADCLag(int ch) {
+        return (--adc_lag_countdown[ch] == 0);
+    }
+    bool EndOfADCLag() {return EndOfADCLag(0);}
+
 
 private:
     int gfx_offset; // Graphics offset, based on the side
@@ -350,6 +373,7 @@ private:
     int last_clock[2]; // Tick number of the last clock observed by the child class
     int clock_countdown[2];
     int cursor_countdown;
+    int adc_lag_countdown[2]; // Time between a clock event and an ADC read event
     bool master_clock_bus; // Clock forwarding was on during the last ISR cycle
     bool applet_started; // Allow the app to maintain state during switching
     int last_view_tick; // Tick number of the most recent view

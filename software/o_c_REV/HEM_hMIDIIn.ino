@@ -258,7 +258,7 @@ private:
         if (log[index].message == HEM_MIDI_NOTE_ON) {
             gfxBitmap(1, y, 8, note);
             gfxPrint(10, y, log[index].data1);
-            gfxPrint(30, y, log[index].data2);
+            gfxPrint(40, y, log[index].data2);
         }
 
         if (log[index].message == HEM_MIDI_NOTE_OFF) {

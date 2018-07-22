@@ -10,8 +10,6 @@
 #define HEM_MIDI_PB_IN 2
 #define HEM_MIDI_VEL_IN 3
 
-#define HEM_MIDI_GATE_LAG 60;
-
 class hMIDIOut : public HemisphereApplet {
 public:
 
@@ -26,6 +24,7 @@ public:
         last_channel = 0;
         function = 0;
         gated = 0;
+        transpose = 0;
 
         const char * fn_name_list[] = {"Mod", "Aft", "Bend", "Veloc"};
         for (int i = 0; i < 4; i++) fn_name[i] = fn_name_list[i];
@@ -35,19 +34,18 @@ public:
         bool read_gate = Gate(0);
 
         // Handle MIDI notes
-        if (read_gate && !gated) {
-            // Prepare to read pitch and send gate in the near future; there's a slight
-            // lag between when a gate is read and when the CV can be read.
-            gate_lag_countdown = HEM_MIDI_GATE_LAG;
-        }
 
-        if (--gate_lag_countdown == 0) { // A new note on message should be sent
+        // Prepare to read pitch and send gate in the near future; there's a slight
+        // lag between when a gate is read and when the CV can be read.
+        if (read_gate && !gated) StartADCLag();
+
+        if (EndOfADCLag()) { // A new note on message should be sent
             // Get a new reading when gated
             ADC_CHANNEL channel = (ADC_CHANNEL)(hemisphere * 2);
             uint32_t pitch = OC::ADC::raw_pitch_value(channel);
             quantizer.Process(pitch, 0, 0);
-            uint32_t midi_note = quantizer.NoteNumber();
-            last_note = midi_note;
+            uint8_t midi_note = quantizer.NoteNumber() + transpose;
+            last_note = constrain(midi_note, 0, 127);
             last_channel = channel;
 
             int velocity = 0x64;
@@ -79,12 +77,14 @@ public:
                 if (function == HEM_MIDI_CC_IN) {
                     usbMIDI.sendControlChange(1, ProportionCV(this_cv, 127), channel + 1);
                     usbMIDI.send_now();
+                    last_tick = OC::CORE::ticks;
                 }
 
                 // Aftertouch
                 if (function == HEM_MIDI_AT_IN) {
                     usbMIDI.sendAfterTouch(ProportionCV(this_cv, 127), channel + 1);
                     usbMIDI.send_now();
+                    last_tick = OC::CORE::ticks;
                 }
 
                 // Pitch Bend
@@ -93,6 +93,7 @@ public:
                     bend = constrain(bend, 0, 16383);
                     usbMIDI.sendPitchBend(bend, channel + 1);
                     usbMIDI.send_now();
+                    last_tick = OC::CORE::ticks;
                 }
             }
         }
@@ -110,12 +111,13 @@ public:
     }
 
     void OnButtonPress() {
-        cursor = 1 - cursor;
+        if (++cursor > 2) cursor = 0;
     }
 
     void OnEncoderMove(int direction) {
         if (cursor == 0) channel = constrain(channel += direction, 0, 15);
-        else function = constrain(function += direction, 0, 3);
+        if (cursor == 1) transpose = constrain(transpose += direction, -24, 24);
+        if (cursor == 2) function = constrain(function += direction, 0, 3);
     }
         
     uint32_t OnDataRequest() {
@@ -136,7 +138,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Gate";
         help[HEMISPHERE_HELP_CVS]      = "1=Pitch 2=Assign";
         help[HEMISPHERE_HELP_OUTS]     = "";
-        help[HEMISPHERE_HELP_ENCODER]  = "MIDI Ch/Assign In";
+        help[HEMISPHERE_HELP_ENCODER]  = "Ch/Trnspose/Assign";
         //                               "------------------" <-- Size Guide
     }
     
@@ -151,15 +153,16 @@ private:
     // Settings
     int channel; // MIDI Out channel
     int function; // Function of B/D output
+    int transpose; // Semitones of transposition
 
     // Housekeeping
-    int cursor; // 0=MIDI channel, 1=CV 2 function
+    int cursor; // 0=MIDI channel, 1=Transpose, 2=CV 2 function
     int last_note; // Last MIDI note number awaiting not off
     int last_velocity;
     int last_channel; // The last Note On channel, just in case the channel is changed before release
     bool gated; // The most recent gate status
     int last_tick; // Most recent MIDI message sent
-    int gate_lag_countdown;
+    int adc_lag_countdown;
     int last_cv; // For checking for changes
     const char* fn_name[4];
 
@@ -174,18 +177,22 @@ private:
         gfxPrint(1, 15, "Ch:");
         gfxPrint(24, 15, channel + 1);
 
+        // Transpose
+        gfxPrint(1, 25, "XP:");
+        if (transpose > -1) gfxPrint(24, 25, "+");
+        gfxPrint(30, 25, transpose);
+
         // Input 2 function
-        gfxPrint(1, 25, "2 :");
-        gfxPrint(24, 25, fn_name[function]);
+        gfxPrint(1, 35, "i2:");
+        gfxPrint(24, 35, fn_name[function]);
 
         // Cursor
         gfxCursor(24, 23 + (cursor * 10), 39);
 
-        // Last note
+        // Last note log
         gfxBitmap(1, 55, 8, note);
         gfxPrint(10, 55, last_note);
         gfxPrint(40, 55, last_velocity);
-
     }
 
     bool cv_has_changed(int this_cv, int last_cv) {
