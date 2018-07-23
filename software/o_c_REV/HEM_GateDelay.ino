@@ -23,7 +23,10 @@ public:
             ForEachChannel(ch)
             {
                 record(ch, Gate(ch));
-                bool p = play(ch);
+                int mod_time = Proportion(DetentedIn(ch), HEMISPHERE_MAX_CV, 1000) + time[ch];
+                mod_time = constrain(mod_time, 0, 2000);
+
+                bool p = play(ch, mod_time);
                 if (p) last_gate[ch] = OC::CORE::ticks;
                 GateOut(ch, p);
 
@@ -47,7 +50,7 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        time[cursor] = constrain(time[cursor] -= (direction * 10), 40, 2000);
+        time[cursor] = constrain(time[cursor] += (direction * 10), 0, 2000);
     }
         
     uint32_t OnDataRequest() {
@@ -66,7 +69,7 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "Gate Ch1,2";
-        help[HEMISPHERE_HELP_CVS]      = "";
+        help[HEMISPHERE_HELP_CVS]      = "Time Mod Ch1,Ch2";
         help[HEMISPHERE_HELP_OUTS]     = "Delay Ch1,2";
         help[HEMISPHERE_HELP_ENCODER]  = "Set time";
         //                               "------------------" <-- Size Guide
@@ -86,7 +89,7 @@ private:
             int y = 15 + (ch * 25);
             if (ch == cursor) gfxCursor(0, y + 8, 63);
 
-            gfxPrint(1, y, 2000 - time[ch]);
+            gfxPrint(1, y, time[ch]);
             gfxPrint("ms");
 
             if (OC::CORE::ticks - last_gate[ch] < 1667) gfxBitmap(54, y, 8, clock_icon);
@@ -107,10 +110,9 @@ private:
     }
 
     /* Get the status of the tape at the current play head location */
-    bool play(int ch) {
-        int play_location = location[ch] + time[ch];
-        if (play_location > 2047) play_location -= 2048;
-        if (play_location < 0) play_location = 0;
+    bool play(int ch, int mod_time) {
+        int play_location = location[ch] - mod_time;
+        if (play_location < 0) play_location += 2048;
         uint16_t word = play_location / 32;
         uint8_t bit = play_location % 32;
         return ((tape[ch][word] >> bit) & 0x01);
