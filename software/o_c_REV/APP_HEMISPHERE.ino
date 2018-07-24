@@ -7,11 +7,13 @@ namespace menu = OC::menu;
 #include "hemisphere_config.h"
 #include "HemisphereApplet.h"
 
-#define DECLARE_APPLET(id, prefix) \
-{ id, prefix ## _Start, prefix ## _Controller, prefix ## _View, prefix ## _Screensaver, \
-  prefix ## _OnButtonPress, prefix ## _OnEncoderMove, prefix ## _ToggleHelpScreen, \
-  prefix ## _OnDataRequest, prefix ## _OnDataReceive \
+#define DECLARE_APPLET(id, class_name) \
+{ id, class_name ## _Start, class_name ## _Controller, class_name ## _View, class_name ## _Screensaver, \
+  class_name ## _OnButtonPress, class_name ## _OnEncoderMove, class_name ## _ToggleHelpScreen, \
+  class_name ## _OnDataRequest, class_name ## _OnDataReceive \
 }
+
+#define HEMISPHERE_DOUBLE_CLICK_TIME 8000
 
 typedef struct Applet {
   int id;
@@ -90,14 +92,6 @@ public:
         }
     }
 
-    void ToggleSelectMode(int hemisphere) {
-        if (hemisphere == select_mode) {
-            select_mode = -1;
-        } else {
-            select_mode = hemisphere;
-        }
-    }
-
     bool SelectModeEnabled() {
         return select_mode > -1;
     }
@@ -137,13 +131,35 @@ public:
         }
     }
 
-    void DelegateButtonPush(const UI::Event &event) {
+    void DelegateEncoderPush(const UI::Event &event) {
         int h = (event.control == OC::CONTROL_BUTTON_L) ? 0 : 1;
         if (select_mode == h) select_mode = -1; // Pushing a button for the selected side turns off select mode
         else {
             int index = my_applets[h];
             if (event.type == UI::EVENT_BUTTON_PRESS) {
                 available_applets[index].OnButtonPress(h);
+            }
+        }
+    }
+
+    void DelegateSelectButtonPush(int hemisphere) {
+        if (OC::CORE::ticks - click_tick < HEMISPHERE_DOUBLE_CLICK_TIME && hemisphere == select_mode) {
+            // This is a double-click, so activate corresponding help screen, leave
+            // Select Mode, and reset the double-click timer
+            SetHelpScreen(hemisphere);
+            select_mode = -1;
+            click_tick = 0;
+        } else {
+            // This is a single click. If a help screen is already selected, and the
+            // button is for the opposite one, go to the other help screen
+            if (help_hemisphere > -1) {
+                if (help_hemisphere != hemisphere) SetHelpScreen(hemisphere);
+                else SetHelpScreen(-1); // Leave help screen if corresponding button is clicked
+            } else {
+                // If Select Mode was on, and the same button was pushed, leave Select Mode
+                if (hemisphere == select_mode) select_mode = -1;
+                else select_mode = hemisphere; // Otherwise, set select mode
+                click_tick = OC::CORE::ticks;
             }
         }
     }
@@ -161,22 +177,18 @@ public:
         forwarding = forwarding ? 0 : 1;
     }
 
-    void ToggleHelpScreen() {
+    void SetHelpScreen(int hemisphere) {
         if (help_hemisphere > -1) { // Turn off the previous help screen
             int index = my_applets[help_hemisphere];
             available_applets[index].ToggleHelpScreen(help_hemisphere);
         }
 
-        // If the same applet is in both hemispheres, skip the second help screen
-        if (my_applets[help_hemisphere] == my_applets[1 - help_hemisphere]) help_hemisphere = 1;
-
-        help_hemisphere++; // Move to the next help screen
-        if (help_hemisphere > 1) help_hemisphere = -1; // Turn them all off
-
-        if (help_hemisphere > -1) { // Turn on the next hemisphere's screen
-            int index = my_applets[help_hemisphere];
-            available_applets[index].ToggleHelpScreen(help_hemisphere);
+        if (hemisphere > -1) { // Turn on the next hemisphere's screen
+            int index = my_applets[hemisphere];
+            available_applets[index].ToggleHelpScreen(hemisphere);
         }
+
+        help_hemisphere = hemisphere;
     }
 
     void RequestAppletData() {
@@ -194,6 +206,7 @@ private:
     int select_mode;
     int forwarding;
     int help_hemisphere; // Which of the hemispheres (if any) is in help mode, or -1 if none
+    uint32_t click_tick; // Measure time between clicks for double-click
 
     int GetAppletIndexByID(int id)
     {
@@ -261,15 +274,15 @@ void HEMISPHERE_handleButtonEvent(const UI::Event &event) {
     if (event.type == UI::EVENT_BUTTON_PRESS) {
         if (event.control == OC::CONTROL_BUTTON_UP || event.control == OC::CONTROL_BUTTON_DOWN) {
             int hemisphere = (event.control == OC::CONTROL_BUTTON_UP) ? LEFT_HEMISPHERE : RIGHT_HEMISPHERE;
-            manager.ToggleSelectMode(hemisphere);
+            manager.DelegateSelectButtonPush(hemisphere);
         } else {
-            manager.DelegateButtonPush(event);
+            manager.DelegateEncoderPush(event);
         }
     }
 
     if (event.type == UI::EVENT_BUTTON_LONG_PRESS) {
         if (event.control == OC::CONTROL_BUTTON_DOWN) manager.ToggleForwarding();
-        if (event.control == OC::CONTROL_BUTTON_L) manager.ToggleHelpScreen();
+        //if (event.control == OC::CONTROL_BUTTON_L) manager.ToggleHelpScreen();
     }
 }
 
