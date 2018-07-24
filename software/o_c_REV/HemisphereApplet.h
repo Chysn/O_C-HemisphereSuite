@@ -332,13 +332,13 @@ protected:
     }
 
     /* Add value to a 32-bit storage unit at the specified location */
-    void Pack(uint32_t &data, PackLocation p, int value) {
+    void Pack(uint32_t &data, PackLocation p, uint32_t value) {
         data |= (value << p.location);
     }
 
     /* Retrieve value from a 32-bit storage unit at the specified location and of the specified bit size */
     int Unpack(uint32_t data, PackLocation p) {
-        int mask = 1;
+        uint32_t mask = 1;
         for (int i = 1; i < p.size; i++) mask |= (0x01 << i);
         return (data >> p.location) & mask;
     }

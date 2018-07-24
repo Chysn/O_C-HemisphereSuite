@@ -33,8 +33,10 @@ typedef struct Applet {
 enum HEMISPHERE_SETTINGS {
     HEMISPHERE_SELECTED_LEFT_ID,
     HEMISPHERE_SELECTED_RIGHT_ID,
-    HEMISPHERE_LEFT_DATA,
-    HEMISPHERE_RIGHT_DATA,
+    HEMISPHERE_LEFT_DATA_L,
+    HEMISPHERE_RIGHT_DATA_L,
+    HEMISPHERE_LEFT_DATA_H,
+    HEMISPHERE_RIGHT_DATA_H,
     HEMISPHERE_SETTING_LAST
 };
 
@@ -70,7 +72,8 @@ public:
         {
             int index = GetAppletIndexByID(values_[h]);
             SetApplet(h, index);
-            available_applets[index].OnDataReceive(h, values_[2 + h]);
+            uint32_t data = (values_[4 + h] << 16) + values_[2 + h];
+            available_applets[index].OnDataReceive(h, data);
         }
     }
 
@@ -234,8 +237,9 @@ public:
         for (int h = 0; h < 2; h++)
         {
             int index = my_applet[h];
-            uint32_t applet_data = available_applets[index].OnDataRequest(h);
-            apply_value(2 + h, applet_data);
+            uint32_t data = available_applets[index].OnDataRequest(h);
+            apply_value(2 + h, data & 0xffff);
+            apply_value(4 + h, (data >> 16) & 0xffff);
         }
     }
 
@@ -291,8 +295,10 @@ private:
 SETTINGS_DECLARE(HemisphereManager, HEMISPHERE_SETTING_LAST) {
     {0, 0, 255, "Applet ID L", NULL, settings::STORAGE_TYPE_U8},
     {0, 0, 255, "Applet ID R", NULL, settings::STORAGE_TYPE_U8},
-    {0, 0, 2147483647, "Data R", NULL, settings::STORAGE_TYPE_U32},
-    {0, 0, 2147483647, "Data L", NULL, settings::STORAGE_TYPE_U32},
+    {0, 0, 65535, "Data L low", NULL, settings::STORAGE_TYPE_U16},
+    {0, 0, 65535, "Data R low", NULL, settings::STORAGE_TYPE_U16},
+    {0, 0, 65535, "Data L high", NULL, settings::STORAGE_TYPE_U16},
+    {0, 0, 65535, "Data R high", NULL, settings::STORAGE_TYPE_U16},
 };
 
 

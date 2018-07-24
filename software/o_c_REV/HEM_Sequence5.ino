@@ -39,16 +39,16 @@ public:
     }
 
     void OnButtonPress() {
-        if (++selected == 5) selected = 0;
+        if (++cursor == 5) cursor = 0;
     }
 
     void OnEncoderMove(int direction) {
-        if (note[selected] + direction < 0) {
+        if (note[cursor] + direction < 0) {
             // If turning past zero, set the mute bit for this step
-            muted |= (0x01 << selected);
+            muted |= (0x01 << cursor);
         } else {
-            note[selected] = constrain(note[selected] += direction, 0, 30);
-            muted &= ~(0x01 << selected);
+            note[cursor] = constrain(note[cursor] += direction, 0, 30);
+            muted &= ~(0x01 << cursor);
         }
     }
 
@@ -82,7 +82,7 @@ protected:
     
 private:
     braids::Quantizer quantizer;
-    int selected = 0;
+    int cursor = 0;
     char muted = 0; // Bitfield for muted steps; ((muted >> step) & 1) means muted
     int note[5]; // Sequence value (0 - 30)
     int step = 0; // Current sequencer step
@@ -101,15 +101,15 @@ private:
             if (!step_is_muted(s)) {
                 gfxLine(x, 25, x, 63);
 
-                // When selected, there's a heavier bar and a solid slider
-                if (s == selected) {
+                // When cursor, there's a heavier bar and a solid slider
+                if (s == cursor) {
                     gfxLine(x + 1, 25, x + 1, 63);
                     gfxRect(x - 4, BottomAlign(note[s]), 9, 3);
                 } else gfxFrame(x - 4, BottomAlign(note[s]), 9, 3);
 
                 // When on this step, there's an indicator circle
                 if (s == step) {gfxCircle(x, 20, 3);}
-            } else if (s == selected) {
+            } else if (s == cursor) {
                 gfxLine(x, 25, x, 63);
                 gfxLine(x + 1, 25, x + 1, 63);
              }
