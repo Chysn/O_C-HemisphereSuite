@@ -7,8 +7,8 @@ namespace menu = OC::menu;
 #include "hemisphere_config.h"
 #include "HemisphereApplet.h"
 
-#define DECLARE_APPLET(id, class_name) \
-{ id, class_name ## _Start, class_name ## _Controller, class_name ## _View, class_name ## _Screensaver, \
+#define DECLARE_APPLET(id, categories, class_name) \
+{ id, categories, class_name ## _Start, class_name ## _Controller, class_name ## _View, class_name ## _Screensaver, \
   class_name ## _OnButtonPress, class_name ## _OnEncoderMove, class_name ## _ToggleHelpScreen, \
   class_name ## _OnDataRequest, class_name ## _OnDataReceive \
 }
@@ -17,6 +17,7 @@ namespace menu = OC::menu;
 
 typedef struct Applet {
   int id;
+  uint8_t categories;
   void (*Start)(int); // Initialize when selected
   void (*Controller)(int, bool);  // Interrupt Service Routine
   void (*View)(int);  // Draw main view
@@ -45,13 +46,23 @@ class HemisphereManager : public settings::SettingsBase<HemisphereManager, HEMIS
 public:
     void Init() {
         select_mode = -1; // Not selecting
+        filter_select_mode = -1; // Not selecting filter
         Applet applets[] = HEMISPHERE_APPLETS;
         memcpy(&available_applets, &applets, sizeof(applets));
         forwarding = 0;
         help_hemisphere = -1;
 
-        SetApplet(0, 0);
-        SetApplet(1, 1);
+        SetApplet(0, GetAppletIndexByID(8)); // ADSR
+        SetApplet(1, GetAppletIndexByID(26)); // Scale Duet
+
+        // Set up category filtering
+        const char* category_list[] = {"Modulator", "Sequencer",
+                                       "Clocking", "Quantizer",
+                                       "Utility", "MIDI",
+                                       "Audio", "Other", "ALL"};
+        for (int i = 0; i < 9; i++) category_name[i] = category_list[i];
+        filter[0] = 8; // All
+        filter[1] = 8;
     }
 
     void Resume() {
@@ -64,23 +75,26 @@ public:
     }
 
     void SetApplet(int hemisphere, int index) {
-        my_applets[hemisphere] = index;
+        my_applet[hemisphere] = index;
         available_applets[index].Start(hemisphere);
         apply_value(hemisphere, available_applets[index].id);
     }
 
     void ChangeApplet(int dir) {
         if (SelectModeEnabled() and help_hemisphere == -1) {
-            int index = my_applets[select_mode];
+            int index = my_applet[select_mode];
             index += dir;
             if (index >= HEMISPHERE_AVAILABLE_APPLETS) index = 0;
             if (index < 0) index = HEMISPHERE_AVAILABLE_APPLETS - 1;
 
             // Handle MIDI applets, only one of which may be selected at a time.
             // If the opposite hemipshere already has a MIDI applet selected,
-            // then skip this applet during selection.
+            // then skip this applet during selection. It might seem better to
+            // simply call ChangeApplet() recursively, but we don't want to permit
+            // a race condition that might steal MIDI notes from the MIDI applet
+            // running in the opposite hemisphere.
             if (available_applets[index].id & 0x80) {
-                int opp_index = my_applets[1 - select_mode];
+                int opp_index = my_applet[1 - select_mode];
                 if (available_applets[opp_index].id & 0x80) {
                     index += dir;
                     if (index >= HEMISPHERE_AVAILABLE_APPLETS) index = 0;
@@ -89,6 +103,14 @@ public:
             }
 
             SetApplet(select_mode, index);
+
+            // If a filter is on, show only selected applets
+            if (filter[select_mode] < 8) {
+                uint8_t f = 0x01 << filter[select_mode];
+                if (!(available_applets[index].categories & f)) {
+                    ChangeApplet(dir);
+                }
+            }
         }
     }
 
@@ -99,20 +121,24 @@ public:
     void ExecuteControllers() {
         for (int h = 0; h < 2; h++)
         {
-            int index = my_applets[h];
+            int index = my_applet[h];
             available_applets[index].Controller(h, (bool)forwarding);
         }
     }
 
     void DrawViews() {
         if (help_hemisphere > -1) {
-            int index = my_applets[help_hemisphere];
+            int index = my_applet[help_hemisphere];
             available_applets[index].View(help_hemisphere);
         } else {
             for (int h = 0; h < 2; h++)
             {
-                int index = my_applets[h];
-                available_applets[index].View(h);
+                if (filter_select_mode == h) {
+                    DrawFilterSelector(h);
+                } else {
+                    int index = my_applet[h];
+                    available_applets[index].View(h);
+                }
             }
 
             if (select_mode == LEFT_HEMISPHERE) graphics.drawFrame(0, 0, 64, 64);
@@ -125,17 +151,20 @@ public:
         else {
             for (int h = 0; h < 2; h++)
             {
-                int index = my_applets[h];
+                int index = my_applet[h];
                 available_applets[index].Screensaver(h);
             }
         }
     }
 
     void DelegateEncoderPush(const UI::Event &event) {
-        int h = (event.control == OC::CONTROL_BUTTON_L) ? 0 : 1;
-        if (select_mode == h) select_mode = -1; // Pushing a button for the selected side turns off select mode
+        int h = (event.control == OC::CONTROL_BUTTON_L) ? LEFT_HEMISPHERE : RIGHT_HEMISPHERE;
+        if (select_mode == h) {
+            select_mode = -1; // Pushing a button for the selected side turns off select mode
+            filter_select_mode = -1; // and filter select mode
+        }
         else {
-            int index = my_applets[h];
+            int index = my_applet[h];
             if (event.type == UI::EVENT_BUTTON_PRESS) {
                 available_applets[index].OnButtonPress(h);
             }
@@ -143,33 +172,43 @@ public:
     }
 
     void DelegateSelectButtonPush(int hemisphere) {
-        if (OC::CORE::ticks - click_tick < HEMISPHERE_DOUBLE_CLICK_TIME && hemisphere == select_mode) {
-            // This is a double-click, so activate corresponding help screen, leave
-            // Select Mode, and reset the double-click timer
-            SetHelpScreen(hemisphere);
-            select_mode = -1;
-            click_tick = 0;
+        if (filter_select_mode > -1) {
+            filter_select_mode = -1;
         } else {
-            // This is a single click. If a help screen is already selected, and the
-            // button is for the opposite one, go to the other help screen
-            if (help_hemisphere > -1) {
-                if (help_hemisphere != hemisphere) SetHelpScreen(hemisphere);
-                else SetHelpScreen(-1); // Leave help screen if corresponding button is clicked
+            if (OC::CORE::ticks - click_tick < HEMISPHERE_DOUBLE_CLICK_TIME && hemisphere == select_mode) {
+                // This is a double-click, so activate corresponding help screen, leave
+                // Select Mode, and reset the double-click timer
+                SetHelpScreen(hemisphere);
+                select_mode = -1;
+                click_tick = 0;
             } else {
-                // If Select Mode was on, and the same button was pushed, leave Select Mode
-                if (hemisphere == select_mode) select_mode = -1;
-                else select_mode = hemisphere; // Otherwise, set select mode
-                click_tick = OC::CORE::ticks;
+                // This is a single click. If a help screen is already selected, and the
+                // button is for the opposite one, go to the other help screen
+                if (help_hemisphere > -1) {
+                    if (help_hemisphere != hemisphere) SetHelpScreen(hemisphere);
+                    else SetHelpScreen(-1); // Leave help screen if corresponding button is clicked
+                } else {
+                    // If Select Mode was on, and the same button was pushed, leave Select Mode
+                    if (hemisphere == select_mode) select_mode = -1;
+                    else select_mode = hemisphere; // Otherwise, set select mode
+                    click_tick = OC::CORE::ticks;
+                }
             }
         }
     }
 
     void DelegateEncoderMovement(const UI::Event &event) {
         int h = (event.control == OC::CONTROL_ENCODER_L) ? LEFT_HEMISPHERE : RIGHT_HEMISPHERE;
-        if (select_mode == h) ChangeApplet(event.value);
-        else {
-            int index = my_applets[h];
-            available_applets[index].OnEncoderMove(h, event.value);
+        if (filter_select_mode == h) {
+            filter[filter_select_mode] += event.value;
+            if (filter[filter_select_mode] > 8) filter[filter_select_mode] = 0;
+            if (filter[filter_select_mode] < 0) filter[filter_select_mode] = 8;
+        } else {
+            if (select_mode == h) ChangeApplet(event.value);
+            else {
+                int index = my_applet[h];
+                available_applets[index].OnEncoderMove(h, event.value);
+            }
         }
     }
 
@@ -179,12 +218,12 @@ public:
 
     void SetHelpScreen(int hemisphere) {
         if (help_hemisphere > -1) { // Turn off the previous help screen
-            int index = my_applets[help_hemisphere];
+            int index = my_applet[help_hemisphere];
             available_applets[index].ToggleHelpScreen(help_hemisphere);
         }
 
         if (hemisphere > -1) { // Turn on the next hemisphere's screen
-            int index = my_applets[hemisphere];
+            int index = my_applet[hemisphere];
             available_applets[index].ToggleHelpScreen(hemisphere);
         }
 
@@ -194,22 +233,52 @@ public:
     void RequestAppletData() {
         for (int h = 0; h < 2; h++)
         {
-            int index = my_applets[h];
+            int index = my_applet[h];
             uint32_t applet_data = available_applets[index].OnDataRequest(h);
             apply_value(2 + h, applet_data);
         }
     }
 
+    void EnableFilterSelect() {
+        filter_select_mode = select_mode;
+    }
+
 private:
     Applet available_applets[HEMISPHERE_AVAILABLE_APPLETS];
-    int my_applets[2]; // Indexes to available_applets
+    int my_applet[2]; // Indexes to available_applets
+    const char* category_name[9];
+    int16_t filter[2];
+    int filter_select_mode;
     int select_mode;
     int forwarding;
     int help_hemisphere; // Which of the hemispheres (if any) is in help mode, or -1 if none
     uint32_t click_tick; // Measure time between clicks for double-click
 
-    int GetAppletIndexByID(int id)
-    {
+    void DrawFilterSelector(int h) {
+        int offset = h * 64;
+
+        // Header
+        graphics.setPrintPos(1 + offset, 2);
+        graphics.print("Categories");
+        graphics.drawLine(0 + offset, 10, 62 + offset, 10);
+        graphics.drawLine(0 + offset, 12, 62 + offset, 12);
+
+        // Draw selector list
+        int o = filter[h] - 2;
+        if (o < 0) o += 9;
+        for (int c = 0; c < 6; c++) // Draw five categories on the screen
+        {
+            int i = c + o;
+            if (i > 8) i -= 9; // Roll back around to make infinitely scroll-able
+            graphics.setPrintPos(8 + offset, 15 + (8 * c));
+            graphics.print(category_name[i]);
+        }
+
+        const uint8_t check[8] = {0x00,0xf0,0x40,0x20,0x10,0x08,0x04,0x00};
+        graphics.drawBitmap8(1 + offset, 29, 8, check);
+    }
+
+    int GetAppletIndexByID(int id) {
         int index = 0;
         for (int i = 0; i < HEMISPHERE_AVAILABLE_APPLETS; i++)
         {
@@ -281,7 +350,7 @@ void HEMISPHERE_handleButtonEvent(const UI::Event &event) {
     }
 
     if (event.type == UI::EVENT_BUTTON_LONG_PRESS) {
-        //if (event.control == OC::CONTROL_BUTTON_DOWN) manager.ToggleForwarding();
+        if (event.control == OC::CONTROL_BUTTON_DOWN) manager.EnableFilterSelect();
         if (event.control == OC::CONTROL_BUTTON_L) manager.ToggleForwarding();
     }
 }
