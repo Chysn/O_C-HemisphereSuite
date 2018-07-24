@@ -19,7 +19,7 @@ public:
     void Start() {
         rate = 61;
         skew = 61;
-        selected = 0;
+        cursor = 0;
         cycle_tick = 0;
     }
 
@@ -56,11 +56,11 @@ public:
     }
 
     void OnButtonPress() {
-        selected = 1 - selected;
+        cursor = 1 - cursor;
     }
 
     void OnEncoderMove(int direction) {
-        if (selected == 0) {
+        if (cursor == 0) {
             rate = constrain(rate += direction, 0, HEM_LFO_MAX_VALUE);
         } else {
             skew = constrain(skew += direction, 0, HEM_LFO_MAX_VALUE);
@@ -90,7 +90,7 @@ protected:
 private:
     int rate; // LFO rate between 0 and HEM_LFO_MAX_VALUE, where 0 is slowest
     int skew; // LFO skew, where 0 is saw, HEM_LFO_MAX_VALUE is ramp, and 31 is triangle
-    int selected; // Whether knob is editing rate (0) or skew (1)
+    int cursor; // Whether knob is editing rate (0) or skew (1)
     int cycle_tick; // The current tick number within the cycle
     int rate_mod; // Modification of rate from CV 1
     int skew_mod; // Modification of skew from CV 2
@@ -99,13 +99,13 @@ private:
         gfxFrame(1, 15, 62, 6);
         int x = Proportion(rate, HEM_LFO_MAX_VALUE, 62);
         gfxLine(x, 15, x, 20);
-        if (selected == 0) gfxRect(1, 16, x, 4);
+        if (cursor == 0) gfxRect(1, 16, x, 4);
     }
 
     void DrawSkewedWaveform() {
         int x = Proportion(skew, HEM_LFO_MAX_VALUE, 62);
-        gfxLine(0, 62, x, 33, selected == 0);
-        gfxLine(x, 33, 62, 62, selected == 0);
+        gfxLine(0, 62, x, 33, cursor == 0);
+        gfxLine(x, 33, 62, 62, cursor == 0);
 
         // Draw zero-crossing line
         gfxDottedLine(0, 48, 63, 48, 5);

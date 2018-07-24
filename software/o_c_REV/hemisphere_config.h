@@ -8,7 +8,7 @@
 // 0x40 = Audio
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 27
+#define HEMISPHERE_AVAILABLE_APPLETS 28
 #define HEMISPHERE_APPLETS { \
     DECLARE_APPLET(  8, 0x01, ADSREG), \
     DECLARE_APPLET( 15, 0x02, AnnularFusion), \
@@ -16,6 +16,7 @@
     DECLARE_APPLET( 12, 0x10, Calculate),\
     DECLARE_APPLET(  6, 0x04, ClockDivider), \
     DECLARE_APPLET( 28, 0x04, ClockSkip), \
+    DECLARE_APPLET( 30, 0x10, Compare), \
     DECLARE_APPLET( 24, 0x02, CVRec), \
     DECLARE_APPLET(  9, 0x08, DualQuant), \
     DECLARE_APPLET( 19, 0x01, GameOfLife), \
@@ -35,6 +36,6 @@
     DECLARE_APPLET( 19, 0x01, Slew), \
     DECLARE_APPLET( 13, 0x14, TLNeuron), \
     DECLARE_APPLET( 18, 0x02, TM), \
-    DECLARE_APPLET( 11, 0x0a, TrigSeq), \
-    DECLARE_APPLET( 25, 0x0a, TrigSeq16), \
+    DECLARE_APPLET( 11, 0x0c, TrigSeq), \
+    DECLARE_APPLET( 25, 0x0c, TrigSeq16), \
 }

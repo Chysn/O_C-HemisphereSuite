@@ -5,7 +5,7 @@
 // (3) Implement all of the public methods below
 // (4) Add text to the help section below in SetHelp()
 // (5) Add a declare line in hemisphere_config.h, which looks like this:
-//     DECLARE_APPLET(id, ClassName), \
+//     DECLARE_APPLET(id, categories, ClassName), \
 // (6) Increment HEMISPHERE_AVAILABLE_APPLETS in hemisphere_config.h
 
 class ClassName : public HemisphereApplet {
