@@ -178,7 +178,7 @@ private:
         gfxPrint(24, 15, channel + 1);
 
         // Transpose
-        gfxPrint(1, 25, "XP:");
+        gfxPrint(1, 25, "Tr:");
         if (transpose > -1) gfxPrint(24, 25, "+");
         gfxPrint(30, 25, transpose);
 

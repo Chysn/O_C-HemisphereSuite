@@ -60,7 +60,9 @@ protected:
     }
     
 private:
-
+    int cursor;
+    
+    
 };
 
 
