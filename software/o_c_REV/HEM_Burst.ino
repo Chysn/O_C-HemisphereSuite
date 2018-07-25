@@ -18,12 +18,9 @@ public:
     }
 
     void Controller() {
-        // Settings over CV
+        // Settings and modulation over CV
         if (DetentedIn(0) > 0) number = ProportionCV(In(0), HEM_BURST_NUMBER_MAX - 1) + 1;
-        if (DetentedIn(1) > 0 and !clocked) {
-            spacing = ProportionCV(In(1), HEM_BURST_SPACING_MAX);
-            if (spacing < HEM_BURST_SPACING_MIN) spacing = HEM_BURST_SPACING_MIN;
-        }
+        int spacing_mod = clocked ? 0 : Proportion(DetentedIn(1), HEMISPHERE_MAX_CV, 500);
 
         // Get timing information
         if (Clock(0)) {
@@ -38,8 +35,10 @@ public:
         // Handle a burst set in progress
         if (bursts_to_go > 0) {
             if (--burst_countdown <= 0) {
-                ClockOut(0, 34); // Short burst, about 2ms
-                if (--bursts_to_go > 0) burst_countdown = spacing * 17; // Reset for next burst
+                int modded_spacing = spacing + spacing_mod;
+                if (modded_spacing < HEM_BURST_SPACING_MIN) modded_spacing = HEM_BURST_SPACING_MIN;
+                ClockOut(0, 34); // Short trigger, about 2ms
+                if (--bursts_to_go > 0) burst_countdown = modded_spacing * 17; // Reset for next burst
                 else GateOut(1, 0); // Turn off the gate
             }
         }
