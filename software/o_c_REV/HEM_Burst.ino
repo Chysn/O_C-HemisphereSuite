@@ -14,15 +14,26 @@ public:
         number = 4;
         spacing = 50;
         bursts_to_go = 0;
+        clocked = 0;
     }
 
     void Controller() {
         // Settings over CV
         if (DetentedIn(0) > 0) number = ProportionCV(In(0), HEM_BURST_NUMBER_MAX - 1) + 1;
-        if (DetentedIn(1) > 0) {
+        if (DetentedIn(1) > 0 and !clocked) {
             spacing = ProportionCV(In(1), HEM_BURST_SPACING_MAX);
             if (spacing < HEM_BURST_SPACING_MIN) spacing = HEM_BURST_SPACING_MIN;
         }
+
+        // Get timing information
+        if (Clock(0)) {
+            if (clocked) {
+                // Get a tempo, if this is the second tick or later since the last clock
+                spacing = (ticks_since_clock / number) / 17;
+                ticks_since_clock = 0;
+            } else clocked = 1;
+        }
+        ticks_since_clock++;
 
         // Handle a burst set in progress
         if (bursts_to_go > 0) {
@@ -34,7 +45,7 @@ public:
         }
 
         // Handle a new burst set trigger
-        if (Clock(0)) {
+        if (Clock(1)) {
             GateOut(1, 1);
             bursts_to_go = number;
             burst_countdown = spacing * 17;
@@ -58,7 +69,10 @@ public:
 
     void OnEncoderMove(int direction) {
         if (cursor == 0) number = constrain(number += direction, 1, HEM_BURST_NUMBER_MAX);
-        if (cursor == 1) spacing = constrain(spacing += direction, HEM_BURST_SPACING_MIN, HEM_BURST_SPACING_MAX);
+        if (cursor == 1) {
+            spacing = constrain(spacing += direction, HEM_BURST_SPACING_MIN, HEM_BURST_SPACING_MAX);
+            clocked = 0;
+        }
     }
         
     uint32_t OnDataRequest() {
@@ -76,7 +90,7 @@ public:
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "Trigger Ch1,Ch2";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Burst";
         help[HEMISPHERE_HELP_CVS]      = "1=Number 2=Spacing";
         help[HEMISPHERE_HELP_OUTS]     = "1=Burst 2=Gate";
         help[HEMISPHERE_HELP_ENCODER]  = "Number/Spacing";
@@ -87,6 +101,9 @@ private:
     int cursor; // Number and Spacing
     int burst_countdown; // Number of ticks to the next expected burst
     int bursts_to_go; // Counts down to end of burst set
+    bool clocked; // When a clock signal is received at Digital 1, clocked is activated, and the
+                  // spacing of a new burst is number/clock length.
+    int ticks_since_clock; // When clocked, this is the time since the last clock.
 
     // Settings
     int number; // How many bursts fire at each trigger
@@ -95,11 +112,14 @@ private:
     void DrawSelector() {
         // Number
         gfxPrint(1, 15, number);
-        gfxPrint(20, 15, "bursts");
+        gfxPrint(28, 15, "bursts");
 
         // Spacing
         gfxPrint(1, 25, spacing);
-        gfxPrint(20, 25, "ms");
+        gfxPrint(28, 25, "ms");
+        if (clocked) {
+            gfxBitmap(55, 25, 8, clock_icon);
+        }
 
         // Cursor
         gfxCursor(1, 23 + (cursor * 10), 62);
