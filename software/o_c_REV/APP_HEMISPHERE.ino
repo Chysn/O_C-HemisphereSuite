@@ -54,8 +54,8 @@ public:
         forwarding = 0;
         help_hemisphere = -1;
 
-        SetApplet(0, GetAppletIndexByID(8)); // ADSR
-        SetApplet(1, GetAppletIndexByID(26)); // Scale Duet
+        SetApplet(0, get_applet_index_by_id(8)); // ADSR
+        SetApplet(1, get_applet_index_by_id(26)); // Scale Duet
 
         // Set up category filtering
         const char* category_list[] = {"Modulator", "Sequencer",
@@ -70,7 +70,7 @@ public:
     void Resume() {
         for (int h = 0; h < 2; h++)
         {
-            int index = GetAppletIndexByID(values_[h]);
+            int index = get_applet_index_by_id(values_[h]);
             SetApplet(h, index);
             uint32_t data = (values_[4 + h] << 16) + values_[2 + h];
             available_applets[index].OnDataReceive(h, data);
@@ -85,35 +85,8 @@ public:
 
     void ChangeApplet(int dir) {
         if (SelectModeEnabled() and help_hemisphere == -1) {
-            int index = my_applet[select_mode];
-            index += dir;
-            if (index >= HEMISPHERE_AVAILABLE_APPLETS) index = 0;
-            if (index < 0) index = HEMISPHERE_AVAILABLE_APPLETS - 1;
-
-            // Handle MIDI applets, only one of which may be selected at a time.
-            // If the opposite hemipshere already has a MIDI applet selected,
-            // then skip this applet during selection. It might seem better to
-            // simply call ChangeApplet() recursively, but we don't want to permit
-            // a race condition that might steal MIDI notes from the MIDI applet
-            // running in the opposite hemisphere.
-            if (available_applets[index].id & 0x80) {
-                int opp_index = my_applet[1 - select_mode];
-                if (available_applets[opp_index].id & 0x80) {
-                    index += dir;
-                    if (index >= HEMISPHERE_AVAILABLE_APPLETS) index = 0;
-                    if (index < 0) index = HEMISPHERE_AVAILABLE_APPLETS - 1;
-                }
-            }
-
+            int index = get_next_applet_index(my_applet[select_mode], dir);
             SetApplet(select_mode, index);
-
-            // If a filter is on, show only selected applets
-            if (filter[select_mode] < 8) {
-                uint8_t f = 0x01 << filter[select_mode];
-                if (!(available_applets[index].categories & f)) {
-                    ChangeApplet(dir);
-                }
-            }
         }
     }
 
@@ -282,7 +255,7 @@ private:
         graphics.drawBitmap8(1 + offset, 29, 8, check);
     }
 
-    int GetAppletIndexByID(int id) {
+    int get_applet_index_by_id(int id) {
         int index = 0;
         for (int i = 0; i < HEMISPHERE_AVAILABLE_APPLETS; i++)
         {
@@ -290,6 +263,32 @@ private:
         }
         return index;
     }
+
+    int get_next_applet_index(int index, int dir) {
+        index += dir;
+        if (index >= HEMISPHERE_AVAILABLE_APPLETS) index = 0;
+        if (index < 0) index = HEMISPHERE_AVAILABLE_APPLETS - 1;
+
+        // If an applet uses MIDI In, it can only be selected in one
+        // hemisphere, and is designated by bit 7 set in its id.
+        if (available_applets[index].id & 0x80) {
+            int opp_index = my_applet[1 - select_mode];
+            if (available_applets[opp_index].id & 0x80) {
+                return get_next_applet_index(index, dir);
+            }
+        }
+
+        // If a filter is on, show only selected applets
+        if (filter[select_mode] < 8) {
+            uint8_t f = 0x01 << filter[select_mode];
+            if (!(available_applets[index].categories & f)) {
+                return get_next_applet_index(index, dir);
+            }
+        }
+
+        return index;
+    }
+
 };
 
 SETTINGS_DECLARE(HemisphereManager, HEMISPHERE_SETTING_LAST) {
