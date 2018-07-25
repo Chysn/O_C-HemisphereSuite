@@ -11,11 +11,20 @@ public:
     }
 
     void Controller() {
+        bool master_clock = MasterClockForwarded();
+
         if (Clock(0)) {
             int prob = p + Proportion(DetentedIn(0), HEMISPHERE_MAX_CV, 100);
             choice = (random(1, 100) <= prob) ? 0 : 1;
+
+            // If Master Clock Forwarding is enabled, respond to this clock by
+            // sending a clock
+            if (master_clock) ClockOut(choice);
         }
-        GateOut(choice, Gate(0));
+
+        // Pass along the gate state if Master Clock Forwarding is off. If it's on,
+        // the clock is handled above
+        if (!master_clock) GateOut(choice, Gate(0));
     }
 
     void View() {

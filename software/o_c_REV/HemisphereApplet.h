@@ -364,6 +364,7 @@ protected:
     }
     bool EndOfADCLag() {return EndOfADCLag(0);}
 
+    bool MasterClockForwarded() {return master_clock_bus;}
 
 private:
     int gfx_offset; // Graphics offset, based on the side

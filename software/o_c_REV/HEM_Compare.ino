@@ -14,7 +14,7 @@ public:
 
     void Controller() {
         int cv_level = Proportion(level, HEM_COMPARE_MAX_VALUE, HEMISPHERE_MAX_CV);
-        mod_cv = cv_level + In(1);
+        mod_cv = cv_level + DetentedIn(1);
         mod_cv = constrain(mod_cv, 0, HEMISPHERE_MAX_CV);
 
         if (In(0) > mod_cv) {
