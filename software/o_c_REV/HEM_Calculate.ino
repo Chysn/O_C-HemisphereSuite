@@ -11,7 +11,7 @@ class Calculate : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "Dual Calc";
+        return "Calculate";
     }
 
     void Start() {

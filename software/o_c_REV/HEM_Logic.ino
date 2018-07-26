@@ -13,7 +13,7 @@ class Logic : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "DualLogic";
+        return "Logic";
     }
 
     void Start() {
