@@ -3,6 +3,8 @@
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
 
+#define HEM_CARPEGGIO_ANIMATION_SPEED 500
+
 class Carpeggio : public HemisphereApplet {
 public:
 
@@ -40,6 +42,12 @@ public:
             int note = sequence[step] + 48 + transpose;
             Out(0, quantizer.Lookup(constrain(note, 0, 126)));
             replay = 0;
+        }
+
+        // Handle imprint confirmation animation
+        if (--confirm_animation_countdown < 0) {
+            confirm_animation_position--;
+            confirm_animation_countdown = HEM_CARPEGGIO_ANIMATION_SPEED;
         }
     }
 
@@ -94,17 +102,32 @@ protected:
     
 private:
     int cursor; // 0=notes, 1=chord
+    braids::Quantizer quantizer;
+
+    // Sequencer state
     uint8_t step; // Current step number
     int16_t sequence[16];
+    bool replay; // When the encoder is moved, re-quantize the output
+
+    // Settings
     int chord; // Selected chord
     int sel_chord; // Most recently-imprinted chord
     int transpose; // Transposition setting (-24 ~ +24)
-    bool replay; // When the encoder is moved, re-quantize the output
-    braids::Quantizer quantizer;
+
+    // Variables to handle imprint confirmation animation
+    int confirm_animation_countdown;
+    int confirm_animation_position;
 
     void DrawSelector() {
+        // Chord selector
         gfxPrint(1, 15, Arp_Chords[chord].chord_name);
-        if (cursor == 1) gfxCursor(1, 23, 62);
+        if (cursor == 1) {
+            gfxCursor(1, 23, 62);
+            if (chord == sel_chord) {
+                const uint8_t check[8] = {0x00,0xf0,0x40,0x20,0x10,0x08,0x04,0x00};
+                gfxBitmap(55, 13, 8, check);
+            }
+        }
 
         // Transpose editor
         gfxPrint(32, 25, "Tr");
@@ -136,6 +159,15 @@ private:
         gfxDottedLine(3 + (8 * cxx), 26, 3 + (8 * cxx), 58, 2);
         gfxDottedLine(1, 28 + (8 * cxy), 32, 28 + (8 * cxy), 2);
         gfxRect(1 + (8 * cxx), 26 + (8 * cxy), 5, 5);
+
+        // Draw confirmation animation, if necessary
+        if (confirm_animation_position > -1) {
+            int progress = 16 - confirm_animation_position;
+            for (int s = 0; s < progress; s++)
+            {
+                gfxRect(1 + (8 * (s / 4)), 26 + (8 * (s % 4)), 7, 7);
+            }
+        }
     }
 
     void ImprintChord(int new_chord) {
@@ -148,6 +180,8 @@ private:
         }
         sel_chord = new_chord;
         chord = new_chord;
+        confirm_animation_position = 16;
+        confirm_animation_countdown = HEM_CARPEGGIO_ANIMATION_SPEED;
     }
 };
 
