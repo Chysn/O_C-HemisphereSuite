@@ -138,8 +138,7 @@ public:
         if (select_mode == h) {
             select_mode = -1; // Pushing a button for the selected side turns off select mode
             filter_select_mode = -1; // and filter select mode
-        }
-        else {
+        } else {
             int index = my_applet[h];
             if (event.type == UI::EVENT_BUTTON_PRESS) {
                 available_applets[index].OnButtonPress(h);
@@ -148,10 +147,16 @@ public:
     }
 
     void DelegateSelectButtonPush(int hemisphere) {
-        if (filter_select_mode > -1) {
+        if (filter_select_mode == hemisphere) {
+            // Exit filter select mode if the corresponding button is pressed
+            select_mode = filter_select_mode;
             filter_select_mode = -1;
+        } else if (filter_select_mode > -1) {
+            // Move to the other hemisphere if the opposite button is pressed
+            select_mode = hemisphere;
+            filter_select_mode = hemisphere;
         } else {
-            if (OC::CORE::ticks - click_tick < HEMISPHERE_DOUBLE_CLICK_TIME && hemisphere == select_mode) {
+            if (OC::CORE::ticks - click_tick < HEMISPHERE_DOUBLE_CLICK_TIME && hemisphere == first_click) {
                 // This is a double-click, so activate corresponding help screen, leave
                 // Select Mode, and reset the double-click timer
                 SetHelpScreen(hemisphere);
@@ -169,6 +174,7 @@ public:
                     else select_mode = hemisphere; // Otherwise, set select mode
                     click_tick = OC::CORE::ticks;
                 }
+                first_click = hemisphere;
             }
         }
     }
@@ -217,7 +223,10 @@ public:
     }
 
     void EnableFilterSelect() {
-        filter_select_mode = select_mode;
+        if (help_hemisphere < 0) { // Ignore this if the help system is on; it makes things weird for the user
+            if (select_mode < 0) select_mode = 0; // Default to the left hemisphere
+            filter_select_mode = select_mode;
+        }
     }
 
 private:
@@ -230,6 +239,7 @@ private:
     int forwarding;
     int help_hemisphere; // Which of the hemispheres (if any) is in help mode, or -1 if none
     uint32_t click_tick; // Measure time between clicks for double-click
+    int first_click; // The first button pushed of a double-click set, to see if the same one is pressed
 
     void DrawFilterSelector(int h) {
         int offset = h * 64;
