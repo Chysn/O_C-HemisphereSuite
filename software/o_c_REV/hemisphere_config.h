@@ -17,7 +17,7 @@
     DECLARE_APPLET(  4, 0x14, Brancher), \
     DECLARE_APPLET( 31, 0x04, Burst), \
     DECLARE_APPLET( 12, 0x10, Calculate),\
-    DECLARE_APPLET( 32, 0x02, Carpeggio), \
+    DECLARE_APPLET( 32, 0x0a, Carpeggio), \
     DECLARE_APPLET(  6, 0x04, ClockDivider), \
     DECLARE_APPLET( 28, 0x04, ClockSkip), \
     DECLARE_APPLET( 30, 0x10, Compare), \
@@ -40,6 +40,6 @@
     DECLARE_APPLET( 19, 0x01, Slew), \
     DECLARE_APPLET( 13, 0x14, TLNeuron), \
     DECLARE_APPLET( 18, 0x02, TM), \
-    DECLARE_APPLET( 11, 0x0c, TrigSeq), \
-    DECLARE_APPLET( 25, 0x0c, TrigSeq16), \
+    DECLARE_APPLET( 11, 0x06, TrigSeq), \
+    DECLARE_APPLET( 25, 0x06, TrigSeq16), \
 }

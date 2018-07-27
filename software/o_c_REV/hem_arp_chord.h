@@ -4,6 +4,10 @@
  * by Roel Das
  */
 
+
+#ifndef HEM_ARP_CHORD_H_
+#define HEM_ARP_CHORD_H_
+
 struct hem_arp_chord {
   const char* chord_name;
   const int chord_tones[12];
@@ -85,3 +89,5 @@ const hem_arp_chord Arp_Chords[] = {
   {"All 5th", {0,7,14,21,28,35,41},7,4},
   {"Corny Pop", {12,11,12,7,3,7,0,0},8,1}
 };
+
+#endif

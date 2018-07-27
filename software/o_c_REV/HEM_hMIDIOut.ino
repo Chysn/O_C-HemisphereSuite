@@ -45,8 +45,7 @@ public:
             uint32_t pitch = OC::ADC::raw_pitch_value(channel);
             quantizer.Process(pitch, 0, 0);
             uint8_t midi_note = quantizer.NoteNumber() + transpose;
-            last_note = constrain(midi_note, 0, 127);
-            last_channel = channel;
+            midi_note = constrain(midi_note, 0, 127);
 
             int velocity = 0x64;
             if (function == HEM_MIDI_VEL_IN) {
@@ -56,11 +55,13 @@ public:
 
             usbMIDI.sendNoteOn(midi_note, velocity, channel + 1);
             usbMIDI.send_now();
+            last_note = midi_note;
+            last_channel = channel;
             last_tick = OC::CORE::ticks;
         }
 
         if (!read_gate && gated) { // A note off message should be sent
-            usbMIDI.sendNoteOff(last_note, 0, channel + 1);
+            usbMIDI.sendNoteOff(last_note, 0, last_channel + 1);
             usbMIDI.send_now();
             last_tick = OC::CORE::ticks;
         }
@@ -190,9 +191,11 @@ private:
         gfxCursor(24, 23 + (cursor * 10), 39);
 
         // Last note log
-        gfxBitmap(1, 55, 8, note);
-        gfxPrint(10, 55, last_note);
-        gfxPrint(40, 55, last_velocity);
+        if (last_velocity) {
+            gfxBitmap(1, 55, 8, note);
+            gfxPrint(10, 55, last_note);
+            gfxPrint(40, 55, last_velocity);
+        }
     }
 
     bool cv_has_changed(int this_cv, int last_cv) {

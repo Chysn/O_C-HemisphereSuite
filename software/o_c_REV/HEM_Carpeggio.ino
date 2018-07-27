@@ -32,15 +32,14 @@ public:
                 int x = ProportionCV(In(0), 3);
                 int y = ProportionCV(In(1), 3);
                 step = (y * 4) + x;
+                pitch_out_for_step();
+            } else {
+                pitch_out_for_step();
+                if (++step > 15) step = 0;
             }
-            int note = sequence[step] + 48 + transpose;
-            Out(0, quantizer.Lookup(constrain(note, 0, 126)));
-            if (++step > 15) step = 0;
-        }
-
-        if (replay) {
-            int note = sequence[step] + 48 + transpose;
-            Out(0, quantizer.Lookup(constrain(note, 0, 126)));
+            replay = 0;
+        } else if (replay) {
+            pitch_out_for_step();
             replay = 0;
         }
 
@@ -70,12 +69,10 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        if (cursor == 0) {
-            sequence[step] = constrain(sequence[step] += direction, 0, 60);
-            replay = 1;
-        }
+        if (cursor == 0) sequence[step] = constrain(sequence[step] += direction, 0, 60);
         if (cursor == 1) chord = constrain(chord += direction, 0, Nr_of_arp_chords - 1);
         if (cursor == 2) transpose = constrain(transpose += direction, -24, 24);
+        replay = 1;
     }
         
     uint32_t OnDataRequest() {
@@ -182,6 +179,11 @@ private:
         chord = new_chord;
         confirm_animation_position = 16;
         confirm_animation_countdown = HEM_CARPEGGIO_ANIMATION_SPEED;
+    }
+
+    void pitch_out_for_step() {
+        int note = sequence[step] + 48 + transpose;
+        Out(0, quantizer.Lookup(constrain(note, 0, 126)));
     }
 };
 
