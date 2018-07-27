@@ -3,6 +3,6 @@
 //
 // GENERATED FILE, DO NOT EDIT
 //
-#define OC_VERSION "v1.1 (OC1.3.4)"
+#define OC_VERSION "v1.2 (OC1.3.4)"
 #endif
   

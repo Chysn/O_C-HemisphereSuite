@@ -29,8 +29,10 @@ public:
             // simply play current step and advance it. This way, the applet can be used as
             // a more conventional arpeggiator as well as a Cartesian one.
             if (DetentedIn(0) || DetentedIn(1)) {
-                int x = ProportionCV(In(0), 3);
-                int y = ProportionCV(In(1), 3);
+                int x = ProportionCV(In(0), 4);
+                int y = ProportionCV(In(1), 4);
+                if (x > 3) x = 3;
+                if (y > 3) y = 3;
                 step = (y * 4) + x;
                 pitch_out_for_step();
             } else {
@@ -63,7 +65,10 @@ public:
 
     void OnButtonPress() {
         // Set a chord imprint if a new chord is picked
-        if (cursor == 1 && chord != sel_chord) ImprintChord(chord);
+        if (cursor == 1 && chord != sel_chord) {
+            cursor = 0; // Don't advance cursor when chord is changed
+            ImprintChord(chord);
+        }
         if (++cursor > 2) cursor = 0;
         ResetCursor();
     }
@@ -72,7 +77,7 @@ public:
         if (cursor == 0) sequence[step] = constrain(sequence[step] += direction, 0, 60);
         if (cursor == 1) chord = constrain(chord += direction, 0, Nr_of_arp_chords - 1);
         if (cursor == 2) transpose = constrain(transpose += direction, -24, 24);
-        replay = 1;
+        if (cursor != 1) replay = 1;
     }
         
     uint32_t OnDataRequest() {
