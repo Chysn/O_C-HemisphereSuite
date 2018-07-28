@@ -49,6 +49,7 @@ public:
     void Init() {
         select_mode = -1; // Not selecting
         filter_select_mode = -1; // Not selecting filter
+        midi_in_hemisphere = -1; // No MIDI In
         Applet applets[] = HEMISPHERE_APPLETS;
         memcpy(&available_applets, &applets, sizeof(applets));
         forwarding = 0;
@@ -79,6 +80,8 @@ public:
 
     void SetApplet(int hemisphere, int index) {
         my_applet[hemisphere] = index;
+        if (midi_in_hemisphere == hemisphere) midi_in_hemisphere = -1;
+        if (available_applets[index].id & 0x80) midi_in_hemisphere = hemisphere;
         available_applets[index].Start(hemisphere);
         apply_value(hemisphere, available_applets[index].id);
     }
@@ -95,6 +98,16 @@ public:
     }
 
     void ExecuteControllers() {
+        if (midi_in_hemisphere == -1) {
+            // Only one ISR can look for MIDI messages at a time, so we need to check
+            // for another MIDI In applet before looking for sysex. Note that applets
+            // that use MIDI In should check for sysex themselves; see Midi In for an
+            // example.
+            if (usbMIDI.read() && usbMIDI.getType() == 7) {
+                ProcessSystemExclusive();
+            }
+        }
+
         for (int h = 0; h < 2; h++)
         {
             int index = my_applet[h];
@@ -223,9 +236,47 @@ public:
     }
 
     void EnableFilterSelect() {
-        if (help_hemisphere < 0) { // Ignore this if the help system is on; it makes things weird for the user
+        if (help_hemisphere < 0) {
             if (select_mode < 0) select_mode = 0; // Default to the left hemisphere
             filter_select_mode = select_mode;
+        }
+    }
+
+    void SendSystemExclusive() {
+        RequestAppletData();
+        uint8_t packet[29];
+        int ix = 0;
+        packet[ix++] = 0xf0; // Start of SysEx
+        packet[ix++] = 0x7d; // Non-Commercial Manufacturer
+        packet[ix++] = 0x62; // Beige Maze
+        packet[ix++] = 0x48; // Hemisphere
+        for (int i = 0; i <  6; i++)
+        {
+            uint16_t v = values_[i];
+            for (int n = 0; n < 4; n++)
+            {
+                packet[ix++] = (v >> (4 * n)) & 0x0f;
+            }
+        }
+        packet[ix++] = 0xf7; // End of SysEx
+        usbMIDI.sendSysEx(29, packet);
+        usbMIDI.send_now();
+    }
+
+    void ProcessSystemExclusive() {
+        const uint8_t *sysex = usbMIDI.getSysExArray();
+        if (sysex[1] == 0x7d && sysex[2] == 0x62 && sysex[3] == 0x48) {
+            int ix = 4;
+            for (int i = 0; i < 6; i++)
+            {
+                uint16_t v = 0;
+                for (int n = 0; n < 4; n++)
+                {
+                    v += sysex[ix++] << (4 * n);
+                }
+                values_[i] = v;
+            }
+            Resume();
         }
     }
 
@@ -238,6 +289,7 @@ private:
     int select_mode;
     int forwarding;
     int help_hemisphere; // Which of the hemispheres (if any) is in help mode, or -1 if none
+    int midi_in_hemisphere; // Which of the hemispheres (if any) is using MIDI In
     uint32_t click_tick; // Measure time between clicks for double-click
     int first_click; // The first button pushed of a double-click set, to see if the same one is pressed
 
@@ -282,8 +334,7 @@ private:
         // If an applet uses MIDI In, it can only be selected in one
         // hemisphere, and is designated by bit 7 set in its id.
         if (available_applets[index].id & 0x80) {
-            int opp_index = my_applet[1 - select_mode];
-            if (available_applets[opp_index].id & 0x80) {
+            if (midi_in_hemisphere == (1 - select_mode)) {
                 return get_next_applet_index(index, dir);
             }
         }
@@ -298,7 +349,6 @@ private:
 
         return index;
     }
-
 };
 
 SETTINGS_DECLARE(HemisphereManager, HEMISPHERE_SETTING_LAST) {
@@ -342,6 +392,9 @@ void HEMISPHERE_isr() {
 }
 
 void HEMISPHERE_handleAppEvent(OC::AppEvent event) {
+    if (event == OC::APP_EVENT_SUSPEND) {
+        manager.SendSystemExclusive();
+    }
 }
 
 void HEMISPHERE_loop() {} // Essentially deprecated in favor of ISR

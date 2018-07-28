@@ -39,7 +39,7 @@
     DECLARE_APPLET(  3, 0x10, Switch), \
     DECLARE_APPLET( 19, 0x01, Slew), \
     DECLARE_APPLET( 13, 0x14, TLNeuron), \
-    DECLARE_APPLET( 18, 0x02, TM), \
     DECLARE_APPLET( 11, 0x06, TrigSeq), \
     DECLARE_APPLET( 25, 0x06, TrigSeq16), \
+    DECLARE_APPLET( 18, 0x02, TM), \
 }

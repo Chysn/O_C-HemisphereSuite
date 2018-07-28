@@ -25,6 +25,9 @@
 
 #include "util/util_settings.h"
 #include "OC_DAC.h"
+#include "braids_quantizer.h"
+#include "braids_quantizer_scales.h"
+#include "OC_scales.h"
 
 #define DT_LENGTH 64
 #define DT_INDEX 65
@@ -57,6 +60,9 @@ public:
     	    last_cv_index = 0; // Allows a manual change to index stick around until changed by CV
 
     	    for (int i = 0; i < DT_SEQ_STEPS; i++) values_[i] = 0;
+
+        quantizer.Init();
+        quantizer.Configure(OC::Scales::GetScale(5), 0xffff);
     }
 
     void ISR() {
@@ -88,7 +94,8 @@ public:
 		if (cv_record_enabled) {
 			adc_value = OC::ADC::raw_pitch_value(ADC_CHANNEL_1);
 			if (adc_value < 0) adc_value = 0; // Constrain CV to positive
-			values_[idx] = (int)adc_value;
+            int32_t pitch = quantizer.Process(adc_value, 0, 0);
+			values_[idx] = (int)pitch;
 		}
 
 		// Update Probability value if Probability Record is enabled
@@ -277,11 +284,13 @@ private:
     int trigger1_countdown;
     int trigger2_countdown;
 
+    braids::Quantizer quantizer;
+
     /* Geez, don't even ask me to explain this. It's 11PM. (position + cursor) % length constrains the
 	 * pattern to length steps. Then the index is added. Then the % DT_TIMELINE_SIZE constrains
 	 * the pattern to the entire indexed pattern.
 	 *
-	 * Note that this is th data index for the CV timeline. For the probability timeline, add
+	 * Note that this is the data index for the CV timeline. For the probability timeline, add
 	 * DT_TIMELINE_SIZE to the returned value.
 	 */
     int data_index_at_position(int position) {

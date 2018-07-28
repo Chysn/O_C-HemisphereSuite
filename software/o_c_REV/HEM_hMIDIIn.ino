@@ -9,6 +9,7 @@
 #define HEM_MIDI_CC 3
 #define HEM_MIDI_AFTERTOUCH 5
 #define HEM_MIDI_PITCHBEND 6
+#define HEM_MIDI_SYSEX 7
 
 // The functions available for each output
 #define HEM_MIDI_NOTE_OUT 0
@@ -52,9 +53,13 @@ public:
 
     void Controller() {
         if (usbMIDI.read()) {
+            int message = usbMIDI.getType();
+            if (message == HEM_MIDI_SYSEX) {
+                ProcessManagerSysEx();
+            }
+
             if (usbMIDI.getChannel() == (channel + 1)) {
                 last_tick = OC::CORE::ticks;
-                int message = usbMIDI.getType();
                 int data1 = usbMIDI.getData1();
                 int data2 = usbMIDI.getData2();
                 bool log_this = false;
@@ -289,6 +294,9 @@ private:
     }
 };
 
+void ProcessManagerSysEx() {
+    manager.ProcessSystemExclusive();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //// Hemisphere Applet Functions
