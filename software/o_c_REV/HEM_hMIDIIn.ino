@@ -55,7 +55,7 @@ public:
         if (usbMIDI.read()) {
             int message = usbMIDI.getType();
             if (message == HEM_MIDI_SYSEX) {
-                ProcessManagerSysEx();
+                ReceiveManagerSysEx();
             }
 
             if (usbMIDI.getChannel() == (channel + 1)) {
@@ -293,10 +293,6 @@ private:
         }
     }
 };
-
-void ProcessManagerSysEx() {
-    manager.ProcessSystemExclusive();
-}
 
 ////////////////////////////////////////////////////////////////////////////////
 //// Hemisphere Applet Functions

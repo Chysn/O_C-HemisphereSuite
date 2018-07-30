@@ -6,6 +6,7 @@ namespace menu = OC::menu;
 
 #include "hemisphere_config.h"
 #include "HemisphereApplet.h"
+#include "BeigeMazeSysEx.h"
 
 #define DECLARE_APPLET(id, categories, class_name) \
 { id, categories, class_name ## _Start, class_name ## _Controller, class_name ## _View, class_name ## _Screensaver, \
@@ -104,7 +105,7 @@ public:
             // that use MIDI In should check for sysex themselves; see Midi In for an
             // example.
             if (usbMIDI.read() && usbMIDI.getType() == 7) {
-                ProcessSystemExclusive();
+                OnReceiveSysEx();
             }
         }
 
@@ -242,40 +243,20 @@ public:
         }
     }
 
-    void SendSystemExclusive() {
+    void OnSendSysEx() {
+        SysEx sysex = SysEx('H', HEMISPHERE_SETTING_LAST);
         RequestAppletData();
-        uint8_t packet[29];
-        int ix = 0;
-        packet[ix++] = 0xf0; // Start of SysEx
-        packet[ix++] = 0x7d; // Non-Commercial Manufacturer
-        packet[ix++] = 0x62; // Beige Maze
-        packet[ix++] = 0x48; // Hemisphere
-        for (int i = 0; i <  6; i++)
-        {
-            uint16_t v = values_[i];
-            for (int n = 0; n < 4; n++)
-            {
-                packet[ix++] = (v >> (4 * n)) & 0x0f;
-            }
-        }
-        packet[ix++] = 0xf7; // End of SysEx
-        usbMIDI.sendSysEx(29, packet);
+        uint8_t packet[sysex.getWrappedSize()];
+        sysex.Wrap(packet, values_, 'H');
+        usbMIDI.sendSysEx(sysex.getWrappedSize(), packet);
         usbMIDI.send_now();
     }
 
-    void ProcessSystemExclusive() {
-        const uint8_t *sysex = usbMIDI.getSysExArray();
-        if (sysex[1] == 0x7d && sysex[2] == 0x62 && sysex[3] == 0x48) {
-            int ix = 4;
-            for (int i = 0; i < 6; i++)
-            {
-                uint16_t v = 0;
-                for (int n = 0; n < 4; n++)
-                {
-                    v += sysex[ix++] << (4 * n);
-                }
-                values_[i] = v;
-            }
+    void OnReceiveSysEx() {
+        SysEx sysex = SysEx('H', HEMISPHERE_SETTING_LAST);
+        uint8_t *data = usbMIDI.getSysExArray();
+        if (sysex.verify(data)) {
+            sysex.Unwrap(values_, data);
             Resume();
         }
     }
@@ -360,12 +341,15 @@ SETTINGS_DECLARE(HemisphereManager, HEMISPHERE_SETTING_LAST) {
     {0, 0, 65535, "Data R high", NULL, settings::STORAGE_TYPE_U16},
 };
 
+HemisphereManager manager;
+
+void ReceiveManagerSysEx() {
+    manager.OnReceiveSysEx();
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 //// O_C App Functions
 ////////////////////////////////////////////////////////////////////////////////
-
-HemisphereManager manager;
 
 // App stubs
 void HEMISPHERE_init() {
@@ -393,7 +377,7 @@ void HEMISPHERE_isr() {
 
 void HEMISPHERE_handleAppEvent(OC::AppEvent event) {
     if (event == OC::APP_EVENT_SUSPEND) {
-        manager.SendSystemExclusive();
+        manager.OnSendSysEx();
     }
 }
 
