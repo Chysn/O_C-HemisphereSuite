@@ -22,10 +22,19 @@ public:
             ClockOut(1);
         }
 
-        if (Clock(0)) {
-            Out(0, quantizer.Lookup(note[step] + 48));
+        int transpose = Proportion(In(0), HEMISPHERE_MAX_CV / 2, 12);
+        transpose = constrain(transpose, -12, 12);
+
+        if (Clock(0)) StartADCLag();
+
+        if (EndOfADCLag()) {
+            Out(0, quantizer.Lookup(note[step] + 48 + transpose));
             Advance(step);
             if (step == 0) ClockOut(1);
+        }
+
+        if (play) {
+            Out(0, quantizer.Lookup(note[step] + 48 + transpose));
         }
     }
 
@@ -43,13 +52,14 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        if (note[cursor] + direction < 0) {
+        if (note[cursor] + direction < 0 && cursor > 0) {
             // If turning past zero, set the mute bit for this step
             muted |= (0x01 << cursor);
         } else {
             note[cursor] = constrain(note[cursor] += direction, 0, 30);
             muted &= ~(0x01 << cursor);
         }
+        play = 1; // Replay the changed step in the controller, so it can be heard
     }
 
     uint32_t OnDataRequest() {
@@ -74,7 +84,7 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
-        help[HEMISPHERE_HELP_CVS]      = "";
+        help[HEMISPHERE_HELP_CVS]      = "1=Transpose";
         help[HEMISPHERE_HELP_OUTS]     = "A=CV B=Clk Step 1";
         help[HEMISPHERE_HELP_ENCODER]  = "Note";
         //                               "------------------" <-- Size Guide
@@ -86,6 +96,7 @@ private:
     char muted = 0; // Bitfield for muted steps; ((muted >> step) & 1) means muted
     int note[5]; // Sequence value (0 - 30)
     int step = 0; // Current sequencer step
+    bool play; // Play the note
 
     void Advance(int starting_point) {
         if (++step == 5) step = 0;

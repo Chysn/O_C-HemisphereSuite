@@ -233,14 +233,10 @@ public:
         return (In(ch) > 300 || In(ch) < -300) ? In(ch) : 0;
     }
 
-    void Out(int ch, int value, int octave) {
+    void Out(int ch, int value, int octave = 0) {
         DAC_CHANNEL channel = (DAC_CHANNEL)(ch + io_offset);
         OC::DAC::set_pitch(channel, value, octave);
         outputs[ch] = value;
-    }
-
-    void Out(int ch, int value) {
-        Out(ch, value, 0);
     }
 
     bool Clock(int ch) {
@@ -259,13 +255,9 @@ public:
         return clocked;
     }
 
-    void ClockOut(int ch, int ticks) {
+    void ClockOut(int ch, int ticks = HEMISPHERE_CLOCK_TICKS) {
         clock_countdown[ch] = ticks;
         Out(ch, 0, 5);
-    }
-
-    void ClockOut(int ch) {
-        ClockOut(ch, HEMISPHERE_CLOCK_TICKS);
     }
 
     bool Gate(int ch) {
@@ -354,16 +346,15 @@ protected:
      *     // etc...
      * }
      */
-    void StartADCLag(int ch) {
+    void StartADCLag(int ch = 0) {
         adc_lag_countdown[ch] = HEMISPHERE_ADC_LAG;
     }
-    void StartADCLag() {StartADCLag(0);}
 
-    bool EndOfADCLag(int ch) {
+    bool EndOfADCLag(int ch = 0) {
         return (--adc_lag_countdown[ch] == 0);
     }
-    bool EndOfADCLag() {return EndOfADCLag(0);}
 
+    /* Master Clock Forwarding is activated. This is updated with each ISR cycle by the Hemisphere Manager */
     bool MasterClockForwarded() {return master_clock_bus;}
 
 private:

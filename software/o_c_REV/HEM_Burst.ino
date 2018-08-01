@@ -15,11 +15,16 @@ public:
         spacing = 50;
         bursts_to_go = 0;
         clocked = 0;
+        last_number_cv_tick = 0;
     }
 
     void Controller() {
         // Settings and modulation over CV
-        if (DetentedIn(0) > 0) number = ProportionCV(In(0), HEM_BURST_NUMBER_MAX - 1) + 1;
+        if (DetentedIn(0) > 0) {
+            number = ProportionCV(In(0), HEM_BURST_NUMBER_MAX + 1);
+            number = constrain(number, 1, HEM_BURST_NUMBER_MAX);
+            last_number_cv_tick = OC::CORE::ticks;
+        }
         int spacing_mod = clocked ? 0 : Proportion(DetentedIn(1), HEMISPHERE_MAX_CV, 500);
 
         // Get timing information
@@ -43,8 +48,17 @@ public:
             }
         }
 
-        // Handle a new burst set trigger
-        if (Clock(1)) {
+        // Handle the triggering of a new burst set.
+        //
+        // number_is_changing: If Number is being changed via CV, employ the ADC Lag mechanism
+        // so that Number can be set and gated with a sequencer (or something). Otherwise, if
+        // Number is not being changed via CV, fire the set of bursts right away. This is done so that
+        // the applet can adapt to contexts that involve (1) the need to accurately interpret rapidly-
+        // changing CV values or (2) the need for tight timing when Number is static-ish.
+        bool number_is_changing = (OC::CORE::ticks - last_number_cv_tick < 80000);
+        if (Clock(1) && number_is_changing) StartADCLag();
+
+        if (EndOfADCLag() || (Clock(1) && !number_is_changing)) {
             GateOut(1, 1);
             bursts_to_go = number;
             burst_countdown = spacing * 17;
@@ -103,6 +117,8 @@ private:
     bool clocked; // When a clock signal is received at Digital 1, clocked is activated, and the
                   // spacing of a new burst is number/clock length.
     int ticks_since_clock; // When clocked, this is the time since the last clock.
+    int last_number_cv_tick; // The last time the number was changed via CV. This is used to
+                             // decide whether the ADC delay should be used when clocks come in.
 
     // Settings
     int number; // How many bursts fire at each trigger
