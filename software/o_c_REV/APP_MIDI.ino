@@ -11,8 +11,34 @@ const uint8_t MIDI_MSG_AFTERTOUCH = 5;
 const uint8_t MIDI_MSG_PITCHBEND = 6;
 const uint8_t MIDI_MSG_SYSEX = 7;
 const uint16_t MIDI_INDICATOR_COUNTDOWN = 2000;
+const int MIDI_MAX_CV = 7677;
+const int MIDI_PARAMETER_COUNT = 40;
+
+const char* const midi_out_functions[7] = {
+  "--", "Note", "Leg.", "Veloc", "Mod", "Aft", "Bend"
+};
+const char* const midi_in_functions[8] = {
+  "--", "Note", "Gate", "Trig", "Veloc", "Mod", "Aft", "Bend"
+};
+const char* const midi_channels[17] = {
+  "Off", " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11", "12", "13", "14", "15", "16"
+};
+const char* const midi_note_numbers[128] = {
+    "C-1","C#-1","D-1","D#-1","E-1","F-1","F#-1","G-1","G#-1","A-1","A#-1","B-1",
+    "C0","C#0","D0","D#0","E0","F0","F#0","G0","G#0","A0","A#0","B0",
+    "C1","C#1","D1","D#1","E1","F1","F#1","G1","G#1","A1","A#1","B1",
+    "C2","C#2","D2","D#2","E2","F2","F#2","G2","G#2","A2","A#2","B2",
+    "C3","C#3","D3","D#3","E3","F3","F#3","G3","G#3","A3","A#3","B3",
+    "C4","C#4","D4","D#4","E4","F4","F#4","G4","G#4","A4","A#4","B4",
+    "C5","C#5","D5","D#5","E5","F5","F#5","G5","G#5","A5","A#5","B5",
+    "C6","C#6","D6","D#6","E6","F6","F#6","G6","G#6","A6","A#6","B6",
+    "C7","C#7","D7","D#7","E7","F7","F#7","G7","G#7","A7","A#7","B7",
+    "C8","C#8","D8","D#8","E8","F8","F#8","G8","G#8","A8","A#8","B8",
+    "C9","C#9","D9","D#9","E9","F9","F#9","G9"
+};
 
 enum MIDI_IN_FUNCTION {
+    MIDI_IN_OFF,
     MIDI_IN_NOTE,
     MIDI_IN_GATE,
     MIDI_IN_TRIGGER,
@@ -23,6 +49,7 @@ enum MIDI_IN_FUNCTION {
 };
 
 enum MIDI_OUT_FUNCTION {
+    MIDI_OUT_OFF,
     MIDI_OUT_NOTE,
     MIDI_OUT_LEGATO,
     MIDI_OUT_VELOCITY,
@@ -59,6 +86,24 @@ enum MIDI_SETTINGS {
     MIDI_SETTING_1_IN_3_TRANSPOSE,
     MIDI_SETTING_1_IN_4_TRANSPOSE,
 
+    MIDI_SETTING_1_OUT_1_RANGE_LOW,
+    MIDI_SETTING_1_OUT_2_RANGE_LOW,
+    MIDI_SETTING_1_OUT_3_RANGE_LOW,
+    MIDI_SETTING_1_OUT_4_RANGE_LOW,
+    MIDI_SETTING_1_IN_A_RANGE_LOW,
+    MIDI_SETTING_1_IN_B_RANGE_LOW,
+    MIDI_SETTING_1_IN_C_RANGE_LOW,
+    MIDI_SETTING_1_IN_D_RANGE_LOW,
+
+    MIDI_SETTING_1_OUT_1_RANGE_HI,
+    MIDI_SETTING_1_OUT_2_RANGE_HI,
+    MIDI_SETTING_1_OUT_3_RANGE_HI,
+    MIDI_SETTING_1_OUT_4_RANGE_HI,
+    MIDI_SETTING_1_IN_A_RANGE_HI,
+    MIDI_SETTING_1_IN_B_RANGE_HI,
+    MIDI_SETTING_1_IN_C_RANGE_HI,
+    MIDI_SETTING_1_IN_D_RANGE_HI,
+
     MIDI_SETTING_2_OUT_1_ASSIGN,
     MIDI_SETTING_2_OUT_2_ASSIGN,
     MIDI_SETTING_2_OUT_3_ASSIGN,
@@ -85,6 +130,24 @@ enum MIDI_SETTINGS {
     MIDI_SETTING_2_IN_2_TRANSPOSE,
     MIDI_SETTING_2_IN_3_TRANSPOSE,
     MIDI_SETTING_2_IN_4_TRANSPOSE,
+
+    MIDI_SETTING_2_OUT_1_RANGE_LOW,
+    MIDI_SETTING_2_OUT_2_RANGE_LOW,
+    MIDI_SETTING_2_OUT_3_RANGE_LOW,
+    MIDI_SETTING_2_OUT_4_RANGE_LOW,
+    MIDI_SETTING_2_IN_A_RANGE_LOW,
+    MIDI_SETTING_2_IN_B_RANGE_LOW,
+    MIDI_SETTING_2_IN_C_RANGE_LOW,
+    MIDI_SETTING_2_IN_D_RANGE_LOW,
+
+    MIDI_SETTING_2_OUT_1_RANGE_HI,
+    MIDI_SETTING_2_OUT_2_RANGE_HI,
+    MIDI_SETTING_2_OUT_3_RANGE_HI,
+    MIDI_SETTING_2_OUT_4_RANGE_HI,
+    MIDI_SETTING_2_IN_A_RANGE_HI,
+    MIDI_SETTING_2_IN_B_RANGE_HI,
+    MIDI_SETTING_2_IN_C_RANGE_HI,
+    MIDI_SETTING_2_IN_D_RANGE_HI,
 
     MIDI_SETTING_SELECTED_SETUP,
 
@@ -135,6 +198,8 @@ public:
         if (screen == 0) graphics.print("   MIDI Assign");
         if (screen == 1) graphics.print("  MIDI Channel");
         if (screen == 2) graphics.print("     Transpose");
+        if (screen == 3) graphics.print("     Range Low");
+        if (screen == 4) graphics.print("    Range High");
 
         // Iterate through the current range of settings
         menu::SettingsList<menu::kScreenLines, 0, menu::kDefaultValueX - 1> settings_list(cursor);
@@ -148,23 +213,32 @@ public:
             // MIDI In and Out indicators for all screens
             if (p > 3) { // It's a MIDI In assignment
                 if (indicator_in[p - 4] > 0 || note_in[p - 4] > -1) {
-                    graphics.drawBitmap8(70, list_item.y + 2, 8, midi_icon);
+                    if (get_in_assign(p - 4) == MIDI_IN_NOTE && note_in[p - 4] > -1) {
+                        graphics.setPrintPos(70, list_item.y + 2);
+                        graphics.print(midi_note_numbers[note_in[p - 4]]);
+                    } else {
+                        graphics.drawBitmap8(70, list_item.y + 2, 8, midi_icon);
+                    }
                 }
             } else { // It's a MIDI Out assignment
                 if (indicator_out[p] > 0 || note_out[p] > -1) {
+                    if ((get_out_assign(p) == MIDI_OUT_NOTE || get_out_assign(p) == MIDI_OUT_LEGATO) && note_out[p] > -1) {
+                        graphics.setPrintPos(70, list_item.y + 2);
+                        graphics.print(midi_note_numbers[note_out[p]]);
+                    }
                     graphics.drawBitmap8(70, list_item.y + 2, 8, midi_icon);
                 }
             }
 
-            // Note indicator for transpose (if the channel is assigned to a Note type)
-            if (screen == 2) {
+            // Note indicator for note edit screens (transpose, range)
+            if (screen > 1) {
                 if (p > 3) {
                     if (get_in_channel(p - 4) > 0 && get_in_assign(p - 4) == MIDI_IN_NOTE) {
-                        graphics.drawBitmap8(56, list_item.y + 2, 8, note_icon);
+                        graphics.drawBitmap8(56, list_item.y + 1, 8, note_icon);
                     }
                 } else {
                     if (get_out_channel(p) > 0 && (get_out_assign(p) == MIDI_OUT_NOTE || get_out_assign(p) == MIDI_OUT_LEGATO)) {
-                        graphics.drawBitmap8(56, list_item.y + 2, 8, note_icon);
+                        graphics.drawBitmap8(56, list_item.y + 1, 8, note_icon);
                     }
                 }
             }
@@ -182,9 +256,9 @@ public:
         if (setup_number != get_setup_number()) Reset();
 
         // Find the cursor position, and new start and end menu items
-        int prev_cursor = cursor.cursor_pos() - ((screen * 8) + (get_setup_number() * 24));
-        int start = (new_screen * 8) + (setup_number * 24);
-        int end = (new_screen * 8) + (setup_number * 24) + 7;
+        int prev_cursor = cursor.cursor_pos() - ((screen * 8) + (get_setup_number() * MIDI_PARAMETER_COUNT));
+        int start = (new_screen * 8) + (setup_number * MIDI_PARAMETER_COUNT);
+        int end = (new_screen * 8) + (setup_number * MIDI_PARAMETER_COUNT) + 7;
 
         // And go to there
         cursor.Init(start, end);
@@ -194,7 +268,7 @@ public:
     }
 
     void SwitchScreen(int dir) {
-        int new_screen = constrain(screen + dir, 0, 2);
+        int new_screen = constrain(screen + dir, 0, 4);
         SelectSetup(get_setup_number(), new_screen);
     }
 
@@ -280,13 +354,15 @@ private:
                         note_on = 1;
                     }
 
+                    if (!in_out_range(ch, midi_note)) note_on = 0; // Don't play if out of range
+
                     if (note_on) {
                         int velocity = 0x64;
                         // Look for an input assigned to velocity on the same channel and, if found, use it
                         for (int vch = 0; vch < 4; vch++)
                         {
                             if (get_out_assign(vch) == MIDI_OUT_VELOCITY && get_out_channel(vch) == out_ch) {
-                                velocity = Proportion(In(vch), HEMISPHERE_MAX_CV, 127);
+                                velocity = Proportion(In(vch), MIDI_MAX_CV, 127);
                             }
                         }
                         usbMIDI.sendNoteOn(midi_note, velocity, out_ch);
@@ -314,21 +390,21 @@ private:
 
                 // Modulation wheel
                 if (out_fn == MIDI_OUT_MOD) {
-                    int value = Proportion(this_cv, HEMISPHERE_MAX_CV, 127);
+                    int value = Proportion(this_cv, MIDI_MAX_CV, 127);
                     usbMIDI.sendControlChange(1, value, out_ch);
                     indicator = 1;
                 }
 
                 // Aftertouch
                 if (out_fn == MIDI_OUT_AFTERTOUCH) {
-                    int value = Proportion(this_cv, HEMISPHERE_MAX_CV, 127);
+                    int value = Proportion(this_cv, MIDI_MAX_CV, 127);
                     usbMIDI.sendAfterTouch(value, out_ch);
                     indicator = 1;
                 }
 
                 // Pitch Bend
                 if (out_fn == MIDI_OUT_PITCHBEND) {
-                    uint16_t bend = Proportion(this_cv + (HEMISPHERE_MAX_CV / 2), HEMISPHERE_MAX_CV, 16383);
+                    uint16_t bend = Proportion(this_cv + (MIDI_MAX_CV / 2), MIDI_MAX_CV, 16383);
                     bend = constrain(bend, 0, 16383);
                     usbMIDI.sendPitchBend(bend, out_ch);
                     indicator = 1;
@@ -362,8 +438,10 @@ private:
                             // misinterpreted if transposition is changed during the note.
                             int note = data1 + get_in_transpose(ch);
                             note = constrain(note, 0, 127);
-                            Out(ch, quantizer.Lookup(note));
-                            indicator = 1;
+                            if (in_in_range(ch, note)) {
+                                Out(ch, quantizer.Lookup(note));
+                                indicator = 1;
+                            } else note_in[ch] = -1;
                         }
 
                         if (in_fn == MIDI_IN_GATE) {
@@ -380,7 +458,7 @@ private:
 
                         if (in_fn == MIDI_IN_VELOCITY) {
                             // Send velocity data to CV
-                            Out(ch, Proportion(data2, 127, HEMISPHERE_MAX_CV));
+                            Out(ch, Proportion(data2, 127, MIDI_MAX_CV));
                             indicator = 1;
                         }
                     }
@@ -401,7 +479,7 @@ private:
                     // Send mod wheel to CV
                     if (data1 == 1) {
                         int data = data2 << 8;
-                        Out(ch, Proportion(data, 0x7fff, HEMISPHERE_MAX_CV));
+                        Out(ch, Proportion(data, 0x7fff, MIDI_MAX_CV));
                         indicator = 1;
                     }
                 }
@@ -409,14 +487,14 @@ private:
                 if (message == MIDI_MSG_AFTERTOUCH && in_fn == MIDI_IN_AFTERTOUCH && in_ch == channel) {
                     // Send aftertouch to CV
                     int data = data2 << 8;
-                    Out(ch, Proportion(data, 0x7fff, HEMISPHERE_MAX_CV));
+                    Out(ch, Proportion(data, 0x7fff, MIDI_MAX_CV));
                     indicator = 1;
                 }
 
                 if (message == MIDI_MSG_PITCHBEND && in_fn == MIDI_IN_PITCHBEND && in_ch == channel) {
                     // Send pitch bend to CV
                     int data = (data2 << 8) + data1 - 16384;
-                    Out(ch, Proportion(data, 0x7fff, HEMISPHERE_MAX_CV));
+                    Out(ch, Proportion(data, 0x7fff, MIDI_MAX_CV));
                     indicator = 1;
                 }
 
@@ -426,33 +504,47 @@ private:
     }
 
     int get_out_assign(int ch) {
-        int setup_offset = get_setup_number() * 24;
+        int setup_offset = get_setup_number() * MIDI_PARAMETER_COUNT;
         return values_[ch + setup_offset];
     }
 
     int get_out_channel(int ch) {
-        int setup_offset = get_setup_number() * 24;
+        int setup_offset = get_setup_number() * MIDI_PARAMETER_COUNT;
         return values_[8 + ch + setup_offset];
     }
 
     int get_out_transpose(int ch) {
-        int setup_offset = get_setup_number() * 24;
+        int setup_offset = get_setup_number() * MIDI_PARAMETER_COUNT;
         return values_[16 + ch + setup_offset];
     }
 
+    bool in_out_range(int ch, int note) {
+        int setup_offset = get_setup_number() * MIDI_PARAMETER_COUNT;
+        int range_low = values_[24 + ch + setup_offset];
+        int range_high = values_[32 + ch + setup_offset];
+        return (note >= range_low && note <= range_high);
+    }
+
     int get_in_assign(int ch) {
-        int setup_offset = get_setup_number() * 24;
+        int setup_offset = get_setup_number() * MIDI_PARAMETER_COUNT;
         return values_[4 + ch + setup_offset];
     }
 
     int get_in_channel(int ch) {
-        int setup_offset = get_setup_number() * 24;
+        int setup_offset = get_setup_number() * MIDI_PARAMETER_COUNT;
         return values_[12 + ch + setup_offset];
     }
 
     int get_in_transpose(int ch) {
-        int setup_offset = get_setup_number() * 24;
+        int setup_offset = get_setup_number() * MIDI_PARAMETER_COUNT;
         return values_[20 + ch + setup_offset];
+    }
+
+    bool in_in_range(int ch, int note) {
+        int setup_offset = get_setup_number() * MIDI_PARAMETER_COUNT;
+        int range_low = values_[28 + ch + setup_offset];
+        int range_high = values_[36 + ch + setup_offset];
+        return (note >= range_low && note <= range_high);
     }
 
     bool cv_has_changed(int this_cv, int last_cv) {
@@ -481,13 +573,13 @@ private:
         Out(ch, 0, (high ? 5 : 0));
     }
 
-    void ClockOut(int ch, int ticks = HEMISPHERE_CLOCK_TICKS) {
+    void ClockOut(int ch, int ticks = 100) {
         clock_countdown[ch] = ticks;
         Out(ch, 0, 5);
     }
 
     void StartADCLag(int ch) {
-        adc_lag_countdown[ch] = HEMISPHERE_ADC_LAG;
+        adc_lag_countdown[ch] = 96;
     }
 
     bool EndOfADCLag(int ch) {
@@ -501,25 +593,15 @@ private:
     }
 };
 
-const char* const midi_out_functions[6] = {
-  "Note", "Leg.", "Veloc", "Mod", "Aft", "Bend"
-};
-const char* const midi_in_functions[7] = {
-  "Note", "Gate", "Trig", "Veloc", "Mod", "Aft", "Bend"
-};
-const char* const midi_channels[17] = {
-  "Off", " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11", "12", "13", "14", "15", "16"
-};
-
 SETTINGS_DECLARE(MIDIInterface, MIDI_SETTING_LAST) {
-    { 0, 0, 5, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 5, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 5, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 5, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 7, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 7, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 7, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 7, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },
 
     { 0, 0, 16, "1 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
     { 0, 0, 16, "2 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
@@ -539,14 +621,32 @@ SETTINGS_DECLARE(MIDIInterface, MIDI_SETTING_LAST) {
     { 0, -24, 24, "MIDI > C", NULL, settings::STORAGE_TYPE_I8 },
     { 0, -24, 24, "MIDI > D", NULL, settings::STORAGE_TYPE_I8 },
 
-    { 0, 0, 5, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 5, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 5, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 5, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "1 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "2 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "3 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "4 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "MIDI > A", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "MIDI > B", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "MIDI > C", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "MIDI > D", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+
+    { 127, 0, 127, "1 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 127, 0, 127, "2 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 127, 0, 127, "3 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 127, 0, 127, "4 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 127, 0, 127, "MIDI > A", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 127, 0, 127, "MIDI > B", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 127, 0, 127, "MIDI > C", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 127, 0, 127, "MIDI > D", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+
+    { 0, 0, 6, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 7, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 7, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 7, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 7, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },
 
     { 0, 0, 16, "1 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
     { 0, 0, 16, "2 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
@@ -565,6 +665,24 @@ SETTINGS_DECLARE(MIDIInterface, MIDI_SETTING_LAST) {
     { 0, -24, 24, "MIDI > B", NULL, settings::STORAGE_TYPE_I8 },
     { 0, -24, 24, "MIDI > C", NULL, settings::STORAGE_TYPE_I8 },
     { 0, -24, 24, "MIDI > D", NULL, settings::STORAGE_TYPE_I8 },
+
+    { 0, 0, 127, "1 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "2 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "3 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "4 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "MIDI > A", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "MIDI > B", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "MIDI > C", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "MIDI > D", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+
+    { 127, 0, 127, "1 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 127, 0, 127, "2 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 127, 0, 127, "3 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 127, 0, 127, "4 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "MIDI > A", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "MIDI > B", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "MIDI > C", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 127, "MIDI > D", midi_note_numbers, settings::STORAGE_TYPE_U8 },
 
     { 0, 0, 1, "Setup", NULL, settings::STORAGE_TYPE_U8 }
 };
