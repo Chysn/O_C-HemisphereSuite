@@ -32,59 +32,59 @@ enum MIDI_OUT_FUNCTION {
 };
 
 enum MIDI_SETTINGS {
-    MIDI_SETTING_1_OUT_1_FN,
-    MIDI_SETTING_1_OUT_1_CHANNEL,
-    MIDI_SETTING_1_OUT_2_FN,
-    MIDI_SETTING_1_OUT_2_CHANNEL,
-    MIDI_SETTING_1_OUT_3_FN,
-    MIDI_SETTING_1_OUT_3_CHANNEL,
-    MIDI_SETTING_1_OUT_4_FN,
-    MIDI_SETTING_1_OUT_4_CHANNEL,
+    MIDI_SETTING_1_OUT_1_ASSIGN,
+    MIDI_SETTING_1_OUT_2_ASSIGN,
+    MIDI_SETTING_1_OUT_3_ASSIGN,
+    MIDI_SETTING_1_OUT_4_ASSIGN,
+    MIDI_SETTING_1_IN_A_ASSIGN,
+    MIDI_SETTING_1_IN_B_ASSIGN,
+    MIDI_SETTING_1_IN_C_ASSIGN,
+    MIDI_SETTING_1_IN_D_ASSIGN,
 
-    MIDI_SETTING_1_IN_A_FN,
+    MIDI_SETTING_1_OUT_1_CHANNEL,
+    MIDI_SETTING_1_OUT_2_CHANNEL,
+    MIDI_SETTING_1_OUT_3_CHANNEL,
+    MIDI_SETTING_1_OUT_4_CHANNEL,
     MIDI_SETTING_1_IN_A_CHANNEL,
-    MIDI_SETTING_1_IN_B_FN,
     MIDI_SETTING_1_IN_B_CHANNEL,
-    MIDI_SETTING_1_IN_C_FN,
     MIDI_SETTING_1_IN_C_CHANNEL,
-    MIDI_SETTING_1_IN_D_FN,
     MIDI_SETTING_1_IN_D_CHANNEL,
 
-    MIDI_SETTING_2_OUT_1_FN,
-    MIDI_SETTING_2_OUT_1_CHANNEL,
-    MIDI_SETTING_2_OUT_2_FN,
-    MIDI_SETTING_2_OUT_2_CHANNEL,
-    MIDI_SETTING_2_OUT_3_FN,
-    MIDI_SETTING_2_OUT_3_CHANNEL,
-    MIDI_SETTING_2_OUT_4_FN,
-    MIDI_SETTING_2_OUT_4_CHANNEL,
+    MIDI_SETTING_1_OUT_1_TRANSPOSE,
+    MIDI_SETTING_1_OUT_2_TRANSPOSE,
+    MIDI_SETTING_1_OUT_3_TRANSPOSE,
+    MIDI_SETTING_1_OUT_4_TRANSPOSE,
+    MIDI_SETTING_1_IN_1_TRANSPOSE,
+    MIDI_SETTING_1_IN_2_TRANSPOSE,
+    MIDI_SETTING_1_IN_3_TRANSPOSE,
+    MIDI_SETTING_1_IN_4_TRANSPOSE,
 
-    MIDI_SETTING_2_IN_A_FN,
+    MIDI_SETTING_2_OUT_1_ASSIGN,
+    MIDI_SETTING_2_OUT_2_ASSIGN,
+    MIDI_SETTING_2_OUT_3_ASSIGN,
+    MIDI_SETTING_2_OUT_4_ASSIGN,
+    MIDI_SETTING_2_IN_A_ASSIGN,
+    MIDI_SETTING_2_IN_B_ASSIGN,
+    MIDI_SETTING_2_IN_C_ASSIGN,
+    MIDI_SETTING_2_IN_D_ASSIGN,
+
+    MIDI_SETTING_2_OUT_1_CHANNEL,
+    MIDI_SETTING_2_OUT_2_CHANNEL,
+    MIDI_SETTING_2_OUT_3_CHANNEL,
+    MIDI_SETTING_2_OUT_4_CHANNEL,
     MIDI_SETTING_2_IN_A_CHANNEL,
-    MIDI_SETTING_2_IN_B_FN,
     MIDI_SETTING_2_IN_B_CHANNEL,
-    MIDI_SETTING_2_IN_C_FN,
     MIDI_SETTING_2_IN_C_CHANNEL,
-    MIDI_SETTING_2_IN_D_FN,
     MIDI_SETTING_2_IN_D_CHANNEL,
 
-    MIDI_SETTING_1_TRANSPOSE_OUT_1,
-    MIDI_SETTING_1_TRANSPOSE_OUT_2,
-    MIDI_SETTING_1_TRANSPOSE_OUT_3,
-    MIDI_SETTING_1_TRANSPOSE_OUT_4,
-    MIDI_SETTING_1_TRANSPOSE_IN_1,
-    MIDI_SETTING_1_TRANSPOSE_IN_2,
-    MIDI_SETTING_1_TRANSPOSE_IN_3,
-    MIDI_SETTING_1_TRANSPOSE_IN_4,
-
-    MIDI_SETTING_2_TRANSPOSE_OUT_1,
-    MIDI_SETTING_2_TRANSPOSE_OUT_2,
-    MIDI_SETTING_2_TRANSPOSE_OUT_3,
-    MIDI_SETTING_2_TRANSPOSE_OUT_4,
-    MIDI_SETTING_2_TRANSPOSE_IN_1,
-    MIDI_SETTING_2_TRANSPOSE_IN_2,
-    MIDI_SETTING_2_TRANSPOSE_IN_3,
-    MIDI_SETTING_2_TRANSPOSE_IN_4,
+    MIDI_SETTING_2_OUT_1_TRANSPOSE,
+    MIDI_SETTING_2_OUT_2_TRANSPOSE,
+    MIDI_SETTING_2_OUT_3_TRANSPOSE,
+    MIDI_SETTING_2_OUT_4_TRANSPOSE,
+    MIDI_SETTING_2_IN_1_TRANSPOSE,
+    MIDI_SETTING_2_IN_2_TRANSPOSE,
+    MIDI_SETTING_2_IN_3_TRANSPOSE,
+    MIDI_SETTING_2_IN_4_TRANSPOSE,
 
     MIDI_SETTING_SELECTED_SETUP,
 
@@ -96,26 +96,16 @@ public:
     menu::ScreenCursor<menu::kScreenLines> cursor;
 
     void Start() {
-        screen = 1;
-        cursor.Init(MIDI_SETTING_1_OUT_1_FN, MIDI_SETTING_1_IN_D_CHANNEL);
+        screen = 0;
+        cursor.Init(MIDI_SETTING_1_OUT_1_ASSIGN, MIDI_SETTING_1_IN_D_ASSIGN);
         quantizer.Init();
         quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
 
-        for (int ch = 0; ch < 4; ch++)
-        {
-            note_in[ch] = -1;
-            note_out[ch] = -1;
-            indicator_in[ch] = 0;
-            indicator_out[ch] = 0;
-            Out(ch, 0);
-        }
+        Reset();
 	}
 
     void Resume() {
-        if (values_[MIDI_SETTING_SELECTED_SETUP] == 0)
-            cursor.Init(MIDI_SETTING_1_OUT_1_FN, MIDI_SETTING_1_IN_D_CHANNEL);
-        else
-            cursor.Init(MIDI_SETTING_2_OUT_1_FN, MIDI_SETTING_2_IN_D_CHANNEL);
+        SelectSetup(get_setup_number(), 0);
     }
 
     void Controller() {
@@ -134,55 +124,52 @@ public:
     }
 
     void View() {
+        // Icons that are used next to the menu items
         const uint8_t midi_icon[8] = {0x3c, 0x42, 0x91, 0x45, 0x45, 0x91, 0x42, 0x3c};
         const uint8_t note_icon[8] = {0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08};
 
+        // Create the header, showing the current Setup and Screen name
         menu::DefaultTitleBar::Draw();
-        graphics.print("MIDI Setup");
+        graphics.print("Setup ");
         graphics.print(get_setup_number() + 1);
-        graphics.print(screen ? " Assign" : " Transpose");
+        if (screen == 0) graphics.print("   MIDI Assign");
+        if (screen == 1) graphics.print("  MIDI Channel");
+        if (screen == 2) graphics.print("     Transpose");
 
+        // Iterate through the current range of settings
         menu::SettingsList<menu::kScreenLines, 0, menu::kDefaultValueX - 1> settings_list(cursor);
         menu::SettingsListItem list_item;
         while (settings_list.available())
         {
             const int current = settings_list.Next(list_item);
             const int value = get_value(current);
+            int p = current % 8; // Menu position from 0-7
+
+            // MIDI In and Out indicators for all screens
+            if (p > 3) { // It's a MIDI In assignment
+                if (indicator_in[p - 4] > 0 || note_in[p - 4] > -1) {
+                    graphics.drawBitmap8(70, list_item.y + 2, 8, midi_icon);
+                }
+            } else { // It's a MIDI Out assignment
+                if (indicator_out[p] > 0 || note_out[p] > -1) {
+                    graphics.drawBitmap8(70, list_item.y + 2, 8, midi_icon);
+                }
+            }
 
             // Note indicator for transpose (if the channel is assigned to a Note type)
-            if (screen == 0) {
-                // This will be a number from 0-7, with 0-3 being Out positions
-                int tr_menu_position = current - 32 - (8 * get_setup_number());
-                if (tr_menu_position < 4) {
-                    int ix = get_out_index(tr_menu_position);
-                    if (values_[ix + 1] > 0 && (values_[ix] == MIDI_OUT_NOTE || values_[ix] == MIDI_OUT_LEGATO)) {
-                        graphics.drawBitmap8(64, list_item.y + 2, 8, note_icon);
+            if (screen == 2) {
+                if (p > 3) {
+                    if (get_in_channel(p - 4) > 0 && get_in_assign(p - 4) == MIDI_IN_NOTE) {
+                        graphics.drawBitmap8(56, list_item.y + 2, 8, note_icon);
                     }
                 } else {
-                    int ix = get_in_index(tr_menu_position - 4);
-                    if (values_[ix + 1] > 0 && values_[ix] == MIDI_IN_NOTE) {
-                        graphics.drawBitmap8(64, list_item.y + 2, 8, note_icon);
+                    if (get_out_channel(p) > 0 && (get_out_assign(p) == MIDI_OUT_NOTE || get_out_assign(p) == MIDI_OUT_LEGATO)) {
+                        graphics.drawBitmap8(56, list_item.y + 2, 8, note_icon);
                     }
                 }
             }
 
-            // MIDI In and Out indicators
-            if (screen == 1) {
-                int sn = current - (16 * get_setup_number());
-                if (sn > 7 && sn < 16 && sn % 2 == 0) { // It's a MIDI In assignment
-                    int ch = (sn - 8) / 2;
-                    if (indicator_in[ch] > 0 || note_in[ch] > -1) {
-                        graphics.drawBitmap8(64, list_item.y + 2, 8, midi_icon);
-                    }
-                }
-                if (sn < 8 && sn % 2 == 0) { // It's a MIDI Out assignment
-                    int ch = sn / 2;
-                    if (indicator_out[ch] > 0 || note_out[ch] > -1) {
-                        graphics.drawBitmap8(64, list_item.y + 2, 8, midi_icon);
-                    }
-                }
-            }
-
+            // Draw the item last so that if it's selected, the icons are reversed, too
             list_item.DrawDefault(value, MIDIInterface::value_attr(current));
         }
     }
@@ -191,44 +178,27 @@ public:
         // Stay the same if not provided
         if (new_screen == -1) new_screen = screen;
 
-        // Save current cursor position
-        cursor_pos[get_setup_number()][screen] = cursor.cursor_pos();
+        // Reset if moving to another setup
+        if (setup_number != get_setup_number()) Reset();
 
-        int start;
-        int end;
-        if (setup_number == 0) {
-            // Setup 1
-            if (new_screen == 0) {
-                start = MIDI_SETTING_1_TRANSPOSE_OUT_1;
-                end = MIDI_SETTING_1_TRANSPOSE_IN_4;
-            } else {
-                start = MIDI_SETTING_1_OUT_1_FN;
-                end = MIDI_SETTING_1_IN_D_CHANNEL;
-            }
-        } else {
-            // Setup 2
-            if (new_screen == 0) {
-                start = MIDI_SETTING_2_TRANSPOSE_OUT_1;
-                end = MIDI_SETTING_2_TRANSPOSE_IN_4;
-            } else {
-                start = MIDI_SETTING_2_OUT_1_FN;
-                end = MIDI_SETTING_2_IN_D_CHANNEL;
-            }
-        }
+        // Find the cursor position, and new start and end menu items
+        int prev_cursor = cursor.cursor_pos() - ((screen * 8) + (get_setup_number() * 24));
+        int start = (new_screen * 8) + (setup_number * 24);
+        int end = (new_screen * 8) + (setup_number * 24) + 7;
 
-        int last_cursor_position = cursor_pos[setup_number][new_screen];
-        if (last_cursor_position == 0) last_cursor_position = start;
+        // And go to there
         cursor.Init(start, end);
-        cursor.Scroll(last_cursor_position - start);
+        cursor.Scroll(prev_cursor);
         values_[MIDI_SETTING_SELECTED_SETUP] = setup_number;
         screen = new_screen;
     }
 
-    void SwitchScreen() {
-        SelectSetup(get_setup_number(), 1 - screen);
+    void SwitchScreen(int dir) {
+        int new_screen = constrain(screen + dir, 0, 2);
+        SelectSetup(get_setup_number(), new_screen);
     }
 
-    void Panic() {
+    void Reset() {
         // Reset the interface states
         for (int ch = 0; ch < 4; ch++)
         {
@@ -236,7 +206,12 @@ public:
             note_out[ch] = -1;
             indicator_in[ch] = 0;
             indicator_out[ch] = 0;
+            Out(ch, 0);
         }
+    }
+
+    void Panic() {
+        Reset();
 
         // Send all notes off on every channel
         for (int note = 0; note < 128; note++)
@@ -254,9 +229,8 @@ private:
     braids::Quantizer quantizer;
 
     // Housekeeping
-    uint8_t cursor_pos[2][2]; // For cursor position of [Setup][Screen]
     int clock_countdown[4]; // For clock output timing
-    bool screen; // 0=Transpose 1=Assign
+    int screen; // 0=Assign 2=Channel 3=Transpose
 
     // MIDI In
     int note_in[4]; // Up to four notes at a time are kept track of with MIDI In
@@ -278,9 +252,8 @@ private:
     void midi_out() {
         for (int ch = 0; ch < 4; ch++)
         {
-            int ix = get_out_index(ch);
-            int out_fn = values_[ix];
-            int out_ch = values_[ix + 1];
+            int out_fn = get_out_assign(ch);
+            int out_ch = get_out_channel(ch);
             if (out_ch == 0) continue;
             bool indicator = 0;
 
@@ -312,8 +285,7 @@ private:
                         // Look for an input assigned to velocity on the same channel and, if found, use it
                         for (int vch = 0; vch < 4; vch++)
                         {
-                            int i = get_out_index(vch);
-                            if (values_[i] == MIDI_OUT_VELOCITY && values_[i + 1] == out_ch) {
+                            if (get_out_assign(vch) == MIDI_OUT_VELOCITY && get_out_channel(vch) == out_ch) {
                                 velocity = Proportion(In(vch), HEMISPHERE_MAX_CV, 127);
                             }
                         }
@@ -379,9 +351,8 @@ private:
             // needs to be routed to any of the CV outputs
             for (int ch = 0; ch < 4; ch++)
             {
-                int ix = get_in_index(ch);
-                int in_fn = values_[ix];
-                int in_ch = values_[ix + 1];
+                int in_fn = get_in_assign(ch);
+                int in_ch = get_in_channel(ch);
                 bool indicator = 0;
                 if (message == MIDI_MSG_NOTE_ON && in_ch == channel) {
                     if (note_in[ch] == -1) { // If this channel isn't already occupied with another note, handle Note On
@@ -454,24 +425,34 @@ private:
         }
     }
 
-    int get_in_index(int ch) {
-        int setup_offset = get_setup_number() * 16;
-        return (ch * 2) + 8 + setup_offset;
+    int get_out_assign(int ch) {
+        int setup_offset = get_setup_number() * 24;
+        return values_[ch + setup_offset];
     }
 
-    int get_in_transpose(int ch) {
-        int setup_offset = get_setup_number() * 8;
-        return values_[36 + ch + setup_offset];
-    }
-
-    int get_out_index(int ch) {
-        int setup_offset = values_[MIDI_SETTING_SELECTED_SETUP] * 16;
-        return (ch * 2) + setup_offset;
+    int get_out_channel(int ch) {
+        int setup_offset = get_setup_number() * 24;
+        return values_[8 + ch + setup_offset];
     }
 
     int get_out_transpose(int ch) {
-        int setup_offset = get_setup_number() * 8;
-        return values_[32 + ch + setup_offset];
+        int setup_offset = get_setup_number() * 24;
+        return values_[16 + ch + setup_offset];
+    }
+
+    int get_in_assign(int ch) {
+        int setup_offset = get_setup_number() * 24;
+        return values_[4 + ch + setup_offset];
+    }
+
+    int get_in_channel(int ch) {
+        int setup_offset = get_setup_number() * 24;
+        return values_[12 + ch + setup_offset];
+    }
+
+    int get_in_transpose(int ch) {
+        int setup_offset = get_setup_number() * 24;
+        return values_[20 + ch + setup_offset];
     }
 
     bool cv_has_changed(int this_cv, int last_cv) {
@@ -531,41 +512,23 @@ const char* const midi_channels[17] = {
 };
 
 SETTINGS_DECLARE(MIDIInterface, MIDI_SETTING_LAST) {
-    { 1, 0, 5, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 1, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 2, 0, 5, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 1, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 5, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 5, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
     { 0, 0, 5, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 1, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
     { 0, 0, 5, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 1, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },
 
-    { 1, 0, 6, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 1, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 2, 0, 6, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 1, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 3, 0, 6, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 1, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 4, 0, 6, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 1, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
-
-    { 1, 0, 5, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 10, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 1, 0, 5, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 11, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 1, 0, 5, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 12, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 1, 0, 5, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 13, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
-
-    { 3, 0, 6, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 10, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 4, 0, 6, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 10, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 5, 0, 6, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 10, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 6, 0, 6, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 10, 0, 16, "  Channel", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "1 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "2 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "3 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "4 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "MIDI > A", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "MIDI > B", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "MIDI > C", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "MIDI > D", midi_channels, settings::STORAGE_TYPE_U8 },
 
     { 0, -24, 24, "1 > MIDI", NULL, settings::STORAGE_TYPE_I8 },
     { 0, -24, 24, "2 > MIDI", NULL, settings::STORAGE_TYPE_I8 },
@@ -575,6 +538,24 @@ SETTINGS_DECLARE(MIDIInterface, MIDI_SETTING_LAST) {
     { 0, -24, 24, "MIDI > B", NULL, settings::STORAGE_TYPE_I8 },
     { 0, -24, 24, "MIDI > C", NULL, settings::STORAGE_TYPE_I8 },
     { 0, -24, 24, "MIDI > D", NULL, settings::STORAGE_TYPE_I8 },
+
+    { 0, 0, 5, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 5, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 5, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 5, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 6, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },
+
+    { 0, 0, 16, "1 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "2 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "3 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "4 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "MIDI > A", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "MIDI > B", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "MIDI > C", midi_channels, settings::STORAGE_TYPE_U8 },
+    { 0, 0, 16, "MIDI > D", midi_channels, settings::STORAGE_TYPE_U8 },
 
     { 0, -24, 24, "1 > MIDI", NULL, settings::STORAGE_TYPE_I8 },
     { 0, -24, 24, "2 > MIDI", NULL, settings::STORAGE_TYPE_I8 },
@@ -646,6 +627,6 @@ void MIDI_handleEncoderEvent(const UI::Event &event) {
         }
     }
     if (event.control == OC::CONTROL_ENCODER_L) {
-        midi_instance.SwitchScreen(); // Switch from Assign to Note and back
+        midi_instance.SwitchScreen(event.value);
     }
 }
