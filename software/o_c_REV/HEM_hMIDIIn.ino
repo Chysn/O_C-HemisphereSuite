@@ -267,13 +267,13 @@ private:
     void log_entry(int y, int index) {
         if (log[index].message == HEM_MIDI_NOTE_ON) {
             gfxBitmap(1, y, 8, note);
-            gfxPrint(10, y, log[index].data1);
+            gfxPrint(10, y, midi_note_numbers[log[index].data1]);
             gfxPrint(40, y, log[index].data2);
         }
 
         if (log[index].message == HEM_MIDI_NOTE_OFF) {
             gfxPrint(1, y, "-");
-            gfxPrint(10, y, log[index].data1);
+            gfxPrint(10, y, midi_note_numbers[log[index].data1]);
         }
 
         if (log[index].message == HEM_MIDI_CC) {
