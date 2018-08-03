@@ -45,7 +45,7 @@ public:
         if (note_on || legato_on) {
             // Get a new reading when gated, or when checking for legato changes
             quantizer.Process(In(0), 0, 0);
-            uint8_t midi_note = quantizer.NoteNumber() + transpose;
+            uint8_t midi_note = quantizer.NoteNumber() + transpose - 4;
             midi_note = constrain(midi_note, 0, 127);
 
             if (legato_on && midi_note != last_note) {

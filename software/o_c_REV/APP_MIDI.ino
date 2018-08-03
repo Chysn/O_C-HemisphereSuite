@@ -1,3 +1,11 @@
+/*
+ * Captain MIDI for Ornament and Crime
+ *
+ * (c)2018, Jason Justian
+ *
+ * MIT License applies; see https://github.com/Chysn/O_C-HemisphereSuite/wiki
+ */
+
 // See https://www.pjrc.com/teensy/td_midi.html
 
 #include "braids_quantizer.h"
@@ -13,9 +21,11 @@ const uint8_t MIDI_MSG_SYSEX = 7;
 const uint16_t MIDI_INDICATOR_COUNTDOWN = 2000;
 const int MIDI_MAX_CV = 7677;
 const int MIDI_PARAMETER_COUNT = 40;
+const int MIDI_CURRENT_SETUP = MIDI_PARAMETER_COUNT * 4;
+const int MIDI_SETTING_LAST = MIDI_CURRENT_SETUP + 1;
 
-const char* const midi_out_functions[7] = {
-  "--", "Note", "Leg.", "Veloc", "Mod", "Aft", "Bend"
+const char* const midi_out_functions[11] = {
+  "--", "Note", "Leg.", "Veloc", "Mod", "Aft", "Bend", "Expr", "Pan", "Hold", "BrthC"
 };
 const char* const midi_in_functions[8] = {
   "--", "Note", "Gate", "Trig", "Veloc", "Mod", "Aft", "Bend"
@@ -37,6 +47,47 @@ const char* const midi_note_numbers[128] = {
     "C9","C#9","D9","D#9","E9","F9","F#9","G9"
 };
 
+#define MIDI_SETUP_PARAMETER_LIST { 0, 0, 10, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 10, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 10, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 10, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 7, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 7, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 7, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 7, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 16, "1 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 16, "2 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 16, "3 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 16, "4 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 16, "MIDI > A", midi_channels, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 16, "MIDI > B", midi_channels, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 16, "MIDI > C", midi_channels, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 16, "MIDI > D", midi_channels, settings::STORAGE_TYPE_U8 },\
+{ 0, -24, 24, "1 > MIDI", NULL, settings::STORAGE_TYPE_I8 },\
+{ 0, -24, 24, "2 > MIDI", NULL, settings::STORAGE_TYPE_I8 },\
+{ 0, -24, 24, "3 > MIDI", NULL, settings::STORAGE_TYPE_I8 },\
+{ 0, -24, 24, "4 > MIDI", NULL, settings::STORAGE_TYPE_I8 },\
+{ 0, -24, 24, "MIDI > A", NULL, settings::STORAGE_TYPE_I8 },\
+{ 0, -24, 24, "MIDI > B", NULL, settings::STORAGE_TYPE_I8 },\
+{ 0, -24, 24, "MIDI > C", NULL, settings::STORAGE_TYPE_I8 },\
+{ 0, -24, 24, "MIDI > D", NULL, settings::STORAGE_TYPE_I8 },\
+{ 0, 0, 127, "1 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 127, "2 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 127, "3 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 127, "4 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 127, "MIDI > A", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 127, "MIDI > B", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 127, "MIDI > C", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 127, "MIDI > D", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 127, 0, 127, "1 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 127, 0, 127, "2 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 127, 0, 127, "3 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 127, 0, 127, "4 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 127, "MIDI > A", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 127, "MIDI > B", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 127, "MIDI > C", midi_note_numbers, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 127, "MIDI > D", midi_note_numbers, settings::STORAGE_TYPE_U8 },
+
 enum MIDI_IN_FUNCTION {
     MIDI_IN_OFF,
     MIDI_IN_NOTE,
@@ -56,102 +107,10 @@ enum MIDI_OUT_FUNCTION {
     MIDI_OUT_MOD,
     MIDI_OUT_AFTERTOUCH,
     MIDI_OUT_PITCHBEND,
-};
-
-enum MIDI_SETTINGS {
-    MIDI_SETTING_1_OUT_1_ASSIGN,
-    MIDI_SETTING_1_OUT_2_ASSIGN,
-    MIDI_SETTING_1_OUT_3_ASSIGN,
-    MIDI_SETTING_1_OUT_4_ASSIGN,
-    MIDI_SETTING_1_IN_A_ASSIGN,
-    MIDI_SETTING_1_IN_B_ASSIGN,
-    MIDI_SETTING_1_IN_C_ASSIGN,
-    MIDI_SETTING_1_IN_D_ASSIGN,
-
-    MIDI_SETTING_1_OUT_1_CHANNEL,
-    MIDI_SETTING_1_OUT_2_CHANNEL,
-    MIDI_SETTING_1_OUT_3_CHANNEL,
-    MIDI_SETTING_1_OUT_4_CHANNEL,
-    MIDI_SETTING_1_IN_A_CHANNEL,
-    MIDI_SETTING_1_IN_B_CHANNEL,
-    MIDI_SETTING_1_IN_C_CHANNEL,
-    MIDI_SETTING_1_IN_D_CHANNEL,
-
-    MIDI_SETTING_1_OUT_1_TRANSPOSE,
-    MIDI_SETTING_1_OUT_2_TRANSPOSE,
-    MIDI_SETTING_1_OUT_3_TRANSPOSE,
-    MIDI_SETTING_1_OUT_4_TRANSPOSE,
-    MIDI_SETTING_1_IN_1_TRANSPOSE,
-    MIDI_SETTING_1_IN_2_TRANSPOSE,
-    MIDI_SETTING_1_IN_3_TRANSPOSE,
-    MIDI_SETTING_1_IN_4_TRANSPOSE,
-
-    MIDI_SETTING_1_OUT_1_RANGE_LOW,
-    MIDI_SETTING_1_OUT_2_RANGE_LOW,
-    MIDI_SETTING_1_OUT_3_RANGE_LOW,
-    MIDI_SETTING_1_OUT_4_RANGE_LOW,
-    MIDI_SETTING_1_IN_A_RANGE_LOW,
-    MIDI_SETTING_1_IN_B_RANGE_LOW,
-    MIDI_SETTING_1_IN_C_RANGE_LOW,
-    MIDI_SETTING_1_IN_D_RANGE_LOW,
-
-    MIDI_SETTING_1_OUT_1_RANGE_HI,
-    MIDI_SETTING_1_OUT_2_RANGE_HI,
-    MIDI_SETTING_1_OUT_3_RANGE_HI,
-    MIDI_SETTING_1_OUT_4_RANGE_HI,
-    MIDI_SETTING_1_IN_A_RANGE_HI,
-    MIDI_SETTING_1_IN_B_RANGE_HI,
-    MIDI_SETTING_1_IN_C_RANGE_HI,
-    MIDI_SETTING_1_IN_D_RANGE_HI,
-
-    MIDI_SETTING_2_OUT_1_ASSIGN,
-    MIDI_SETTING_2_OUT_2_ASSIGN,
-    MIDI_SETTING_2_OUT_3_ASSIGN,
-    MIDI_SETTING_2_OUT_4_ASSIGN,
-    MIDI_SETTING_2_IN_A_ASSIGN,
-    MIDI_SETTING_2_IN_B_ASSIGN,
-    MIDI_SETTING_2_IN_C_ASSIGN,
-    MIDI_SETTING_2_IN_D_ASSIGN,
-
-    MIDI_SETTING_2_OUT_1_CHANNEL,
-    MIDI_SETTING_2_OUT_2_CHANNEL,
-    MIDI_SETTING_2_OUT_3_CHANNEL,
-    MIDI_SETTING_2_OUT_4_CHANNEL,
-    MIDI_SETTING_2_IN_A_CHANNEL,
-    MIDI_SETTING_2_IN_B_CHANNEL,
-    MIDI_SETTING_2_IN_C_CHANNEL,
-    MIDI_SETTING_2_IN_D_CHANNEL,
-
-    MIDI_SETTING_2_OUT_1_TRANSPOSE,
-    MIDI_SETTING_2_OUT_2_TRANSPOSE,
-    MIDI_SETTING_2_OUT_3_TRANSPOSE,
-    MIDI_SETTING_2_OUT_4_TRANSPOSE,
-    MIDI_SETTING_2_IN_1_TRANSPOSE,
-    MIDI_SETTING_2_IN_2_TRANSPOSE,
-    MIDI_SETTING_2_IN_3_TRANSPOSE,
-    MIDI_SETTING_2_IN_4_TRANSPOSE,
-
-    MIDI_SETTING_2_OUT_1_RANGE_LOW,
-    MIDI_SETTING_2_OUT_2_RANGE_LOW,
-    MIDI_SETTING_2_OUT_3_RANGE_LOW,
-    MIDI_SETTING_2_OUT_4_RANGE_LOW,
-    MIDI_SETTING_2_IN_A_RANGE_LOW,
-    MIDI_SETTING_2_IN_B_RANGE_LOW,
-    MIDI_SETTING_2_IN_C_RANGE_LOW,
-    MIDI_SETTING_2_IN_D_RANGE_LOW,
-
-    MIDI_SETTING_2_OUT_1_RANGE_HI,
-    MIDI_SETTING_2_OUT_2_RANGE_HI,
-    MIDI_SETTING_2_OUT_3_RANGE_HI,
-    MIDI_SETTING_2_OUT_4_RANGE_HI,
-    MIDI_SETTING_2_IN_A_RANGE_HI,
-    MIDI_SETTING_2_IN_B_RANGE_HI,
-    MIDI_SETTING_2_IN_C_RANGE_HI,
-    MIDI_SETTING_2_IN_D_RANGE_HI,
-
-    MIDI_SETTING_SELECTED_SETUP,
-
-    MIDI_SETTING_LAST
+    MIDI_OUT_EXPRESSION,
+    MIDI_OUT_PAN,
+    MIDI_OUT_HOLD,
+    MIDI_OUT_BREATH
 };
 
 class MIDIInterface : public settings::SettingsBase<MIDIInterface, MIDI_SETTING_LAST> {
@@ -160,7 +119,7 @@ public:
 
     void Start() {
         screen = 0;
-        cursor.Init(MIDI_SETTING_1_OUT_1_ASSIGN, MIDI_SETTING_1_IN_D_ASSIGN);
+        cursor.Init(0, 7);
         quantizer.Init();
         quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
 
@@ -213,34 +172,30 @@ public:
             // MIDI In and Out indicators for all screens
             if (p > 3) { // It's a MIDI In assignment
                 if (indicator_in[p - 4] > 0 || note_in[p - 4] > -1) {
-                    if (get_in_assign(p - 4) == MIDI_IN_NOTE && note_in[p - 4] > -1) {
-                        graphics.setPrintPos(70, list_item.y + 2);
-                        graphics.print(midi_note_numbers[note_in[p - 4]]);
-                    } else {
-                        graphics.drawBitmap8(70, list_item.y + 2, 8, midi_icon);
-                    }
+                    if (get_in_assign(p - 4) == MIDI_IN_NOTE) {
+                        if (note_in[p - 4] > -1) {
+                            graphics.setPrintPos(70, list_item.y + 2);
+                            graphics.print(midi_note_numbers[note_in[p - 4]]);
+                        }
+                    } else graphics.drawBitmap8(70, list_item.y + 2, 8, midi_icon);
                 }
+
+                // Indicate if the assignment is a note type
+                if (get_in_channel(p - 4) > 0 && get_in_assign(p - 4) == MIDI_IN_NOTE)
+                    graphics.drawBitmap8(56, list_item.y + 1, 8, note_icon);
             } else { // It's a MIDI Out assignment
                 if (indicator_out[p] > 0 || note_out[p] > -1) {
-                    if ((get_out_assign(p) == MIDI_OUT_NOTE || get_out_assign(p) == MIDI_OUT_LEGATO) && note_out[p] > -1) {
-                        graphics.setPrintPos(70, list_item.y + 2);
-                        graphics.print(midi_note_numbers[note_out[p]]);
-                    }
-                    graphics.drawBitmap8(70, list_item.y + 2, 8, midi_icon);
+                    if ((get_out_assign(p) == MIDI_OUT_NOTE || get_out_assign(p) == MIDI_OUT_LEGATO)) {
+                        if (note_out[p] > -1) {
+                            graphics.setPrintPos(70, list_item.y + 2);
+                            graphics.print(midi_note_numbers[note_out[p]]);
+                        }
+                    } else graphics.drawBitmap8(70, list_item.y + 2, 8, midi_icon);
                 }
-            }
 
-            // Note indicator for note edit screens (transpose, range)
-            if (screen > 1) {
-                if (p > 3) {
-                    if (get_in_channel(p - 4) > 0 && get_in_assign(p - 4) == MIDI_IN_NOTE) {
-                        graphics.drawBitmap8(56, list_item.y + 1, 8, note_icon);
-                    }
-                } else {
-                    if (get_out_channel(p) > 0 && (get_out_assign(p) == MIDI_OUT_NOTE || get_out_assign(p) == MIDI_OUT_LEGATO)) {
-                        graphics.drawBitmap8(56, list_item.y + 1, 8, note_icon);
-                    }
-                }
+                // Indicate if the assignment is a note type
+                if (get_out_channel(p) > 0 && (get_out_assign(p) == MIDI_OUT_NOTE || get_out_assign(p) == MIDI_OUT_LEGATO))
+                    graphics.drawBitmap8(56, list_item.y + 1, 8, note_icon);
             }
 
             // Draw the item last so that if it's selected, the icons are reversed, too
@@ -263,13 +218,18 @@ public:
         // And go to there
         cursor.Init(start, end);
         cursor.Scroll(prev_cursor);
-        values_[MIDI_SETTING_SELECTED_SETUP] = setup_number;
+        values_[MIDI_CURRENT_SETUP] = setup_number;
         screen = new_screen;
     }
 
     void SwitchScreen(int dir) {
         int new_screen = constrain(screen + dir, 0, 4);
         SelectSetup(get_setup_number(), new_screen);
+    }
+
+    void SwitchSetup(int dir) {
+        int new_setup = constrain(get_setup_number() + dir, 0, 3);
+        SelectSetup(new_setup);
     }
 
     void Reset() {
@@ -294,7 +254,6 @@ public:
             {
                 usbMIDI.sendNoteOff(note, 0, channel);
             }
-            usbMIDI.send_now();
         }
     }
 
@@ -320,7 +279,7 @@ private:
     uint16_t indicator_out[4]; // A MIDI indicator will display next to MIDI Out assignment
 
     int get_setup_number() {
-        return values_[MIDI_SETTING_SELECTED_SETUP];
+        return values_[MIDI_CURRENT_SETUP];
     }
 
     void midi_out() {
@@ -343,7 +302,7 @@ private:
                 if (note_on || legato_on[ch]) {
                     // Get a new reading when gated, or when checking for legato changes
                     quantizer.Process(In(ch), 0, 0);
-                    uint8_t midi_note = quantizer.NoteNumber() + get_out_transpose(ch);
+                    uint8_t midi_note = quantizer.NoteNumber() + get_out_transpose(ch) - 4;
                     midi_note = constrain(midi_note, 0, 127);
 
                     if (legato_on[ch] && midi_note != note_out[ch]) {
@@ -389,9 +348,17 @@ private:
                 last_cv[ch] = this_cv;
 
                 // Modulation wheel
-                if (out_fn == MIDI_OUT_MOD) {
+                if (out_fn == MIDI_OUT_MOD || out_fn >= MIDI_OUT_EXPRESSION) {
+                    int cc = 1; // Modulation
+                    if (out_fn == MIDI_OUT_EXPRESSION) cc = 11;
+                    if (out_fn == MIDI_OUT_PAN) cc = 10;
+                    if (out_fn == MIDI_OUT_HOLD) cc = 64;
+                    if (out_fn == MIDI_OUT_BREATH) cc = 2;
+
                     int value = Proportion(this_cv, MIDI_MAX_CV, 127);
-                    usbMIDI.sendControlChange(1, value, out_ch);
+                    if (cc == 64) value = (value >= 60) ? 127 : 0; // On or off for sustain pedal
+
+                    usbMIDI.sendControlChange(cc, value, out_ch);
                     indicator = 1;
                 }
 
@@ -413,7 +380,6 @@ private:
 
             if (indicator) indicator_out[ch] = MIDI_INDICATOR_COUNTDOWN;
         }
-        usbMIDI.send_now();
     }
 
     void midi_in() {
@@ -594,96 +560,10 @@ private:
 };
 
 SETTINGS_DECLARE(MIDIInterface, MIDI_SETTING_LAST) {
-    { 0, 0, 6, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 7, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 7, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 7, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 7, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },
-
-    { 0, 0, 16, "1 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "2 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "3 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "4 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "MIDI > A", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "MIDI > B", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "MIDI > C", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "MIDI > D", midi_channels, settings::STORAGE_TYPE_U8 },
-
-    { 0, -24, 24, "1 > MIDI", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "2 > MIDI", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "3 > MIDI", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "4 > MIDI", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "MIDI > A", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "MIDI > B", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "MIDI > C", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "MIDI > D", NULL, settings::STORAGE_TYPE_I8 },
-
-    { 0, 0, 127, "1 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "2 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "3 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "4 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "MIDI > A", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "MIDI > B", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "MIDI > C", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "MIDI > D", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-
-    { 127, 0, 127, "1 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 127, 0, 127, "2 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 127, 0, 127, "3 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 127, 0, 127, "4 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 127, 0, 127, "MIDI > A", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 127, 0, 127, "MIDI > B", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 127, 0, 127, "MIDI > C", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 127, 0, 127, "MIDI > D", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-
-    { 0, 0, 6, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 6, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 7, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 7, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 7, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 7, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },
-
-    { 0, 0, 16, "1 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "2 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "3 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "4 > MIDI", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "MIDI > A", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "MIDI > B", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "MIDI > C", midi_channels, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 16, "MIDI > D", midi_channels, settings::STORAGE_TYPE_U8 },
-
-    { 0, -24, 24, "1 > MIDI", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "2 > MIDI", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "3 > MIDI", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "4 > MIDI", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "MIDI > A", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "MIDI > B", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "MIDI > C", NULL, settings::STORAGE_TYPE_I8 },
-    { 0, -24, 24, "MIDI > D", NULL, settings::STORAGE_TYPE_I8 },
-
-    { 0, 0, 127, "1 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "2 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "3 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "4 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "MIDI > A", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "MIDI > B", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "MIDI > C", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "MIDI > D", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-
-    { 127, 0, 127, "1 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 127, 0, 127, "2 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 127, 0, 127, "3 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 127, 0, 127, "4 > MIDI", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "MIDI > A", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "MIDI > B", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "MIDI > C", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-    { 0, 0, 127, "MIDI > D", midi_note_numbers, settings::STORAGE_TYPE_U8 },
-
+    MIDI_SETUP_PARAMETER_LIST
+    MIDI_SETUP_PARAMETER_LIST
+    MIDI_SETUP_PARAMETER_LIST
+    MIDI_SETUP_PARAMETER_LIST
     { 0, 0, 1, "Setup", NULL, settings::STORAGE_TYPE_U8 }
 };
 
@@ -730,10 +610,10 @@ void MIDI_screensaver() {
 void MIDI_handleButtonEvent(const UI::Event &event) {
     if (event.control == OC::CONTROL_BUTTON_R && event.type == UI::EVENT_BUTTON_PRESS)
         midi_instance.cursor.toggle_editing();
-    if (event.control == OC::CONTROL_BUTTON_L && event.type == UI::EVENT_BUTTON_PRESS)
+    if (event.control == OC::CONTROL_BUTTON_L && event.type == UI::EVENT_BUTTON_LONG_PRESS)
         midi_instance.Panic();
-    if (event.control == OC::CONTROL_BUTTON_UP) midi_instance.SelectSetup(0);
-    if (event.control == OC::CONTROL_BUTTON_DOWN) midi_instance.SelectSetup(1);
+    if (event.control == OC::CONTROL_BUTTON_UP) midi_instance.SwitchSetup(1);
+    if (event.control == OC::CONTROL_BUTTON_DOWN) midi_instance.SwitchSetup(-1);
 }
 
 void MIDI_handleEncoderEvent(const UI::Event &event) {
