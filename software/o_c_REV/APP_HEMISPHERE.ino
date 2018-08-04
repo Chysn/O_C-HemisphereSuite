@@ -6,7 +6,7 @@ namespace menu = OC::menu;
 
 #include "hemisphere_config.h"
 #include "HemisphereApplet.h"
-#include "BeigeMazeSysEx.h"
+#include "SystemExclusiveHandler.h"
 
 #define DECLARE_APPLET(id, categories, class_name) \
 { id, categories, class_name ## _Start, class_name ## _Controller, class_name ## _View, class_name ## _Screensaver, \
@@ -45,7 +45,8 @@ enum HEMISPHERE_SETTINGS {
 //// Hemisphere Manager
 ////////////////////////////////////////////////////////////////////////////////
 
-class HemisphereManager : public settings::SettingsBase<HemisphereManager, HEMISPHERE_SETTING_LAST> {
+class HemisphereManager : public SystemExclusiveHandler,
+    public settings::SettingsBase<HemisphereManager, HEMISPHERE_SETTING_LAST> {
 public:
     void Init() {
         select_mode = -1; // Not selecting
@@ -244,19 +245,38 @@ public:
     }
 
     void OnSendSysEx() {
-        SysEx sysex = SysEx('H', HEMISPHERE_SETTING_LAST);
+        // Set the values_ array prior to packing it
         RequestAppletData();
-        uint8_t packet[sysex.getWrappedSize()];
-        sysex.Wrap(packet, values_, 'H');
-        usbMIDI.sendSysEx(sysex.getWrappedSize(), packet);
-        usbMIDI.send_now();
+
+        // Describe the data structure for the audience
+        uint8_t V[10];
+        V[0] = (uint8_t)values_[HEMISPHERE_SELECTED_LEFT_ID];
+        V[1] = (uint8_t)values_[HEMISPHERE_SELECTED_RIGHT_ID];
+        V[2] = (uint8_t)(values_[HEMISPHERE_LEFT_DATA_L] & 0xff);
+        V[3] = (uint8_t)((values_[HEMISPHERE_LEFT_DATA_L] >> 8) & 0xff);
+        V[4] = (uint8_t)(values_[HEMISPHERE_RIGHT_DATA_L] & 0xff);
+        V[5] = (uint8_t)((values_[HEMISPHERE_RIGHT_DATA_L] >> 8) & 0xff);
+        V[6] = (uint8_t)(values_[HEMISPHERE_LEFT_DATA_H] & 0xff);
+        V[7] = (uint8_t)((values_[HEMISPHERE_LEFT_DATA_H] >> 8) & 0xff);
+        V[8] = (uint8_t)(values_[HEMISPHERE_RIGHT_DATA_H] & 0xff);
+        V[9] = (uint8_t)((values_[HEMISPHERE_RIGHT_DATA_H] >> 8) & 0xff);
+
+        // Pack it up, ship it out
+        UnpackedData unpacked;
+        unpacked.set_data(10, V);
+        PackedData packed = unpacked.pack();
+        SendSysEx(packed, 'H');
     }
 
     void OnReceiveSysEx() {
-        SysEx sysex = SysEx('H', HEMISPHERE_SETTING_LAST);
-        uint8_t *data = usbMIDI.getSysExArray();
-        if (sysex.verify(data)) {
-            sysex.Unwrap(values_, data);
+        uint8_t V[10];
+        if (ExtractSysExData(V, 'H')) {
+            values_[HEMISPHERE_SELECTED_LEFT_ID] = V[0];
+            values_[HEMISPHERE_SELECTED_RIGHT_ID] = V[1];
+            values_[HEMISPHERE_LEFT_DATA_L] = ((uint16_t)V[3] << 8) + V[2];
+            values_[HEMISPHERE_RIGHT_DATA_L] = ((uint16_t)V[5] << 8) + V[4];
+            values_[HEMISPHERE_LEFT_DATA_H] = ((uint16_t)V[7] << 8) + V[6];
+            values_[HEMISPHERE_RIGHT_DATA_H] = ((uint16_t)V[9] << 8) + V[8];
             Resume();
         }
     }

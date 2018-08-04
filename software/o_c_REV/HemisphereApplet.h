@@ -34,7 +34,7 @@ typedef struct PackLocation {
 class HemisphereApplet {
 public:
 
-    virtual const char* applet_name(); // Maximum of 10 characters
+    virtual const char* applet_name(); // Maximum of 9 characters
     virtual void View();
     virtual void ScreensaverView();
     virtual void Start();

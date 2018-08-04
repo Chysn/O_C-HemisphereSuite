@@ -30,9 +30,9 @@
     DECLARE_APPLET( 16, 0x40, LoFiPCM), \
     DECLARE_APPLET( 10, 0x14, Logic), \
     DECLARE_APPLET( 21, 0x01, LowerRenz), \
-    DECLARE_APPLET( 33, 0x10, MixerBal), \
     DECLARE_APPLET(150, 0x20, hMIDIIn), \
     DECLARE_APPLET( 27, 0x20, hMIDIOut), \
+    DECLARE_APPLET( 33, 0x10, MixerBal), \
     DECLARE_APPLET( 20, 0x02, Palimpsest), \
     DECLARE_APPLET( 26, 0x08, ScaleDuet), \
     DECLARE_APPLET( 23, 0x80, Scope), \

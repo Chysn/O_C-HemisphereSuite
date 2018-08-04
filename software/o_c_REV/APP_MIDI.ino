@@ -159,7 +159,8 @@ struct CaptainMIDILog {
     }
 };
 
-class CaptainMIDI : public settings::SettingsBase<CaptainMIDI, MIDI_SETTING_LAST> {
+class CaptainMIDI : public SystemExclusiveHandler,
+    public settings::SettingsBase<CaptainMIDI, MIDI_SETTING_LAST> {
 public:
     menu::ScreenCursor<menu::kScreenLines> cursor;
 
@@ -180,6 +181,10 @@ public:
     }
 
     void Controller() {
+        if (usbMIDI.read() && usbMIDI.getType() == 7) {
+            OnReceiveSysEx();
+        }
+
         midi_in();
         midi_out();
 
@@ -265,6 +270,43 @@ public:
                 usbMIDI.sendNoteOff(note, 0, channel);
             }
         }
+    }
+
+    /* When the app is suspended, it sends out a system exclusive dump, generated here */
+    void OnSendSysEx() {
+        // Teensy will receive 60-byte sysex files, so there's room for one and only one
+        // Setup. The currently-selected Setup will be the one we're sending. That's 40
+        // bytes.
+        uint8_t V[MIDI_PARAMETER_COUNT];
+        uint8_t offset = MIDI_PARAMETER_COUNT * get_setup_number();
+        for (int i = 0; i < MIDI_PARAMETER_COUNT; i++)
+        {
+            int p = values_[i + offset];
+            if (i > 15 && i < 24) p += 24; // These are signed, so they need to be converted
+            V[i] = static_cast<uint8_t>(p);
+        }
+
+        // Pack the data and send it out
+        UnpackedData unpacked;
+        unpacked.set_data(40, V);
+        PackedData packed = unpacked.pack();
+        SendSysEx(packed, 'M');
+    }
+
+    void OnReceiveSysEx() {
+        // Since only one Setup is coming, use the currently-selected setup to determine
+        // where to stash it.
+        uint8_t V[MIDI_PARAMETER_COUNT];
+        if (ExtractSysExData(V, 'M')) {
+            uint8_t offset = MIDI_PARAMETER_COUNT * get_setup_number();
+            for (int i = 0; i < MIDI_PARAMETER_COUNT; i++)
+            {
+                int p = (int)V[i];
+                if (i > 15 && i < 24) p -= 24; // Restore the sign removed in OnSendSysEx()
+                values_[i + offset] = p;
+            }
+        }
+        Resume();
     }
 
 private:
@@ -708,7 +750,9 @@ void MIDI_isr() {
 }
 
 void MIDI_handleAppEvent(OC::AppEvent event) {
-
+    if (event == OC::APP_EVENT_SUSPEND) {
+        midi_instance.OnSendSysEx();
+    }
 }
 
 void MIDI_loop() {
