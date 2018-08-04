@@ -391,6 +391,7 @@ private:
         menu::SettingsListItem list_item;
         while (settings_list.available())
         {
+            bool suppress = 0; // Don't show the setting if it's not relevant
             const int current = settings_list.Next(list_item);
             const int value = get_value(current);
             int p = current % 8; // Menu position from 0-7
@@ -409,6 +410,7 @@ private:
                 // Indicate if the assignment is a note type
                 if (get_in_channel(p) > 0 && get_in_assign(p) == MIDI_IN_NOTE)
                     graphics.drawBitmap8(56, list_item.y + 1, 8, note_icon);
+                else if (screen > 1) suppress = 1;
             } else { // It's a MIDI Out assignment
                 p -= 4;
                 if (indicator_out[p] > 0 || note_out[p] > -1) {
@@ -423,10 +425,16 @@ private:
                 // Indicate if the assignment is a note type
                 if (get_out_channel(p) > 0 && (get_out_assign(p) == MIDI_OUT_NOTE || get_out_assign(p) == MIDI_OUT_LEGATO))
                     graphics.drawBitmap8(56, list_item.y + 1, 8, note_icon);
+                else if (screen > 1) suppress = 1;
             }
 
             // Draw the item last so that if it's selected, the icons are reversed, too
-            list_item.DrawDefault(value, CaptainMIDI::value_attr(current));
+            if (!suppress) list_item.DrawDefault(value, CaptainMIDI::value_attr(current));
+            else {
+                list_item.SetPrintPos();
+                graphics.print("                   --");
+                list_item.DrawCustom();
+            }
         }
     }
 
@@ -564,10 +572,10 @@ private:
 
                 // Pitch Bend
                 if (out_fn == MIDI_OUT_PITCHBEND) {
-                    uint16_t bend = Proportion(this_cv + (MIDI_MAX_CV / 2), MIDI_MAX_CV, 16383);
-                    bend = constrain(bend, 0, 16383);
+                    uint16_t bend = Proportion(this_cv + (MIDI_MAX_CV / 2), MIDI_MAX_CV, 32767);
+                    bend = constrain(bend, 0, 32767);
                     usbMIDI.sendPitchBend(bend, out_ch);
-                    UpdateLog(0, ch, 4, out_ch, bend - 8192, 0);
+                    UpdateLog(0, ch, 4, out_ch, bend - 16384, 0);
                     indicator = 1;
                 }
             }
@@ -624,6 +632,7 @@ private:
                             // Send a trigger pulse to CV
                             ClockOut(ch);
                             indicator = 1;
+                            gate_captured = 1;
                         }
 
                         if (in_fn == MIDI_IN_VELOCITY) {

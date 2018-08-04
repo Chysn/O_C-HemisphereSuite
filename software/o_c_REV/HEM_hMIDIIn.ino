@@ -278,12 +278,12 @@ private:
 
         if (log[index].message == HEM_MIDI_CC) {
             gfxBitmap(1, y, 8, mod);
-            gfxPrint(10, y, log[index].data2 << 8);
+            gfxPrint(10, y, log[index].data2);
         }
 
         if (log[index].message == HEM_MIDI_AFTERTOUCH) {
             gfxBitmap(1, y, 8, at);
-            gfxPrint(10, y, log[index].data2 << 8);
+            gfxPrint(10, y, log[index].data2);
         }
 
         if (log[index].message == HEM_MIDI_PITCHBEND) {
