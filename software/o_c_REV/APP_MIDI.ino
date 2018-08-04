@@ -181,10 +181,6 @@ public:
     }
 
     void Controller() {
-        if (usbMIDI.read() && usbMIDI.getType() == 7) {
-            OnReceiveSysEx();
-        }
-
         midi_in();
         midi_out();
 
@@ -578,6 +574,9 @@ private:
             int channel = usbMIDI.getChannel();
             int data1 = usbMIDI.getData1();
             int data2 = usbMIDI.getData2();
+
+            // Handle system exclusive dump for Setup data
+            if (message == MIDI_MSG_SYSEX) OnReceiveSysEx();
 
             // A MIDI message has been received; go through each channel to see if it
             // needs to be routed to any of the CV outputs
