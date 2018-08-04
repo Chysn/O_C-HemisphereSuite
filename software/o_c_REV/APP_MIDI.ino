@@ -200,7 +200,8 @@ public:
     }
 
     void View() {
-        if (display == 0) DrawSetupScreens();
+        if (copy_mode) DrawCopyScreen();
+        else if (display == 0) DrawSetupScreens();
         else DrawLogScreen();
     }
 
@@ -239,12 +240,17 @@ public:
     }
 
     void SwitchSetup(int dir) {
-        int new_setup = constrain(get_setup_number() + dir, 0, 3);
-        SelectSetup(new_setup);
+        if (copy_mode) {
+            copy_setup_target = constrain(copy_setup_target + dir, 0, 3);
+        } else {
+            int new_setup = constrain(get_setup_number() + dir, 0, 3);
+            SelectSetup(new_setup);
+        }
     }
 
     void ToggleDisplay() {
-        display = 1 - display;
+        if (copy_mode) copy_mode = 0;
+        else display = 1 - display;
     }
 
     void Reset() {
@@ -309,6 +315,30 @@ public:
         Resume();
     }
 
+   void ToggleCopyMode() {
+       copy_mode = 1 - copy_mode;
+       copy_setup_source = get_setup_number();
+       copy_setup_target = copy_setup_source + 1;
+       if (copy_setup_target > 3) copy_setup_target = 0;
+   }
+
+   void ToggleCursor() {
+       if (copy_mode) CopySetup(copy_setup_source, copy_setup_target);
+       else cursor.toggle_editing();
+   }
+
+   void CopySetup(int source, int target) {
+       int source_offset = MIDI_PARAMETER_COUNT * source;
+       int target_offset = MIDI_PARAMETER_COUNT * target;
+       for (int c = 0; c < MIDI_PARAMETER_COUNT; c++)
+       {
+           values_[target_offset + c] = values_[source_offset + c];
+       }
+       copy_mode = 0;
+       SwitchSetup(target);
+       Resume();
+   }
+
 private:
     // Quantizer for note numbers
     braids::Quantizer quantizer;
@@ -317,6 +347,10 @@ private:
     int clock_countdown[4]; // For clock output timing
     int screen; // 0=Assign 2=Channel 3=Transpose
     bool display; // 0=Setup Edit 1=Log
+    bool copy_mode; // Copy mode on/off
+    int copy_setup_source; // Which setup is being copied?
+    int copy_setup_target; // Which setup is the
+
     CaptainMIDILog log[MIDI_LOG_MAX_SIZE];
     int log_index; // Index of log for writing
     int log_view; // Current index for viewing
@@ -405,6 +439,27 @@ private:
                 }
             }
         }
+    }
+
+    void DrawCopyScreen() {
+        menu::DefaultTitleBar::Draw();
+        graphics.setPrintPos(0,1);
+        graphics.print("Copy");
+
+        graphics.setPrintPos(8, 28);
+        graphics.print("Setup ");
+        graphics.print(copy_setup_source + 1);
+        graphics.print(" -");
+        graphics.setPrintPos(58, 28);
+        graphics.print("> ");
+        graphics.print("Setup ");
+        graphics.print(copy_setup_target + 1);
+
+        graphics.setPrintPos(0, 55);
+        graphics.print("[CANCEL]");
+
+        graphics.setPrintPos(90, 55);
+        graphics.print("[COPY]");
     }
 
     int get_setup_number() {
@@ -768,14 +823,17 @@ void MIDI_screensaver() {
 
 void MIDI_handleButtonEvent(const UI::Event &event) {
     if (event.control == OC::CONTROL_BUTTON_R && event.type == UI::EVENT_BUTTON_PRESS)
-        midi_instance.cursor.toggle_editing();
+        midi_instance.ToggleCursor();
     if (event.control == OC::CONTROL_BUTTON_L) {
         if (event.type == UI::EVENT_BUTTON_LONG_PRESS) midi_instance.Panic();
         else midi_instance.ToggleDisplay();
     }
 
     if (event.control == OC::CONTROL_BUTTON_UP) midi_instance.SwitchSetup(1);
-    if (event.control == OC::CONTROL_BUTTON_DOWN) midi_instance.SwitchSetup(-1);
+    if (event.control == OC::CONTROL_BUTTON_DOWN) {
+        if (event.type == UI::EVENT_BUTTON_PRESS) midi_instance.SwitchSetup(-1);
+        if (event.type == UI::EVENT_BUTTON_LONG_PRESS) midi_instance.ToggleCopyMode();
+    }
 }
 
 void MIDI_handleEncoderEvent(const UI::Event &event) {
