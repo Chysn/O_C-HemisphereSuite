@@ -42,7 +42,7 @@ public:
             if (--burst_countdown <= 0) {
                 int modded_spacing = spacing + spacing_mod;
                 if (modded_spacing < HEM_BURST_SPACING_MIN) modded_spacing = HEM_BURST_SPACING_MIN;
-                ClockOut(0, 34); // Short trigger, about 2ms
+                ClockOut(0);
                 if (--bursts_to_go > 0) burst_countdown = modded_spacing * 17; // Reset for next burst
                 else GateOut(1, 0); // Turn off the gate
             }
