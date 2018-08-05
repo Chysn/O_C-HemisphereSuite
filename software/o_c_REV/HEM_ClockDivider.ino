@@ -131,13 +131,13 @@ private:
             if (ch == cursor) gfxCursor(0, y + 8, 63);
 
             if (div[ch] > 0) {
-                gfxPrint(1, y, "1/");
+                gfxPrint(1, y, "/");
                 gfxPrint(div[ch]);
                 gfxPrint(" Div");
             }
             if (div[ch] < 0) {
-                gfxPrint(1, y, -div[ch]);
-                gfxPrint("/1");
+                gfxPrint(1, y, "x");
+                gfxPrint(-div[ch]);
                 gfxPrint(" Mult");
             }
         }

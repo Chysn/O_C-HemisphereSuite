@@ -1,6 +1,7 @@
 #define HEM_BURST_NUMBER_MAX 12
 #define HEM_BURST_SPACING_MAX 500
 #define HEM_BURST_SPACING_MIN 8
+#define HEM_BURST_CLOCKDIV_MAX 8
 
 class Burst : public HemisphereApplet {
 public:
@@ -12,6 +13,7 @@ public:
     void Start() {
         cursor = 0;
         number = 4;
+        div = 1;
         spacing = 50;
         bursts_to_go = 0;
         clocked = 0;
@@ -37,10 +39,13 @@ public:
         }
         ticks_since_clock++;
 
+        // Get spacing with clock division or multiplication calculated
+        int effective_spacing = get_effective_spacing();
+
         // Handle a burst set in progress
         if (bursts_to_go > 0) {
             if (--burst_countdown <= 0) {
-                int modded_spacing = spacing + spacing_mod;
+                int modded_spacing = effective_spacing + spacing_mod;
                 if (modded_spacing < HEM_BURST_SPACING_MIN) modded_spacing = HEM_BURST_SPACING_MIN;
                 ClockOut(0);
                 if (--bursts_to_go > 0) burst_countdown = modded_spacing * 17; // Reset for next burst
@@ -59,9 +64,10 @@ public:
         if (Clock(1) && number_is_changing) StartADCLag();
 
         if (EndOfADCLag() || (Clock(1) && !number_is_changing)) {
+            ClockOut(0);
             GateOut(1, 1);
-            bursts_to_go = number;
-            burst_countdown = spacing * 17;
+            bursts_to_go = number - 1;
+            burst_countdown = effective_spacing * 17;
         }
     }
 
@@ -77,7 +83,9 @@ public:
     }
 
     void OnButtonPress() {
-        cursor = 1 - cursor;
+        cursor += 1;
+        if (cursor > 2) cursor = 0;
+        if (cursor > 1 && !clocked) cursor = 0;
     }
 
     void OnEncoderMove(int direction) {
@@ -86,18 +94,27 @@ public:
             spacing = constrain(spacing += direction, HEM_BURST_SPACING_MIN, HEM_BURST_SPACING_MAX);
             clocked = 0;
         }
+        if (cursor == 2) {
+            div += direction;
+            if (div > HEM_BURST_CLOCKDIV_MAX) div = HEM_BURST_CLOCKDIV_MAX;
+            if (div < -HEM_BURST_CLOCKDIV_MAX) div = -HEM_BURST_CLOCKDIV_MAX;
+            if (div == 0) div = direction > 0 ? 1 : -2; // No such thing as 1/1 Multiple
+            if (div == -1) div = 1; // Must be moving up to hit -1 (see previous line)
+        }
     }
         
     uint32_t OnDataRequest() {
         uint32_t data = 0;
-        // example: pack property_name at bit 0, with size of 8 bits
-        // Pack(data, PackLocation {0,8}, property_name); 
+        Pack(data, PackLocation {0,8}, number);
+        Pack(data, PackLocation {8,8}, spacing);
+        Pack(data, PackLocation {16,8}, div + 8);
         return data;
     }
 
     void OnDataReceive(uint32_t data) {
-        // example: unpack value at bit 0 with size of 8 bits to property_name
-        // property_name = Unpack(data, PackLocation {0,8}); 
+        number = Unpack(data, PackLocation {0,8});
+        spacing = Unpack(data, PackLocation {8,8});
+        div = Unpack(data, PackLocation {16,8}) - 8;
     }
 
 protected:
@@ -106,7 +123,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Burst";
         help[HEMISPHERE_HELP_CVS]      = "1=Number 2=Spacing";
         help[HEMISPHERE_HELP_OUTS]     = "1=Burst 2=Gate";
-        help[HEMISPHERE_HELP_ENCODER]  = "Number/Spacing";
+        help[HEMISPHERE_HELP_ENCODER]  = "Number/Spacing/Div";
         //                               "------------------" <-- Size Guide
     }
     
@@ -123,6 +140,7 @@ private:
     // Settings
     int number; // How many bursts fire at each trigger
     int spacing; // How many ms pass between each burst
+    int div; // Divide or multiply the clock tempo
 
     void DrawSelector() {
         // Number
@@ -130,10 +148,15 @@ private:
         gfxPrint(28, 15, "bursts");
 
         // Spacing
-        gfxPrint(1, 25, spacing);
+        gfxPrint(1, 25, clocked ? get_effective_spacing() : spacing);
         gfxPrint(28, 25, "ms");
+
+        // Div
         if (clocked) {
-            gfxBitmap(55, 25, 8, clock_icon);
+            gfxBitmap(1, 35, 8, clock_icon);
+            gfxPrint(11, 35, div < 0 ? "x" : "/");
+            gfxPrint(div < 0 ? -div : div);
+            gfxPrint(div < 0 ? " Mult" : " Div");
         }
 
         // Cursor
@@ -143,8 +166,17 @@ private:
     void DrawIndicator() {
         for (int i = 0; i < bursts_to_go; i++)
         {
-            gfxFrame(1 + (i * 4), 40, 3, 12);
+            gfxFrame(1 + (i * 5), 46, 4, 12);
         }
+    }
+
+    int get_effective_spacing() {
+        int effective_spacing = spacing;
+        if (clocked) {
+            if (div > 1) effective_spacing *= div;
+            if (div < 0) effective_spacing /= -div;
+        }
+        return effective_spacing;
     }
 
 };
