@@ -128,7 +128,7 @@ public:
                     ForEachChannel(ch)
                     {
                         if (function[ch] == HEM_MIDI_PB_OUT) {
-                            int data = (data2 << 8) + data1 - 16384;
+                            int data = (data2 << 7) + data1 - 8192;
                             Out(ch, Proportion(data, 0x7fff, HEMISPHERE_MAX_CV));
                             log_this = 1;
                         }
@@ -287,7 +287,7 @@ private:
         }
 
         if (log[index].message == HEM_MIDI_PITCHBEND) {
-            int data = (log[index].data2 << 8) + log[index].data1 - 16384;
+            int data = (log[index].data2 << 7) + log[index].data1 - 8192;
             gfxBitmap(1, y, 8, pb);
             gfxPrint(10, y, data);
         }

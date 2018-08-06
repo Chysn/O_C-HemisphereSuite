@@ -8,7 +8,7 @@
 // 0x40 = Audio
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 32
+#define HEMISPHERE_AVAILABLE_APPLETS 34
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
@@ -32,11 +32,13 @@
     DECLARE_APPLET( 21, 0x01, LowerRenz), \
     DECLARE_APPLET(150, 0x20, hMIDIIn), \
     DECLARE_APPLET( 27, 0x20, hMIDIOut), \
+    DECLARE_APPLET( 35, 0x22, MIDISeq), \
     DECLARE_APPLET( 33, 0x10, MixerBal), \
     DECLARE_APPLET( 20, 0x02, Palimpsest), \
     DECLARE_APPLET( 26, 0x08, ScaleDuet), \
     DECLARE_APPLET( 23, 0x80, Scope), \
     DECLARE_APPLET( 14, 0x02, Sequence5), \
+    DECLARE_APPLET( 36, 0x04, Shuffle), \
     DECLARE_APPLET(  7, 0x01, SkewedLFO), \
     DECLARE_APPLET(  3, 0x10, Switch), \
     DECLARE_APPLET( 19, 0x01, Slew), \

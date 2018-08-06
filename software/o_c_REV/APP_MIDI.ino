@@ -572,10 +572,10 @@ private:
 
                 // Pitch Bend
                 if (out_fn == MIDI_OUT_PITCHBEND) {
-                    uint16_t bend = Proportion(this_cv + (MIDI_MAX_CV / 2), MIDI_MAX_CV, 32767);
-                    bend = constrain(bend, 0, 32767);
+                    int16_t bend = Proportion(this_cv + (MIDI_MAX_CV / 2), MIDI_MAX_CV, 16383);
+                    bend = constrain(bend, 0, 16383);
                     usbMIDI.sendPitchBend(bend, out_ch);
-                    UpdateLog(0, ch, 4, out_ch, bend - 16384, 0);
+                    UpdateLog(0, ch, 4, out_ch, bend - 8192, 0);
                     indicator = 1;
                 }
             }
@@ -676,7 +676,7 @@ private:
 
                 if (message == MIDI_MSG_PITCHBEND && in_fn == MIDI_IN_PITCHBEND && in_ch == channel) {
                     // Send pitch bend to CV
-                    int data = (data2 << 8) + data1 - 16384;
+                    int data = (data2 << 7) + data1 - 8192;
                     Out(ch, Proportion(data, 0x7fff, MIDI_MAX_CV));
                     UpdateLog(1, ch, 4, in_ch, data, 0);
                     indicator = 1;
