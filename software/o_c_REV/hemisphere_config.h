@@ -15,6 +15,7 @@
     DECLARE_APPLET(  8, 0x01, ADSREG), \
     DECLARE_APPLET( 34, 0x01, ADEG), \
     DECLARE_APPLET( 15, 0x02, AnnularFusion), \
+    DECLARE_APPLET( 38, 0x80, BowTieSeq), \
     DECLARE_APPLET(  4, 0x14, Brancher), \
     DECLARE_APPLET( 31, 0x04, Burst), \
     DECLARE_APPLET( 12, 0x10, Calculate),\
@@ -32,7 +33,6 @@
     DECLARE_APPLET( 21, 0x01, LowerRenz), \
     DECLARE_APPLET(150, 0x20, hMIDIIn), \
     DECLARE_APPLET( 27, 0x20, hMIDIOut), \
-    DECLARE_APPLET( 35, 0x22, MIDISeq), \
     DECLARE_APPLET( 33, 0x10, MixerBal), \
     DECLARE_APPLET( 20, 0x02, Palimpsest), \
     DECLARE_APPLET( 26, 0x08, ScaleDuet), \

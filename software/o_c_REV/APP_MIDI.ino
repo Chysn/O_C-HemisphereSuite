@@ -333,13 +333,17 @@ public:
    void CopySetup(int source, int target) {
        int source_offset = MIDI_PARAMETER_COUNT * source;
        int target_offset = MIDI_PARAMETER_COUNT * target;
-       for (int c = 0; c < MIDI_PARAMETER_COUNT; c++)
-       {
-           values_[target_offset + c] = values_[source_offset + c];
+       if (source_offset == target_offset) {
+           OnSendSysEx();
+       } else {
+           for (int c = 0; c < MIDI_PARAMETER_COUNT; c++)
+           {
+               values_[target_offset + c] = values_[source_offset + c];
+           }
+           SwitchSetup(target);
+           Resume();
        }
        copy_mode = 0;
-       SwitchSetup(target);
-       Resume();
    }
 
 private:
@@ -464,14 +468,17 @@ private:
         graphics.print(" -");
         graphics.setPrintPos(58, 28);
         graphics.print("> ");
-        graphics.print("Setup ");
-        graphics.print(copy_setup_target + 1);
+        if (copy_setup_source == copy_setup_target) graphics.print("SysEx");
+        else {
+            graphics.print("Setup ");
+            graphics.print(copy_setup_target + 1);
+        }
 
         graphics.setPrintPos(0, 55);
         graphics.print("[CANCEL]");
 
         graphics.setPrintPos(90, 55);
-        graphics.print("[COPY]");
+        graphics.print(copy_setup_source == copy_setup_target ? "[DUMP]" : "[COPY]");
     }
 
     int get_setup_number() {
@@ -653,14 +660,22 @@ private:
                         } else if (in_fn == MIDI_IN_NOTE) {
                             // Log Note Off on the note assignment
                             UpdateLog(1, ch, 1, in_ch, data1, 0);
+                        } else if (in_fn == MIDI_IN_VELOCITY) {
+                            Out(ch, 0);
                         }
                     }
                 }
 
                 bool cc = (in_fn == MIDI_IN_MOD || in_fn >= MIDI_IN_EXPRESSION);
                 if (cc && message == MIDI_MSG_MIDI_CC && in_ch == channel) {
+                    uint8_t cc = 1;
+                    if (in_fn == MIDI_IN_EXPRESSION) cc = 11;
+                    if (in_fn == MIDI_IN_PAN) cc = 10;
+                    if (in_fn == MIDI_IN_HOLD) cc = 64;
+                    if (in_fn == MIDI_IN_BREATH) cc = 2;
                     // Send CC wheel to CV
-                    if (data1 == 1) {
+                    if (data1 == cc) {
+                        if (in_fn == MIDI_IN_HOLD && data2 > 0) data2 = 127;
                         Out(ch, Proportion(data2, 127, MIDI_MAX_CV));
                         UpdateLog(1, ch, 2, in_ch, data1, data2);
                         indicator = 1;
@@ -677,7 +692,7 @@ private:
                 if (message == MIDI_MSG_PITCHBEND && in_fn == MIDI_IN_PITCHBEND && in_ch == channel) {
                     // Send pitch bend to CV
                     int data = (data2 << 7) + data1 - 8192;
-                    Out(ch, Proportion(data, 0x7fff, MIDI_MAX_CV));
+                    Out(ch, Proportion(data, 0x7fff, MIDI_MAX_CV / 2));
                     UpdateLog(1, ch, 4, in_ch, data, 0);
                     indicator = 1;
                 }
@@ -827,9 +842,6 @@ void MIDI_isr() {
 }
 
 void MIDI_handleAppEvent(OC::AppEvent event) {
-    if (event == OC::APP_EVENT_SUSPEND) {
-        midi_instance.OnSendSysEx();
-    }
 }
 
 void MIDI_loop() {

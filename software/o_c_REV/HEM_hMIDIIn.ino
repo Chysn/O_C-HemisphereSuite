@@ -129,7 +129,7 @@ public:
                     {
                         if (function[ch] == HEM_MIDI_PB_OUT) {
                             int data = (data2 << 7) + data1 - 8192;
-                            Out(ch, Proportion(data, 0x7fff, HEMISPHERE_MAX_CV));
+                            Out(ch, Proportion(data, 0x7fff, HEMISPHERE_MAX_CV / 2));
                             log_this = 1;
                         }
                     }

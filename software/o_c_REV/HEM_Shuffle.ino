@@ -112,7 +112,7 @@ private:
         for (int n = 0; n < 2; n++)
         {
             int x = Proportion(delay[n], 100, 20) + (n * 20) + 4;
-            gfxBitmap(x, 48, 8, which == n ? note : x_note);
+            gfxBitmap(x, 48 - (which == n ? 3 : 0), 8, which == n ? note : x_note);
         }
 
         int lx = Proportion(OC::CORE::ticks - last_tick, tempo, 20) + (which * 20) + 4;
