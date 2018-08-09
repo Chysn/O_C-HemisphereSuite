@@ -152,14 +152,38 @@ typedef struct _SysExData {
 class SystemExclusiveHandler {
 public:
 
-    /* OnSysExSend() is called when there's a request to send system exclusive data, usually
+    /* OnSendSysEx() is called when there's a request to send system exclusive data, usually
      * in response to the suspension of the app. In OnSendSysEx(), the app is responsible for
-     * generating an UnpackedData instance, which contains an array of up to 48 uint_8 bytes,
+     * generating an UnpackedData instance, which contains an array of up to 48 uint8_t bytes,
      * converting it to a PackedData instance, and passing that PackedData to SysExSend().
      */
     virtual void OnSendSysEx();
 
+    /* OnReciveSysEx() is called when a system exclusive message comes in. In OnReceiveSysEx(),
+     * the app is responsible for converting a PackedData instance into an UnpackedData instance,
+     * which contains an array of up to 48 uint8_t bytes, and putting that data into the app's
+     * internal data system.
+     */
     virtual void OnReceiveSysEx();
+
+protected:
+    /* ListenForSysEx() is for use by apps that don't otherwise deal with listening to MIDI input.
+     * A call to ListenForSysEx() is placed in the ISR. When SysEx is recieved, ListenForSysEx()
+     * calls OnReceiveSysEx().
+     *
+     * IMPORTANT! Do not use ListenForSysEx() in apps that use MIDI in, because ListenForSysEx()
+     * will devour most of the incoming MIDI events, and MIDI in won't work.
+     */
+    bool ListenForSysEx() {
+        bool heard_sysex = 0;
+        if (usbMIDI.read()) {
+            if (usbMIDI.getType() == 7) {
+                OnReceiveSysEx();
+                heard_sysex = 1;
+            }
+        }
+        return heard_sysex;
+    }
 
     void SendSysEx(PackedData packed, char target_id) {
         uint8_t sysex[SYSEX_DATA_MAX_SIZE];

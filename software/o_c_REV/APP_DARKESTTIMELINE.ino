@@ -28,6 +28,7 @@
 #include "braids_quantizer.h"
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
+#include "SystemExclusiveHandler.h"
 
 #define DT_LENGTH 64
 #define DT_INDEX 65
@@ -42,7 +43,8 @@ const int DT_DATA_MAX = 7800; // Highest value from ADC method used
 const int DT_CURSOR_TICKS = 8000; // How many ticks that the cursor blinks on and off when recording
 const int DT_TRIGGER_TICKS = 100; // How many ticks a trigger lasts (about 6ms)
 
-class DarkestTimeline : public settings::SettingsBase<DarkestTimeline, DARKEST_TIMELINE_SETTING_LAST> {
+class DarkestTimeline : public SystemExclusiveHandler,
+    public settings::SettingsBase<DarkestTimeline, DARKEST_TIMELINE_SETTING_LAST> {
 public:
     void Init() {
     		apply_value(DT_LENGTH, 16);
@@ -66,6 +68,7 @@ public:
     }
 
     void ISR() {
+        ListenForSysEx();
     		UpdateInputState();
     		UpdateOutputState();
     		if (--blink_countdown < -DT_CURSOR_TICKS) blink_countdown = DT_CURSOR_TICKS;
@@ -95,7 +98,7 @@ public:
 			adc_value = OC::ADC::raw_pitch_value(ADC_CHANNEL_1);
 			if (adc_value < 0) adc_value = 0; // Constrain CV to positive
             int32_t pitch = quantizer.Process(adc_value, 0, 0);
-			values_[idx] = (int)pitch;
+			values_[idx] = (uint16_t)pitch;
 		}
 
 		// Update Probability value if Probability Record is enabled
@@ -270,6 +273,47 @@ public:
     		return values_[DT_INDEX];
     }
 
+    /* When the app is suspended, it sends out a system exclusive dump, generated here */
+    void OnSendSysEx() {
+        uint8_t V[35];
+        for (int i = 0; i < 35; i++) V[i] = 0; // Initialize data
+        // Limit is 48 packed bytes, and there are 130 bytes that need packing. So wrap this
+        // app's data up into four smaller sysex "pages" of 32 bytes each.
+        for (int page = 0; page < 4; page++)
+        {
+            int ix = 0;
+            V[ix++] = (char)page;
+            V[ix++] = (uint8_t)values_[DT_LENGTH]; // Store length and index with each page
+            V[ix++] = (uint8_t)values_[DT_INDEX];
+            for (int b = 0; b < 16; b++)
+            {
+                V[ix++] = values_[(page * 16) + b] & 0xff; // Low byte
+                V[ix++] = (values_[(page * 16) + b] >> 8) & 0xff; // High byte
+            }
+            UnpackedData unpacked;
+            unpacked.set_data(32, V);
+            PackedData packed = unpacked.pack();
+            SendSysEx(packed, 'D');
+        }
+    }
+
+    void OnReceiveSysEx() {
+        uint8_t V[35];
+        for (int i = 0; i < 35; i++) V[i] = 0; // Initialize data
+        if (ExtractSysExData(V, 'D')) {
+            int ix = 0;
+            int page = V[ix++];
+            values_[DT_LENGTH] = V[ix++];
+            values_[DT_INDEX] = V[ix++];
+            for (int b = 0; b < 16; b++)
+            {
+                uint8_t low = V[ix++];
+                uint8_t high = V[ix++];
+                values_[(page * 16) + b] = (uint16_t)(high << 8) | low;
+            }
+        }
+    }
+
 private:
     int cursor;
     bool clocked;
@@ -352,6 +396,9 @@ void DARKESTTIMELINE_handleAppEvent(OC::AppEvent event) {
     if (event ==  OC::APP_EVENT_RESUME) {
     		timeline_instance.Resume();
     }
+    if (event == OC::APP_EVENT_SUSPEND) {
+        timeline_instance.OnSendSysEx();
+    }
 }
 
 void DARKESTTIMELINE_loop() {
@@ -365,9 +412,8 @@ void DARKESTTIMELINE_menu() {
 }
 
 void DARKESTTIMELINE_screensaver() {
-	timeline_instance.ScreenSaverMode(1);
-	timeline_instance.DrawCVView();
-	timeline_instance.DrawProbabilityView();
+    timeline_instance.DrawCVView();
+    timeline_instance.DrawProbabilityView();
 }
 
 void DARKESTTIMELINE_handleButtonEvent(const UI::Event &event) {
