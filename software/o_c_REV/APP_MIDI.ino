@@ -26,13 +26,13 @@ const int MIDI_SETTING_LAST = MIDI_CURRENT_SETUP + 1;
 const int MIDI_LOG_MAX_SIZE = 101;
 
 const char* const midi_out_functions[11] = {
-  "--", "Note", "Leg.", "Veloc", "Mod", "Aft", "Bend", "Expr", "Pan", "Hold", "Brth"
+    "--", "Note", "Leg.", "Veloc", "Mod", "Aft", "Bend", "Expr", "Pan", "Hold", "Brth"
 };
 const char* const midi_in_functions[12] = {
-  "--", "Note", "Gate", "Trig", "Veloc", "Mod", "Aft", "Bend",  "Expr", "Pan", "Hold", "Brth"
+    "--", "Note", "Gate", "Trig", "Veloc", "Mod", "Aft", "Bend",  "Expr", "Pan", "Hold", "Brth"
 };
 const char* const midi_channels[17] = {
-  "Off", " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11", "12", "13", "14", "15", "16"
+    "Off", " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11", "12", "13", "14", "15", "16"
 };
 const char* const midi_note_numbers[128] = {
     "C-1","C#-1","D-1","D#-1","E-1","F-1","F#-1","G-1","G#-1","A-1","A#-1","B-1",
@@ -312,7 +312,7 @@ public:
             {
                 int p = (int)V[i];
                 if (i > 15 && i < 24) p -= 24; // Restore the sign removed in OnSendSysEx()
-                values_[i + offset] = p;
+                apply_value(i + offset, p);
             }
         }
         Resume();
@@ -330,6 +330,7 @@ public:
        else cursor.toggle_editing();
    }
 
+   /* Perform a copy or sysex dump */
    void CopySetup(int source, int target) {
        int source_offset = MIDI_PARAMETER_COUNT * source;
        int target_offset = MIDI_PARAMETER_COUNT * target;
@@ -344,6 +345,15 @@ public:
            Resume();
        }
        copy_mode = 0;
+   }
+
+   /* If the changed value is a high or low range, make sure that the high range doesn't go
+    * below the low range, or that the low range doesn't go above the high range
+    */
+   void ConstrainRangeValue(int ix) {
+       int page = ix / 8; // Page within a Setup
+       if (page == 4 && values_[ix] < values_[ix - 8]) values_[ix] = values_[ix - 8];
+       if (page == 3 && values_[ix] > values_[ix + 8]) values_[ix] = values_[ix + 8];
    }
 
 private:
@@ -874,6 +884,7 @@ void MIDI_handleEncoderEvent(const UI::Event &event) {
     if (event.control == OC::CONTROL_ENCODER_R) {
         if (midi_instance.cursor.editing()) {
             midi_instance.change_value(midi_instance.cursor.cursor_pos(), event.value);
+            midi_instance.ConstrainRangeValue(midi_instance.cursor.cursor_pos());
         } else {
             midi_instance.cursor.Scroll(event.value);
         }
