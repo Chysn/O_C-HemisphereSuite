@@ -111,15 +111,13 @@ private:
     int last_scope_tick; // Used to auto-calculate sample countdown
 
     // Icons
-    const uint8_t clock[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
-    const uint8_t cv[8] = {0x1f, 0x11, 0x11, 0x00, 0x07, 0x18, 0x07, 0x00};
 
     void DrawBPM() {
         gfxPrint(9, 15, "BPM ");
         gfxPrint(bpm);
         gfxLine(0, 24, 63, 24);
 
-        if (OC::CORE::ticks - last_bpm_tick < 1666) gfxBitmap(1, 15, 8, clock);
+        if (OC::CORE::ticks - last_bpm_tick < 1666) gfxBitmap(1, 15, 8, CLOCK_ICON);
     }
 
     void DrawInput1() {
@@ -138,7 +136,7 @@ private:
 
     void DrawInput2() {
         gfxLine(0, 53, 63, 53);
-        gfxBitmap(1, 55, 8, cv);
+        gfxBitmap(1, 55, 8, CV_ICON);
         gfxPrint(10, 55, last_cv);
     }
 };

@@ -107,8 +107,6 @@ private:
     int beats[2];
     int step;
     int cursor = 0; // Ch1: 0=Length, 1=Hits; Ch2: 2=Length 3=Hits
-    uint8_t x_note[8] = {0x00, 0xa0, 0x40, 0xa0, 0x1f, 0x02, 0x0c, 0x00};
-    uint8_t meter[8] = {0x7e, 0x10, 0x1c, 0x10, 0x1c, 0x10, 0x7e, 0x00};
     AFStepCoord disp_coord[2][32];
     uint32_t pattern[2];
     int last_clock;
@@ -147,12 +145,12 @@ private:
         int f = cursor - (ch * 2); // Cursor function
 
         // Length cursor
-        gfxBitmap(1, 15, 8, meter);
+        gfxBitmap(1, 15, 8, METER_ICON);
         gfxPrint(9, 15, length[ch]);
         if (f == 0) gfxCursor(1, 23, 20);
 
         // Beats cursor
-        gfxBitmap(1, 25, 8, x_note);
+        gfxBitmap(1, 25, 8, X_NOTE_ICON);
         gfxPrint(9, 25, beats[ch]);
         if (f == 1) gfxCursor(1, 33, 20);
 

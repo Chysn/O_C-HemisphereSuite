@@ -314,8 +314,7 @@ private:
             graphics.print(category_name[i]);
         }
 
-        const uint8_t check[8] = {0x00,0xf0,0x40,0x20,0x10,0x08,0x04,0x00};
-        graphics.drawBitmap8(1 + offset, 29, 8, check);
+        graphics.drawBitmap8(1 + offset, 29, 8, CHECK_ICON);
     }
 
     int get_applet_index_by_id(int id) {

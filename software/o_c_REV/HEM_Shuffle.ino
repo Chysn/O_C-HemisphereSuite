@@ -82,10 +82,6 @@ private:
     uint32_t next_trigger; // The tick of the next scheduled trigger
     uint32_t tempo; // Calculated time between ticks
 
-    // Icons
-    const uint8_t x_note[8] = {0x00, 0xa0, 0x40, 0xa0, 0x1f, 0x02, 0x0c, 0x00};
-    const uint8_t note[8] = {0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08};
-    
     // Settings
     int16_t delay[2]; // Percentage delay for even (0) and odd (1) clock
 
@@ -93,7 +89,7 @@ private:
         for (int i = 0; i < 2; i++)
         {
             int16_t d = delay[i];
-            gfxBitmap(i * 12, 15 + (i * 10), 8, x_note);
+            gfxBitmap(i * 12, 15 + (i * 10), 8, X_NOTE_ICON);
             gfxPrint(32 + (d < 10 ? 6 : 0), 15 + (i * 10), d);
             gfxPrint("%");
             if (cursor == i) gfxCursor(32, 23 + (i * 10), 18);
@@ -112,7 +108,7 @@ private:
         for (int n = 0; n < 2; n++)
         {
             int x = Proportion(delay[n], 100, 20) + (n * 20) + 4;
-            gfxBitmap(x, 48 - (which == n ? 3 : 0), 8, which == n ? note : x_note);
+            gfxBitmap(x, 48 - (which == n ? 3 : 0), 8, which == n ? NOTE_ICON : X_NOTE_ICON);
         }
 
         int lx = Proportion(OC::CORE::ticks - last_tick, tempo, 20) + (which * 20) + 4;

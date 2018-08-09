@@ -101,8 +101,7 @@ private:
     braids::Quantizer quantizer;
 
     void DrawSelector() {
-        const uint8_t note[8] = {0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08};
-        gfxBitmap(1, 14, 8, note);
+        gfxBitmap(1, 14, 8, NOTE_ICON);
         gfxPrint(12, 15, length);
         gfxPrint(32, 15, "p=");
         if (cursor == 1) {

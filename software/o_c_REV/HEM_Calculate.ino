@@ -105,7 +105,6 @@ private:
     int operation[2];
     int selected;
     bool rand_clocked[2];
-    const uint8_t clock[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
     
     void DrawSelector()
     {
@@ -115,8 +114,7 @@ private:
             if (ch == selected) gfxCursor(0 + (31 * ch), 23, 30);
 
             // Show the icon if this random calculator is clocked
-            if (operation[ch] == 6 && rand_clocked[ch])
-                gfxBitmap(22 + (31 * ch), 15, 8, clock);
+            if (operation[ch] == 6 && rand_clocked[ch]);
         }
     }
 };

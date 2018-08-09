@@ -93,14 +93,13 @@ private:
     int adc_lag_countdown;
     const uint8_t notes[2][8] = {{0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08},
                                  {0xc0, 0xa0, 0xa0, 0xa0, 0x7f, 0x00, 0x00, 0x00}};
-    const uint8_t clock[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
 
     void DrawSelector()
     {
         ForEachChannel(ch)
         {
             gfxBitmap(0 + (31 * ch), 15, 8, notes[ch]);
-            if (!continuous[ch]) gfxBitmap(10 + (31 * ch), 15,  8, clock); // Display icon if clocked
+            if (!continuous[ch]) gfxBitmap(10 + (31 * ch), 15,  8, CLOCK_ICON); // Display icon if clocked
 
             gfxPrint(0 + (31 * ch), 25, OC::scale_names_short[scale[ch]]);
             if (ch == cursor) gfxCursor(0 + (31 * ch), 33, 30);

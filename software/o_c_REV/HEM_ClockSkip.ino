@@ -86,7 +86,7 @@ private:
     {
         ForEachChannel(ch)
         {
-            gfxBitmap(12 + (32 * ch), 45, 8, clock_icon);
+            gfxBitmap(12 + (32 * ch), 45, 8, CLOCK_ICON);
             if (trigger_countdown[ch] > 0) gfxFrame(9 + (32 * ch), 42, 13, 13);
         }
     }

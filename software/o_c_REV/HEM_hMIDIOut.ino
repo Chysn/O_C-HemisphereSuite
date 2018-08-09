@@ -170,13 +170,6 @@ private:
     // Quantizer for note numbers
     braids::Quantizer quantizer;
 
-    // Icons
-    const uint8_t note[8] = {0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08};
-    const uint8_t mod[8]  = {0x30, 0x08, 0x04, 0x08, 0x10, 0x20, 0x10, 0x0c};
-    const uint8_t pb[8]   = {0x20, 0x70, 0x70, 0x3f, 0x20, 0x14, 0x0c, 0x1c};
-    const uint8_t at[8]   = {0x00, 0x00, 0x20, 0x42, 0xf5, 0x48, 0x20, 0x00};
-    const uint8_t midi[8] = {0x3c, 0x42, 0x91, 0x45, 0x45, 0x91, 0x42, 0x3c};
-
     // Settings
     int channel; // MIDI Out channel
     int function; // Function of B/D output
@@ -212,7 +205,7 @@ private:
 
     void DrawMonitor() {
         if (OC::CORE::ticks - last_tick < 4000) {
-            gfxBitmap(46, 1, 8, midi);
+            gfxBitmap(46, 1, 8, MIDI_ICON);
         }
     }
 
@@ -241,7 +234,7 @@ private:
         // Last note log
         if (last_velocity) {
             gfxDottedLine(1, 55, 62, 55, 2);
-            gfxBitmap(1, 56, 8, note);
+            gfxBitmap(1, 56, 8, NOTE_ICON);
             gfxPrint(10, 56, midi_note_numbers[last_note]);
             gfxPrint(40, 56, last_velocity);
         }
@@ -263,7 +256,7 @@ private:
 
     void log_entry(int y, int index) {
         if (log[index].message == HEM_MIDI_NOTE_ON) {
-            gfxBitmap(1, y, 8, note);
+            gfxBitmap(1, y, 8, NOTE_ICON);
             gfxPrint(10, y, midi_note_numbers[log[index].data1]);
             gfxPrint(40, y, log[index].data2);
         }
@@ -274,18 +267,18 @@ private:
         }
 
         if (log[index].message == HEM_MIDI_CC) {
-            gfxBitmap(1, y, 8, mod);
+            gfxBitmap(1, y, 8, MOD_ICON);
             gfxPrint(10, y, log[index].data1);
         }
 
         if (log[index].message == HEM_MIDI_AFTERTOUCH) {
-            gfxBitmap(1, y, 8, at);
+            gfxBitmap(1, y, 8, AFTERTOUCH_ICON);
             gfxPrint(10, y, log[index].data1);
         }
 
         if (log[index].message == HEM_MIDI_PITCHBEND) {
             int data = log[index].data1;
-            gfxBitmap(1, y, 8, pb);
+            gfxBitmap(1, y, 8, BEND_ICON);
             gfxPrint(10, y, data);
         }
     }

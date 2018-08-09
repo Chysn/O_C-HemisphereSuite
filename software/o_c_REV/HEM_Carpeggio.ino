@@ -126,8 +126,7 @@ private:
         if (cursor == 1) {
             gfxCursor(1, 23, 62);
             if (chord == sel_chord) {
-                const uint8_t check[8] = {0x00,0xf0,0x40,0x20,0x10,0x08,0x04,0x00};
-                gfxBitmap(55, 13, 8, check);
+                gfxBitmap(55, 13, 8, CHECK_ICON);
             }
         }
 

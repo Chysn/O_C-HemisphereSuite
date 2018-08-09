@@ -25,6 +25,18 @@ typedef int32_t simfloat;
 #define BottomAlign(h) (62 - h)
 #define ForEachChannel(ch) for(int ch = 0; ch < 2; ch++)
 
+// Icons
+const uint8_t CHECK_ICON[8]      = {0x00, 0xf0, 0x40, 0x20, 0x10, 0x08, 0x04, 0x00};
+const uint8_t X_NOTE_ICON[8]     = {0x00, 0xa0, 0x40, 0xa0, 0x1f, 0x02, 0x0c, 0x00};
+const uint8_t METER_ICON[8]      = {0x7e, 0x10, 0x1c, 0x10, 0x1c, 0x10, 0x7e, 0x00};
+const uint8_t NOTE_ICON[8]       = {0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08};
+const uint8_t CLOCK_ICON[8]      = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
+const uint8_t MOD_ICON[8]        = {0x30, 0x08, 0x04, 0x08, 0x10, 0x20, 0x10, 0x0c};
+const uint8_t BEND_ICON[8]       = {0x20, 0x70, 0x70, 0x3f, 0x20, 0x14, 0x0c, 0x1c};
+const uint8_t AFTERTOUCH_ICON[8] = {0x00, 0x00, 0x20, 0x42, 0xf5, 0x48, 0x20, 0x00};
+const uint8_t MIDI_ICON[8]       = {0x3c, 0x42, 0x91, 0x45, 0x45, 0x91, 0x42, 0x3c};
+const uint8_t CV_ICON[8]         = {0x1f, 0x11, 0x11, 0x00, 0x07, 0x18, 0x07, 0x00};
+
 // Specifies where data goes in flash storage for each selcted applet, and how big it is
 typedef struct PackLocation {
     int location;
@@ -119,7 +131,7 @@ public:
     void DrawNotifications() {
         // CV Forwarding Icon
         if (master_clock_bus) {
-            graphics.drawBitmap8(56, 1, 8, clock_icon);
+            graphics.drawBitmap8(56, 1, 8, CLOCK_ICON);
         }
     }
 
@@ -288,7 +300,6 @@ protected:
     const char* help[4];
     virtual void SetHelp();
     bool screensaver_on; // Is the screensaver active?
-    const uint8_t clock_icon[8] = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
 
     //////////////// Calculation methods
     ////////////////////////////////////////////////////////////////////////////////

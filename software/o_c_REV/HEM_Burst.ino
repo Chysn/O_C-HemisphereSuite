@@ -153,7 +153,7 @@ private:
 
         // Div
         if (clocked) {
-            gfxBitmap(1, 35, 8, clock_icon);
+            gfxBitmap(1, 35, 8, CLOCK_ICON);
             gfxPrint(11, 35, div < 0 ? "x" : "/");
             gfxPrint(div < 0 ? -div : div);
             gfxPrint(div < 0 ? " Mult" : " Div");
