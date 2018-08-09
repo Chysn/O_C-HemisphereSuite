@@ -291,7 +291,7 @@ public:
                 V[ix++] = (values_[(page * 16) + b] >> 8) & 0xff; // High byte
             }
             UnpackedData unpacked;
-            unpacked.set_data(32, V);
+            unpacked.set_data(35, V);
             PackedData packed = unpacked.pack();
             SendSysEx(packed, 'D');
         }
