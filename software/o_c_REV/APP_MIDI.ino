@@ -144,13 +144,13 @@ struct CaptainMIDILog {
 
         if (message == 0 || message == 1) {
             graphics.print(midi_note_numbers[data1]);
-            graphics.setPrintPos(108, y);
+            graphics.setPrintPos(102, y);
             graphics.print(data2); // Velocity
         }
 
         if (message == 2) {
             graphics.print(data1); // Controller number
-            graphics.setPrintPos(108, y);
+            graphics.setPrintPos(102, y);
             graphics.print(data2); // Value
         }
 
@@ -463,6 +463,14 @@ private:
                 if (ix < log_index) {
                     log[ix].DrawAt(l * 8 + 15);
                 }
+            }
+
+            // Draw scroll
+            if (log_index > 6) {
+                graphics.drawFrame(122, 14, 6, 48);
+                int y = (((log_view << 6) / log_index) * 40) >> 6;
+                if (y > 40) y = 40;
+                graphics.drawRect(124, 16 + y, 2, 6);
             }
         }
     }
