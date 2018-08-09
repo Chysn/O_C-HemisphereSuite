@@ -109,7 +109,7 @@ public:
 
                 // Pitch Bend
                 if (function == HEM_MIDI_PB_IN) {
-                    uint16_t bend = ProportionCV(this_cv + (HEMISPHERE_MAX_CV / 2), 16383);
+                    uint16_t bend = Proportion(this_cv + HEMISPHERE_3V_CV, HEMISPHERE_3V_CV * 2, 16383);
                     bend = constrain(bend, 0, 16383);
                     usbMIDI.sendPitchBend(bend, channel + 1);
                     usbMIDI.send_now();

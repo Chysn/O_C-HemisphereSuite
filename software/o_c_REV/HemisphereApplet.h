@@ -5,6 +5,7 @@
 #define LEFT_HEMISPHERE 0
 #define RIGHT_HEMISPHERE 1
 #define HEMISPHERE_MAX_CV 7677
+#define HEMISPHERE_3V_CV 4583
 #define HEMISPHERE_CLOCK_TICKS 100
 #define HEMISPHERE_CURSOR_TICKS 12000
 #define HEMISPHERE_SCREEN_BLANK_TICKS 30000000
@@ -17,9 +18,11 @@
 #define HEMISPHERE_HELP_ENCODER 3
 
 // Simulated fixed floats by multiplying and dividing by powers of 2
+#ifndef int2simfloat
 #define int2simfloat(x) (x << 14)
 #define simfloat2int(x) (x >> 14)
 typedef int32_t simfloat;
+#endif
 
 // Hemisphere-specific macros
 #define BottomAlign(h) (62 - h)

@@ -11,6 +11,8 @@
 #include "braids_quantizer.h"
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
+#include "HSAppIO.h"
+#include "SystemExclusiveHandler.h"
 
 const uint8_t MIDI_MSG_NOTE_ON = 1;
 const uint8_t MIDI_MSG_NOTE_OFF = 0;
@@ -20,6 +22,7 @@ const uint8_t MIDI_MSG_PITCHBEND = 6;
 const uint8_t MIDI_MSG_SYSEX = 7;
 const uint16_t MIDI_INDICATOR_COUNTDOWN = 2000;
 const int MIDI_MAX_CV = 7677;
+const int MIDI_3V_CV = 4583;
 const int MIDI_PARAMETER_COUNT = 40;
 const int MIDI_CURRENT_SETUP = MIDI_PARAMETER_COUNT * 4;
 const int MIDI_SETTING_LAST = MIDI_CURRENT_SETUP + 1;
@@ -142,25 +145,29 @@ struct CaptainMIDILog {
         graphics.print(midi_messages[message]);
         graphics.setPrintPos(72, y);
 
+        uint8_t x_offset = (data2 < 100) ? 6 : 0;
+        x_offset += (data2 < 10) ? 6 : 0;
+
         if (message == 0 || message == 1) {
             graphics.print(midi_note_numbers[data1]);
-            graphics.setPrintPos(102, y);
+            graphics.setPrintPos(102 + x_offset, y);
             graphics.print(data2); // Velocity
         }
 
-        if (message == 2) {
-            graphics.print(data1); // Controller number
-            graphics.setPrintPos(102, y);
+        if (message == 2 || message == 3) {
+            if (message == 2) graphics.print(data1); // Controller number
+            graphics.setPrintPos(102 + x_offset, y);
             graphics.print(data2); // Value
         }
 
-        if (message == 3 or message == 4) {
-            graphics.print(data1); // Aftertouch or bend value
+        if (message == 4) {
+            if (data2 > 0) graphics.print("+");
+            graphics.print(data2); // Aftertouch or bend value
         }
     }
 };
 
-class CaptainMIDI : public SystemExclusiveHandler,
+class CaptainMIDI : public SystemExclusiveHandler, public HSAppIO,
     public settings::SettingsBase<CaptainMIDI, MIDI_SETTING_LAST> {
 public:
     menu::ScreenCursor<menu::kScreenLines> cursor;
@@ -194,12 +201,11 @@ public:
         // Handle clock timing
         for (int ch = 0; ch < 4; ch++)
         {
-            if (clock_countdown[ch] > 0) {
-                if (--clock_countdown[ch] == 0) Out(ch, 0);
-            }
             if (indicator_in[ch] > 0) --indicator_in[ch];
             if (indicator_out[ch] > 0) --indicator_out[ch];
         }
+
+        HSIOController();
     }
 
     void View() {
@@ -361,7 +367,6 @@ private:
     braids::Quantizer quantizer;
 
     // Housekeeping
-    int clock_countdown[4]; // For clock output timing
     int screen; // 0=Assign 2=Channel 3=Transpose
     bool display; // 0=Setup Edit 1=Log
     bool copy_mode; // Copy mode on/off
@@ -377,7 +382,6 @@ private:
     uint16_t indicator_in[4]; // A MIDI indicator will display next to MIDI In assignment
 
     // MIDI Out
-    int adc_lag_countdown[4]; // Lag countdown for each input channel
     bool gated[4]; // Current gated status of each input
     int note_out[4]; // Most recent note from this input channel
     int last_channel[4]; // Keep track of the actual send channel, in case it's changed while the note is on
@@ -468,8 +472,8 @@ private:
             // Draw scroll
             if (log_index > 6) {
                 graphics.drawFrame(122, 14, 6, 48);
-                int y = (((log_view << 6) / log_index) * 40) >> 6;
-                if (y > 40) y = 40;
+                int y = Proportion(log_view, log_index - 6, 38);
+                y = constrain(y, 0, 38);
                 graphics.drawRect(124, 16 + y, 2, 6);
             }
         }
@@ -546,6 +550,7 @@ private:
                                 velocity = Proportion(In(vch), MIDI_MAX_CV, 127);
                             }
                         }
+                        velocity = constrain(velocity, 0, 127);
                         usbMIDI.sendNoteOn(midi_note, velocity, out_ch);
                         UpdateLog(0, ch, 0, out_ch, midi_note, velocity);
                         indicator = 1;
@@ -580,6 +585,7 @@ private:
                     if (out_fn == MIDI_OUT_BREATH) cc = 2;
 
                     int value = Proportion(this_cv, MIDI_MAX_CV, 127);
+                    value = constrain(value, 0, 127);
                     if (cc == 64) value = (value >= 60) ? 127 : 0; // On or off for sustain pedal
 
                     usbMIDI.sendControlChange(cc, value, out_ch);
@@ -590,17 +596,18 @@ private:
                 // Aftertouch
                 if (out_fn == MIDI_OUT_AFTERTOUCH) {
                     int value = Proportion(this_cv, MIDI_MAX_CV, 127);
+                    value = constrain(value, 0, 127);
                     usbMIDI.sendAfterTouch(value, out_ch);
-                    UpdateLog(0, ch, 3, out_ch, value, 0);
+                    UpdateLog(0, ch, 3, out_ch, 0, value);
                     indicator = 1;
                 }
 
                 // Pitch Bend
                 if (out_fn == MIDI_OUT_PITCHBEND) {
-                    int16_t bend = Proportion(this_cv + (MIDI_MAX_CV / 2), MIDI_MAX_CV, 16383);
+                    int16_t bend = Proportion(this_cv + MIDI_3V_CV, MIDI_3V_CV * 2, 16383);
                     bend = constrain(bend, 0, 16383);
                     usbMIDI.sendPitchBend(bend, out_ch);
-                    UpdateLog(0, ch, 4, out_ch, bend - 8192, 0);
+                    UpdateLog(0, ch, 4, out_ch, 0, bend - 8192);
                     indicator = 1;
                 }
             }
@@ -710,8 +717,8 @@ private:
                 if (message == MIDI_MSG_PITCHBEND && in_fn == MIDI_IN_PITCHBEND && in_ch == channel) {
                     // Send pitch bend to CV
                     int data = (data2 << 7) + data1 - 8192;
-                    Out(ch, Proportion(data, 0x7fff, MIDI_MAX_CV / 2));
-                    UpdateLog(1, ch, 4, in_ch, data, 0);
+                    Out(ch, Proportion(data, 0x7fff, MIDI_3V_CV));
+                    UpdateLog(1, ch, 4, in_ch, 0, data);
                     indicator = 1;
                 }
 
@@ -769,46 +776,6 @@ private:
         return (diff > 50 || diff < -50) ? 1 : 0;
     }
 
-    void Out(int ch, int value, int octave = 0) {
-        OC::DAC::set_pitch((DAC_CHANNEL)ch, value, octave);
-    }
-
-    int In(int ch) {
-        return OC::ADC::raw_pitch_value((ADC_CHANNEL)ch);
-    }
-
-    bool Gate(int ch) {
-        bool high = 0;
-        if (ch == 0) high = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_1>();
-        if (ch == 1) high = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_2>();
-        if (ch == 2) high = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_3>();
-        if (ch == 3) high = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_4>();
-        return high;
-    }
-
-    void GateOut(int ch, bool high) {
-        Out(ch, 0, (high ? 5 : 0));
-    }
-
-    void ClockOut(int ch, int ticks = 100) {
-        clock_countdown[ch] = ticks;
-        Out(ch, 0, 5);
-    }
-
-    void StartADCLag(int ch) {
-        adc_lag_countdown[ch] = 96;
-    }
-
-    bool EndOfADCLag(int ch) {
-        return (--adc_lag_countdown[ch] == 0);
-    }
-
-    int Proportion(int numerator, int denominator, int max_value) {
-        simfloat proportion = int2simfloat((int32_t)numerator) / (int32_t)denominator;
-        int scaled = simfloat2int(proportion * max_value);
-        return scaled;
-    }
-
     void UpdateLog(bool out, int ch, uint8_t message, uint8_t channel, int16_t data1, int16_t data2) {
         char io = out ? ('A' + ch) : ('1' + ch);
         log[log_index++] = {out, io, message, channel, data1, data2};
@@ -832,13 +799,13 @@ SETTINGS_DECLARE(CaptainMIDI, MIDI_SETTING_LAST) {
     { 0, 0, 1, "Setup", NULL, settings::STORAGE_TYPE_U8 }
 };
 
-CaptainMIDI midi_instance;
+CaptainMIDI captain_midi_instance;
 
 ////////////////////////////////////////////////////////////////////////////////
 //// App Functions
 ////////////////////////////////////////////////////////////////////////////////
 void MIDI_init() {
-    midi_instance.Start();
+    captain_midi_instance.Start();
 }
 
 size_t MIDI_storageSize() {
@@ -846,58 +813,61 @@ size_t MIDI_storageSize() {
 }
 
 size_t MIDI_save(void *storage) {
-    return midi_instance.Save(storage);
+    return captain_midi_instance.Save(storage);
 }
 
 size_t MIDI_restore(const void *storage) {
-    size_t s = midi_instance.Restore(storage);
-    midi_instance.Resume();
+    size_t s = captain_midi_instance.Restore(storage);
+    captain_midi_instance.Resume();
     return s;
 }
 
 void MIDI_isr() {
-	return midi_instance.Controller();
+	return captain_midi_instance.Controller();
 }
 
 void MIDI_handleAppEvent(OC::AppEvent event) {
+    if (event == OC::APP_EVENT_SUSPEND) {
+        captain_midi_instance.OnSendSysEx();
+    }
 }
 
 void MIDI_loop() {
 }
 
 void MIDI_menu() {
-    midi_instance.View();
+    captain_midi_instance.View();
 }
 
 void MIDI_screensaver() {
-    midi_instance.Screensaver();
+    captain_midi_instance.Screensaver();
 }
 
 void MIDI_handleButtonEvent(const UI::Event &event) {
     if (event.control == OC::CONTROL_BUTTON_R && event.type == UI::EVENT_BUTTON_PRESS)
-        midi_instance.ToggleCursor();
+        captain_midi_instance.ToggleCursor();
     if (event.control == OC::CONTROL_BUTTON_L) {
-        if (event.type == UI::EVENT_BUTTON_LONG_PRESS) midi_instance.Panic();
-        else midi_instance.ToggleDisplay();
+        if (event.type == UI::EVENT_BUTTON_LONG_PRESS) captain_midi_instance.Panic();
+        else captain_midi_instance.ToggleDisplay();
     }
 
-    if (event.control == OC::CONTROL_BUTTON_UP) midi_instance.SwitchSetup(1);
+    if (event.control == OC::CONTROL_BUTTON_UP) captain_midi_instance.SwitchSetup(1);
     if (event.control == OC::CONTROL_BUTTON_DOWN) {
-        if (event.type == UI::EVENT_BUTTON_PRESS) midi_instance.SwitchSetup(-1);
-        if (event.type == UI::EVENT_BUTTON_LONG_PRESS) midi_instance.ToggleCopyMode();
+        if (event.type == UI::EVENT_BUTTON_PRESS) captain_midi_instance.SwitchSetup(-1);
+        if (event.type == UI::EVENT_BUTTON_LONG_PRESS) captain_midi_instance.ToggleCopyMode();
     }
 }
 
 void MIDI_handleEncoderEvent(const UI::Event &event) {
     if (event.control == OC::CONTROL_ENCODER_R) {
-        if (midi_instance.cursor.editing()) {
-            midi_instance.change_value(midi_instance.cursor.cursor_pos(), event.value);
-            midi_instance.ConstrainRangeValue(midi_instance.cursor.cursor_pos());
+        if (captain_midi_instance.cursor.editing()) {
+            captain_midi_instance.change_value(captain_midi_instance.cursor.cursor_pos(), event.value);
+            captain_midi_instance.ConstrainRangeValue(captain_midi_instance.cursor.cursor_pos());
         } else {
-            midi_instance.cursor.Scroll(event.value);
+            captain_midi_instance.cursor.Scroll(event.value);
         }
     }
     if (event.control == OC::CONTROL_ENCODER_L) {
-        midi_instance.SwitchScreenOrLogView(event.value);
+        captain_midi_instance.SwitchScreenOrLogView(event.value);
     }
 }
