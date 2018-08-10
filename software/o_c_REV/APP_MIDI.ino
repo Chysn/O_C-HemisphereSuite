@@ -338,16 +338,16 @@ public:
 
    /* Perform a copy or sysex dump */
    void CopySetup(int source, int target) {
-       int source_offset = MIDI_PARAMETER_COUNT * source;
-       int target_offset = MIDI_PARAMETER_COUNT * target;
-       if (source_offset == target_offset) {
+       if (source == target) {
            OnSendSysEx();
        } else {
+           int source_offset = MIDI_PARAMETER_COUNT * source;
+           int target_offset = MIDI_PARAMETER_COUNT * target;
            for (int c = 0; c < MIDI_PARAMETER_COUNT; c++)
            {
                values_[target_offset + c] = values_[source_offset + c];
            }
-           SwitchSetup(target);
+           SelectSetup(target);
            Resume();
        }
        copy_mode = 0;
