@@ -190,8 +190,7 @@ private:
 
         // Show the length if it's length set mode
         if (length_set_mode) {
-            gfxPrint(40, 40 + note_height, OC::user_scales[current_scale].num_notes);
-            gfxPrint(" Notes");
+            segment.Print(22, 50, OC::user_scales[current_scale].num_notes);
         }
     }
 
