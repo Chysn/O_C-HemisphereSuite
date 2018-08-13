@@ -276,7 +276,6 @@ public:
     /* When the app is suspended, it sends out a system exclusive dump, generated here */
     void OnSendSysEx() {
         uint8_t V[35];
-        for (int i = 0; i < 35; i++) V[i] = 0; // Initialize data
         // Limit is 48 packed bytes, and there are 130 bytes that need packing. So wrap this
         // app's data up into four smaller sysex "pages" of 32 bytes each.
         for (int page = 0; page < 4; page++)
@@ -291,7 +290,7 @@ public:
                 V[ix++] = (values_[(page * 16) + b] >> 8) & 0xff; // High byte
             }
             UnpackedData unpacked;
-            unpacked.set_data(35, V);
+            unpacked.set_data(ix, V);
             PackedData packed = unpacked.pack();
             SendSysEx(packed, 'D');
         }
@@ -299,7 +298,6 @@ public:
 
     void OnReceiveSysEx() {
         uint8_t V[35];
-        for (int i = 0; i < 35; i++) V[i] = 0; // Initialize data
         if (ExtractSysExData(V, 'D')) {
             int ix = 0;
             int page = V[ix++];

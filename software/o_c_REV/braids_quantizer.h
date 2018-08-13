@@ -69,6 +69,9 @@ class Quantizer {
   // Reverse of Lookup; gets last codeword used (for MIDI Out, etc.)
   int8_t NoteNumber();
 
+  // Force Process to process again
+  void Requantize();
+
  private:
   bool enabled_;
   int16_t enabled_notes_[16];
@@ -78,6 +81,7 @@ class Quantizer {
   int32_t previous_boundary_;
   int32_t next_boundary_;
   uint8_t note_number_;
+  bool requantize_;
 
   inline void Configure(const int16_t* notes, int16_t scale_span, size_t num_notes, uint16_t mask)
   {  

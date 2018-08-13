@@ -61,7 +61,7 @@ int32_t Quantizer::Process(int32_t pitch, int32_t root, int32_t transpose) {
   #else
     pitch -= ((12 << 7) << 1);
   #endif
-  if (pitch >= previous_boundary_ && pitch <= next_boundary_ && transpose == transpose_) {
+  if (!requantize_ && (pitch >= previous_boundary_ && pitch <= next_boundary_ && transpose == transpose_)) {
     // We're still in the voronoi cell for the active codeword.
     pitch = codeword_;
   } else {
@@ -116,6 +116,10 @@ int32_t Quantizer::Lookup(int32_t index) const {
 int8_t Quantizer::NoteNumber() {
     if (note_number_ > 103) note_number_ = 103;
     return note_number_ + 24;
+}
+
+void Quantizer::Requantize() {
+    requantize_ = 1;
 }
 
 }  // namespace braids

@@ -4,8 +4,8 @@
 
 #define LEFT_HEMISPHERE 0
 #define RIGHT_HEMISPHERE 1
-#define HEMISPHERE_MAX_CV 7677
-#define HEMISPHERE_3V_CV 4583
+#define HEMISPHERE_MAX_CV 7680
+#define HEMISPHERE_3V_CV 4608
 #define HEMISPHERE_CLOCK_TICKS 100
 #define HEMISPHERE_CURSOR_TICKS 12000
 #define HEMISPHERE_SCREEN_BLANK_TICKS 30000000
@@ -50,10 +50,10 @@ class HemisphereApplet {
 public:
 
     virtual const char* applet_name(); // Maximum of 9 characters
-    virtual void View();
-    virtual void ScreensaverView();
     virtual void Start();
     virtual void Controller();
+    virtual void View();
+    virtual void ScreensaverView();
 
     void BaseStart(int h) {
         hemisphere = h;
@@ -251,7 +251,7 @@ public:
     void Out(int ch, int value, int octave = 0) {
         DAC_CHANNEL channel = (DAC_CHANNEL)(ch + io_offset);
         OC::DAC::set_pitch(channel, value, octave);
-        outputs[ch] = value;
+        outputs[ch] = value + (octave * (12 << 7));
     }
 
     bool Clock(int ch) {

@@ -332,12 +332,12 @@ public:
    }
 
    void ToggleCursor() {
-       if (copy_mode) CopySetup(copy_setup_source, copy_setup_target);
+       if (copy_mode) CopySetup(copy_setup_target, copy_setup_source);
        else cursor.toggle_editing();
    }
 
    /* Perform a copy or sysex dump */
-   void CopySetup(int source, int target) {
+   void CopySetup(int target, int source) {
        if (source == target) {
            OnSendSysEx();
        } else {
