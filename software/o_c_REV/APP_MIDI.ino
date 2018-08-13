@@ -122,47 +122,59 @@ enum MIDI_OUT_FUNCTION {
     MIDI_OUT_BREATH
 };
 
-const char* const midi_messages[5] = {
-    "Note", "Off", "CC#", "Aft", "Bend"
+const char* const midi_messages[6] = {
+    "Note", "Off", "CC#", "Aft", "Bend", "SysEx"
 };
 struct CaptainMIDILog {
-    bool out; // 0 = out, 1 = in
+    bool midi_in; // 0 = out, 1 = in
     char io; // 1, 2, 3, 4, A, B, C, D
-    uint8_t message; // 0 = Note On, 1 = Note Off, 2 = CC, 3 = Aftertouch, 4 = Bend
+    uint8_t message; // 0 = Note On, 1 = Note Off, 2 = CC, 3 = Aftertouch, 4 = Bend, 5 = SysEx
     uint8_t channel; // MIDI channel
     int16_t data1;
     int16_t data2;
 
     void DrawAt(int y) {
-        graphics.setPrintPos(1, y);
-        if (out) graphics.print(">");
-        graphics.print(io);
-        if (!out) graphics.print(">");
-        graphics.print(" ");
-        graphics.print(midi_channels[channel]);
-        graphics.setPrintPos(36, y);
+        if (message == 5) {
+            int app_code = static_cast<char>(data1);
+            if (app_code >0) {
+                graphics.setPrintPos(1, y);
+                graphics.print("SysEx: ");
+                if (app_code == 'M') graphics.print("Captain MIDI");
+                if (app_code == 'H') graphics.print("Hemisphere");
+                if (app_code == 'D') graphics.print("D. Timeline");
+                if (app_code == 'E') graphics.print("Scale Editor");
+            }
+        } else {
+            graphics.setPrintPos(1, y);
+            if (midi_in) graphics.print(">");
+            graphics.print(io);
+            if (!midi_in) graphics.print(">");
+            graphics.print(" ");
+            graphics.print(midi_channels[channel]);
+            graphics.setPrintPos(36, y);
 
-        graphics.print(midi_messages[message]);
-        graphics.setPrintPos(72, y);
+            graphics.print(midi_messages[message]);
+            graphics.setPrintPos(72, y);
 
-        uint8_t x_offset = (data2 < 100) ? 6 : 0;
-        x_offset += (data2 < 10) ? 6 : 0;
+            uint8_t x_offset = (data2 < 100) ? 6 : 0;
+            x_offset += (data2 < 10) ? 6 : 0;
 
-        if (message == 0 || message == 1) {
-            graphics.print(midi_note_numbers[data1]);
-            graphics.setPrintPos(102 + x_offset, y);
-            graphics.print(data2); // Velocity
-        }
+            if (message == 0 || message == 1) {
+                graphics.print(midi_note_numbers[data1]);
+                graphics.setPrintPos(102 + x_offset, y);
+                graphics.print(data2); // Velocity
+            }
 
-        if (message == 2 || message == 3) {
-            if (message == 2) graphics.print(data1); // Controller number
-            graphics.setPrintPos(102 + x_offset, y);
-            graphics.print(data2); // Value
-        }
+            if (message == 2 || message == 3) {
+                if (message == 2) graphics.print(data1); // Controller number
+                graphics.setPrintPos(102 + x_offset, y);
+                graphics.print(data2); // Value
+            }
 
-        if (message == 4) {
-            if (data2 > 0) graphics.print("+");
-            graphics.print(data2); // Aftertouch or bend value
+            if (message == 4) {
+                if (data2 > 0) graphics.print("+");
+                graphics.print(data2); // Aftertouch or bend value
+            }
         }
     }
 };
@@ -320,6 +332,10 @@ public:
                 if (i > 15 && i < 24) p -= 24; // Restore the sign removed in OnSendSysEx()
                 apply_value(i + offset, p);
             }
+            UpdateLog(1, 0, 5, 0, 'M', 0);
+        } else {
+            char app_code = LastSysExApplicationCode();
+            UpdateLog(1, 0, 5, 0, app_code, 0);
         }
         Resume();
     }
@@ -776,9 +792,9 @@ private:
         return (diff > 50 || diff < -50) ? 1 : 0;
     }
 
-    void UpdateLog(bool out, int ch, uint8_t message, uint8_t channel, int16_t data1, int16_t data2) {
-        char io = out ? ('A' + ch) : ('1' + ch);
-        log[log_index++] = {out, io, message, channel, data1, data2};
+    void UpdateLog(bool midi_in, int ch, uint8_t message, uint8_t channel, int16_t data1, int16_t data2) {
+        char io = midi_in ? ('A' + ch) : ('1' + ch);
+        log[log_index++] = {midi_in, io, message, channel, data1, data2};
         if (log_index == MIDI_LOG_MAX_SIZE) {
             for (int i = 0; i < MIDI_LOG_MAX_SIZE - 1; i++)
             {

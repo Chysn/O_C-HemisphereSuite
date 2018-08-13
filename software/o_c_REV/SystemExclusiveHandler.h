@@ -225,9 +225,19 @@ protected:
             {
                 V[i] = unpacked.data[i];
             }
+            last_app_code = target_id;
+        } else {
+            if (sysex[1] == 0x7d && sysex[2] == 0x62) {
+                last_app_code = sysex[3];
+            } else last_app_code = 0; // Unknown application
         }
         return verify;
     }
+
+    char LastSysExApplicationCode() {return last_app_code;}
+
+private:
+    char last_app_code; // The most recent application code received
 };
 
 #endif /* SYSEX_HANDLER_H_ */
