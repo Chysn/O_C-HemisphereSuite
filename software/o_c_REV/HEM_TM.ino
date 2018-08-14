@@ -118,14 +118,15 @@ private:
         gfxPrint(12, 15, length);
         gfxPrint(32, 15, "p=");
         if (cursor == 1) {
-            gfxCursor(32, 23, 30);
+            gfxCursor(45, 23, 18); // Probability Cursor
             gfxPrint(p);
         } else {
             gfxPrint(" -");
         }
-        gfxPrint(1, 25, OC::scale_names_short[scale]);
-        if (cursor == 0) gfxCursor(1, 23, 30);
-        if (cursor == 2) gfxCursor(1, 33, 62);
+        gfxBitmap(1, 24, 8, SCALE_ICON);
+        gfxPrint(12, 25, OC::scale_names_short[scale]);
+        if (cursor == 0) gfxCursor(13, 23, 12); // Length Cursor
+        if (cursor == 2) gfxCursor(13, 33, 30); // Scale Cursor
     }
 
     void DrawIndicator() {
