@@ -8,7 +8,7 @@
 // 0x40 = Audio
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 35
+#define HEMISPHERE_AVAILABLE_APPLETS 36
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
@@ -46,5 +46,6 @@
     DECLARE_APPLET( 37, 0x10, Trending), \
     DECLARE_APPLET( 11, 0x06, TrigSeq), \
     DECLARE_APPLET( 25, 0x06, TrigSeq16), \
+    DECLARE_APPLET( 39, 0x80, Tuner), \
     DECLARE_APPLET( 18, 0x02, TM), \
 }

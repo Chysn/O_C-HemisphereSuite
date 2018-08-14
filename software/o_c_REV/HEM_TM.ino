@@ -135,7 +135,7 @@ private:
         for (int b = 0; b < 16; b++)
         {
             int v = (reg >> b) & 0x01;
-            if (v) gfxRect(4 * b, 42, 3, 18);
+            if (v) gfxRect(4 * b, 42, 3, 19);
         }
     }
 
