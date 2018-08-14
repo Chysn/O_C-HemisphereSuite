@@ -1,3 +1,5 @@
+const uint8_t HEM_PPQN_VALUES[] = {1, 2, 4, 8, 16, 24};
+
 class Scope : public HemisphereApplet {
 public:
 
@@ -32,7 +34,7 @@ public:
         }
 
         if (!freeze) {
-            last_cv = In(1);
+            last_cv = (In(1) * 100) / (12 << 7);
 
             if (--sample_countdown < 1) {
                 sample_countdown = sample_ticks;
@@ -114,7 +116,7 @@ private:
 
     void DrawBPM() {
         gfxPrint(9, 15, "BPM ");
-        gfxPrint(bpm);
+        gfxPrint(bpm / 4);
         gfxLine(0, 24, 63, 24);
 
         if (OC::CORE::ticks - last_bpm_tick < 1666) gfxBitmap(1, 15, 8, CLOCK_ICON);
@@ -135,9 +137,19 @@ private:
     }
 
     void DrawInput2() {
+        int wv = last_cv / 100; // whole volts
+        int dv = last_cv - (wv * 100); // decimal
+        if (dv < 0) dv = -dv;
+
         gfxLine(0, 53, 63, 53);
         gfxBitmap(1, 55, 8, CV_ICON);
-        gfxPrint(10, 55, last_cv);
+        if (wv >= 0) {
+            gfxPrint(12, 55, "+");
+            gfxPrint(wv);
+        } else gfxPrint(12, 55, wv);
+        gfxPrint(".");
+        gfxPrint(dv);
+        gfxPrint("V");
     }
 };
 
