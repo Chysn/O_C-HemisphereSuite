@@ -8,6 +8,7 @@
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
 #include "bjorklund.h"
+const uint8_t TM_MAX_SCALE = 63;
 
 class TM : public HemisphereApplet {
 public:
@@ -22,7 +23,8 @@ public:
         length = 16;
         cursor = 0;
         quantizer.Init();
-        quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
+        scale = OC::Scales::SCALE_SEMI;
+        quantizer.Configure(OC::Scales::GetScale(scale), 0xffff); // Semi-tone
     }
 
     void Controller() {
@@ -61,12 +63,18 @@ public:
     }
 
     void OnButtonPress() {
-        cursor = 1 - cursor;
+        if (++cursor > 2) cursor = 0;
     }
 
     void OnEncoderMove(int direction) {
+        if (cursor == 0) length = constrain(length += direction, 2, 16);
         if (cursor == 1) p = constrain(p += direction, 0, 100);
-        else length = constrain(length += direction, 2, 16);
+        if (cursor == 2) {
+            scale += direction;
+            if (scale >= TM_MAX_SCALE) scale = 0;
+            if (scale < 0) scale = TM_MAX_SCALE - 1;
+            quantizer.Configure(OC::Scales::GetScale(scale), 0xffff);
+        }
     }
         
     uint32_t OnDataRequest() {
@@ -74,6 +82,7 @@ public:
         Pack(data, PackLocation {0,16}, reg);
         Pack(data, PackLocation {16,7}, p);
         Pack(data, PackLocation {23,4}, length - 1);
+        Pack(data, PackLocation {27,6}, scale);
         return data;
     }
 
@@ -81,6 +90,7 @@ public:
         reg = Unpack(data, PackLocation {0,16});
         p = Unpack(data, PackLocation {16,7});
         length = Unpack(data, PackLocation {23,4}) + 1;
+        scale = Unpack(data, PackLocation {27,6});
     }
 
 protected:
@@ -89,16 +99,19 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
         help[HEMISPHERE_HELP_CVS]      = "";
         help[HEMISPHERE_HELP_OUTS]     = "A=Quant5-bit B=CV8";
-        help[HEMISPHERE_HELP_ENCODER]  = "Length/Probability";
+        help[HEMISPHERE_HELP_ENCODER]  = "Length/Prob/Scale";
         //                               "------------------" <-- Size Guide
     }
     
 private:
+    int length; // Sequence length
+    int cursor;  // 0 = length, 1 = p, 2 = scale
+    braids::Quantizer quantizer;
+
+    // Settings
     uint16_t reg; // 16-bit sequence register
     int p; // Probability of bit 15 changing on each cycle
-    int length; // Sequence length
-    int cursor;  // 0 = length, 1 = p
-    braids::Quantizer quantizer;
+    int8_t scale; // Scale used for quantized output
 
     void DrawSelector() {
         gfxBitmap(1, 14, 8, NOTE_ICON);
@@ -108,18 +121,20 @@ private:
             gfxCursor(32, 23, 30);
             gfxPrint(p);
         } else {
-            gfxCursor(1, 23, 30);
             gfxPrint(" -");
         }
+        gfxPrint(1, 25, OC::scale_names_short[scale]);
+        if (cursor == 0) gfxCursor(1, 23, 30);
+        if (cursor == 2) gfxCursor(1, 33, 62);
     }
 
     void DrawIndicator() {
-        gfxLine(0, 34, 63, 34);
-        gfxLine(0, 49, 63, 49);
+        gfxLine(0, 40, 63, 40);
+        gfxLine(0, 62, 63, 62);
         for (int b = 0; b < 16; b++)
         {
             int v = (reg >> b) & 0x01;
-            if (v) gfxRect(4 * b, 36, 3, 12);
+            if (v) gfxRect(4 * b, 42, 3, 18);
         }
     }
 

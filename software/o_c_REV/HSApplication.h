@@ -205,12 +205,12 @@ public:
 private:
     int clock_countdown[4]; // For clock output timing
     int adc_lag_countdown[4]; // Lag countdown for each input channel
-    int cursor_countdown;
-    bool screensaver_on;
-    uint32_t last_view_tick;
-    int inputs[4];
-    int outputs[4];
-    uint32_t last_clock[4];
+    int cursor_countdown; // Timer for cursor blinkin'
+    bool screensaver_on; // Is the screensaver active?
+    uint32_t last_view_tick; // Time since the last view, for activating screen blanking
+    int inputs[4]; // Last ADC values
+    int outputs[4]; // Last DAC values; inputs[] and outputs[] are used to allow access to values in Views
+    uint32_t last_clock[4]; // Keeps time since last clock
 };
 
 #endif /* HSAPPLICATION_H_ */

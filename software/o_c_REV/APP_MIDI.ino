@@ -11,7 +11,7 @@
 #include "braids_quantizer.h"
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
-#include "HSAppIO.h"
+#include "HSApplication.h"
 #include "SystemExclusiveHandler.h"
 
 const uint8_t MIDI_MSG_NOTE_ON = 1;
@@ -21,8 +21,6 @@ const uint8_t MIDI_MSG_AFTERTOUCH = 5;
 const uint8_t MIDI_MSG_PITCHBEND = 6;
 const uint8_t MIDI_MSG_SYSEX = 7;
 const uint16_t MIDI_INDICATOR_COUNTDOWN = 2000;
-const int MIDI_MAX_CV = 7677;
-const int MIDI_3V_CV = 4583;
 const int MIDI_PARAMETER_COUNT = 40;
 const int MIDI_CURRENT_SETUP = MIDI_PARAMETER_COUNT * 4;
 const int MIDI_SETTING_LAST = MIDI_CURRENT_SETUP + 1;
@@ -179,7 +177,7 @@ struct CaptainMIDILog {
     }
 };
 
-class CaptainMIDI : public SystemExclusiveHandler, public HSAppIO,
+class CaptainMIDI : public SystemExclusiveHandler, public HSApplication,
     public settings::SettingsBase<CaptainMIDI, MIDI_SETTING_LAST> {
 public:
     menu::ScreenCursor<menu::kScreenLines> cursor;
@@ -216,8 +214,6 @@ public:
             if (indicator_in[ch] > 0) --indicator_in[ch];
             if (indicator_out[ch] > 0) --indicator_out[ch];
         }
-
-        HSIOController();
     }
 
     void View() {
@@ -226,7 +222,7 @@ public:
         else DrawLogScreen();
     }
 
-    void Screensaver() {
+    void ScreensaverView() {
         DrawSetupScreens();
     }
 
@@ -563,7 +559,7 @@ private:
                         for (int vch = 0; vch < 4; vch++)
                         {
                             if (get_out_assign(vch) == MIDI_OUT_VELOCITY && get_out_channel(vch) == out_ch) {
-                                velocity = Proportion(In(vch), MIDI_MAX_CV, 127);
+                                velocity = Proportion(In(vch), HSAPPLICATION_5V, 127);
                             }
                         }
                         velocity = constrain(velocity, 0, 127);
@@ -600,7 +596,7 @@ private:
                     if (out_fn == MIDI_OUT_HOLD) cc = 64;
                     if (out_fn == MIDI_OUT_BREATH) cc = 2;
 
-                    int value = Proportion(this_cv, MIDI_MAX_CV, 127);
+                    int value = Proportion(this_cv, HSAPPLICATION_5V, 127);
                     value = constrain(value, 0, 127);
                     if (cc == 64) value = (value >= 60) ? 127 : 0; // On or off for sustain pedal
 
@@ -611,7 +607,7 @@ private:
 
                 // Aftertouch
                 if (out_fn == MIDI_OUT_AFTERTOUCH) {
-                    int value = Proportion(this_cv, MIDI_MAX_CV, 127);
+                    int value = Proportion(this_cv, HSAPPLICATION_5V, 127);
                     value = constrain(value, 0, 127);
                     usbMIDI.sendAfterTouch(value, out_ch);
                     UpdateLog(0, ch, 3, out_ch, 0, value);
@@ -620,7 +616,7 @@ private:
 
                 // Pitch Bend
                 if (out_fn == MIDI_OUT_PITCHBEND) {
-                    int16_t bend = Proportion(this_cv + MIDI_3V_CV, MIDI_3V_CV * 2, 16383);
+                    int16_t bend = Proportion(this_cv + HSAPPLICATION_3V, HSAPPLICATION_3V * 2, 16383);
                     bend = constrain(bend, 0, 16383);
                     usbMIDI.sendPitchBend(bend, out_ch);
                     UpdateLog(0, ch, 4, out_ch, 0, bend - 8192);
@@ -685,7 +681,7 @@ private:
 
                         if (in_fn == MIDI_IN_VELOCITY) {
                             // Send velocity data to CV
-                            Out(ch, Proportion(data2, 127, MIDI_MAX_CV));
+                            Out(ch, Proportion(data2, 127, HSAPPLICATION_5V));
                             indicator = 1;
                         }
                     }
@@ -717,7 +713,7 @@ private:
                     // Send CC wheel to CV
                     if (data1 == cc) {
                         if (in_fn == MIDI_IN_HOLD && data2 > 0) data2 = 127;
-                        Out(ch, Proportion(data2, 127, MIDI_MAX_CV));
+                        Out(ch, Proportion(data2, 127, HSAPPLICATION_5V));
                         UpdateLog(1, ch, 2, in_ch, data1, data2);
                         indicator = 1;
                     }
@@ -725,7 +721,7 @@ private:
 
                 if (message == MIDI_MSG_AFTERTOUCH && in_fn == MIDI_IN_AFTERTOUCH && in_ch == channel) {
                     // Send aftertouch to CV
-                    Out(ch, Proportion(data2, 127, MIDI_MAX_CV));
+                    Out(ch, Proportion(data2, 127, HSAPPLICATION_5V));
                     UpdateLog(1, ch, 3, in_ch, data1, data2);
                     indicator = 1;
                 }
@@ -733,7 +729,7 @@ private:
                 if (message == MIDI_MSG_PITCHBEND && in_fn == MIDI_IN_PITCHBEND && in_ch == channel) {
                     // Send pitch bend to CV
                     int data = (data2 << 7) + data1 - 8192;
-                    Out(ch, Proportion(data, 0x7fff, MIDI_3V_CV));
+                    Out(ch, Proportion(data, 0x7fff, HSAPPLICATION_3V));
                     UpdateLog(1, ch, 4, in_ch, 0, data);
                     indicator = 1;
                 }
@@ -839,7 +835,7 @@ size_t MIDI_restore(const void *storage) {
 }
 
 void MIDI_isr() {
-	return captain_midi_instance.Controller();
+	return captain_midi_instance.BaseController();
 }
 
 void MIDI_handleAppEvent(OC::AppEvent event) {
@@ -852,11 +848,11 @@ void MIDI_loop() {
 }
 
 void MIDI_menu() {
-    captain_midi_instance.View();
+    captain_midi_instance.BaseView();
 }
 
 void MIDI_screensaver() {
-    captain_midi_instance.Screensaver();
+    captain_midi_instance.BaseScreensaverView();
 }
 
 void MIDI_handleButtonEvent(const UI::Event &event) {
