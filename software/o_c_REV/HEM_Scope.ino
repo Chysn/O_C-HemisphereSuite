@@ -69,7 +69,9 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        sample_ticks = constrain(sample_ticks += (direction * 10), 2, 64000);
+        if (sample_ticks < 32) sample_ticks += direction;
+        else sample_ticks += direction * 10;
+        sample_ticks = constrain(sample_ticks, 2, 64000);
         last_encoder_move = OC::CORE::ticks;
     }
         
