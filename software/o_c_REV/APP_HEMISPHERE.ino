@@ -2,6 +2,7 @@
 #include "OC_digital_inputs.h"
 #include "OC_visualfx.h"
 #include "OC_patterns.h"
+#include "src/drivers/FreqMeasure/OC_FreqMeasure.h"
 namespace menu = OC::menu;
 
 #include "hemisphere_config.h"

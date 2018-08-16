@@ -73,10 +73,16 @@ public:
         help_active = 0;
         cursor_countdown = HEMISPHERE_CURSOR_TICKS;
 
+        // Shutdown FTM capture on Digital 4, used by Tuner
+        if (hemisphere == 1) {
+            FreqMeasure.end();
+            OC::DigitalInputs::reInit();
+        }
+
         // Maintain previous app state by skipping Start
         if (!applet_started) {
-            Start();
             applet_started = true;
+            Start();
         }
     }
 
@@ -304,6 +310,13 @@ protected:
     const char* help[4];
     virtual void SetHelp();
     bool screensaver_on; // Is the screensaver active?
+
+    /* Forces applet's Start() method to run the next time the applet is selected. This
+     * allows an applet to start up the same way every time, regardless of previous state.
+     */
+    void AllowRestart() {
+        applet_started = 0;
+    }
 
     //////////////// Calculation methods
     ////////////////////////////////////////////////////////////////////////////////

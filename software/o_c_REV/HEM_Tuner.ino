@@ -1,4 +1,3 @@
-#include "src/drivers/FreqMeasure/OC_FreqMeasure.h"
 static constexpr double HEM_TUNER_AaboveMidCtoC0 = 0.03716272234383494188492;
 
 class Tuner : public HemisphereApplet {
@@ -11,6 +10,7 @@ public:
     void Start() {
         A4_Hz = 440;
         FreqMeasure.begin();
+        AllowRestart();
     }
 
     void Controller() {
@@ -42,6 +42,7 @@ public:
     }
 
     void OnButtonPress() {
+        Start();
     }
 
     void OnEncoderMove(int direction) {
@@ -60,12 +61,17 @@ public:
 
 protected:
     void SetHelp() {
-        //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "2=Input";
-        help[HEMISPHERE_HELP_CVS]      = "";
-        help[HEMISPHERE_HELP_OUTS]     = "";
-        help[HEMISPHERE_HELP_ENCODER]  = "A4 Hz";
-        //                               "------------------" <-- Size Guide
+        if (hemisphere == 1) {
+            help[HEMISPHERE_HELP_DIGITALS] = "2=Input";
+            help[HEMISPHERE_HELP_CVS]      = "";
+            help[HEMISPHERE_HELP_OUTS]     = "";
+            help[HEMISPHERE_HELP_ENCODER]  = "A4 Hz P=Reset";
+        } else {
+            help[HEMISPHERE_HELP_DIGITALS] = "Due to hardware";
+            help[HEMISPHERE_HELP_CVS]      = "constraints, the";
+            help[HEMISPHERE_HELP_OUTS]     = "Tuner must run in";
+            help[HEMISPHERE_HELP_ENCODER]  = "right hemisphere";
+        }
     }
     
 private:
