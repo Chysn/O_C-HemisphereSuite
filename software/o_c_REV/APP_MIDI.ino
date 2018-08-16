@@ -539,7 +539,7 @@ private:
                 if (note_on || legato_on[ch]) {
                     // Get a new reading when gated, or when checking for legato changes
                     quantizer.Process(In(ch), 0, 0);
-                    uint8_t midi_note = quantizer.NoteNumber() + get_out_transpose(ch) - 4;
+                    uint8_t midi_note = quantizer.MIDINoteNumber() + get_out_transpose(ch);
                     midi_note = constrain(midi_note, 0, 127);
 
                     if (legato_on[ch] && midi_note != note_out[ch]) {

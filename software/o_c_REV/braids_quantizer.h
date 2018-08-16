@@ -66,8 +66,8 @@ class Quantizer {
   // HACK for TM
   int32_t Lookup(int32_t index) const;
 
-  // Reverse of Lookup; gets last codeword used (for MIDI Out, etc.)
-  int8_t NoteNumber();
+  // Convert a quantized note into a MIDI note number for a semitone scale
+  uint16_t MIDINoteNumber();
 
   // Force Process to process again
   void Requantize();
@@ -80,7 +80,7 @@ class Quantizer {
   int32_t transpose_;
   int32_t previous_boundary_;
   int32_t next_boundary_;
-  uint8_t note_number_;
+  uint16_t note_number_;
   bool requantize_;
 
   inline void Configure(const int16_t* notes, int16_t scale_span, size_t num_notes, uint16_t mask)

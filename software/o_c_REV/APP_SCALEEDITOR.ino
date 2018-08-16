@@ -15,7 +15,8 @@ public:
         undo_value = OC::user_scales[current_scale].notes[0];
         octave = 1;
         QuantizeCurrent();
-        segment.Init();
+        segment.Init(SegmentSize::BIG_SEGMENTS);
+        tinynumbers.Init(SegmentSize::TINY_SEGMENTS);
 	}
 
     void Controller() {
@@ -122,7 +123,7 @@ public:
     }
 
     void OnLeftEncoderMove(int direction) {
-        if (!import_mode) ChangeValue(direction);
+        if (!import_mode && !length_set_mode) ChangeValue(direction);
     }
 
     void OnRightEncoderMove(int direction) {
@@ -144,53 +145,48 @@ private:
     int current_quantized;
     int octave;
     SegmentDisplay segment;
+    SegmentDisplay tinynumbers;
 
     void DrawInterface() {
-        // Start by drawing rectangles representing the scale notes
-        // Between 4-16 steps for each user scale. I'll make them 6 pixels wide each with
-        // a one pixel gutter on each side. It'll be centered, so the x offset will be
-        uint8_t offset_x = (128 - (8 * OC::user_scales[current_scale].num_notes)) / 2;
-        const uint8_t note_height = 12;
-        uint8_t join_x = 0; // The currently-selected note will be joined to the editor window at this X position
-        for (uint8_t n = 0; n < OC::user_scales[current_scale].num_notes; n++)
+        // The interface is a spreadsheet-like 4x4 grid, with each
+        // cell being 32x9 pixels. At the bottom of grid is an editing
+        // area with larger number with the current value, or the
+        // scale size. First draw the grid:
+        for (uint8_t cx = 0; cx < 4; cx++)
         {
-            if (length_set_mode) {
-                if (n < OC::user_scales[current_scale].num_notes - 1 || CursorBlink()) gfxFrame(1 + offset_x + (8 * n), 15, 6, note_height);
-            } else {
-                if (n == current_note) {
-                    join_x = 3 + offset_x + (8 * n);
-                    gfxRect(1 + offset_x + (8 * n), 15, 6, note_height);
-                } else gfxFrame(1 + offset_x + (8 * n), 15, 6, note_height);
+            for (uint8_t cy = 0; cy < 4; cy++)
+            {
+                uint8_t ix = (cy * 4) + cx; // index within the scale
+                uint8_t x = cx * 32;
+                uint8_t y = cy * 9 + 15;
+                if (ix < OC::user_scales[current_scale].num_notes) {
+
+                    uint32_t note_value = OC::user_scales[current_scale].notes[ix];
+                    uint32_t cents = (note_value * 100) >> 7;
+                    uint32_t frac_cents = ((note_value * 100000) >> 7) - cents * 1000;
+
+                    tinynumbers.PrintWhole(x + 2, y + 2, cents);
+                    tinynumbers.PrintDecimal(frac_cents, 1, 1000);
+
+                    // If this is the current note, highlight it
+                    if (ix == current_note && !length_set_mode) gfxInvert(x, y, 32, 9);
+                    if (length_set_mode && ix == OC::user_scales[current_scale].num_notes - 1)
+                        gfxCursor(x, y + 9, 32);
+                }
             }
         }
 
-        // Draw the joiner line from the current note to the value editor
-        if (join_x > 0) {
-            // Vertical line from the note box down
-            gfxLine(join_x, 15 + note_height, join_x, 15 + note_height + 8);
-            gfxLine(join_x + 1, 15 + note_height, join_x + 1, 15 + note_height + 8);
-
-            // Horizontal line to the center
-            gfxLine(join_x, 15 + note_height + 8, 64, 15 + note_height + 8);
-
-            // Center line down to the value editor
-            gfxLine(63, 15 + note_height + 8, 63, 15 + note_height + 16);
-            gfxLine(64, 15 + note_height + 8, 64, 15 + note_height + 16);
-            uint8_t value_editor_y = 38 + note_height;
-
+        // Now the editing area:
+        if (length_set_mode) {
+            segment.PrintWhole(22, 52, OC::user_scales[current_scale].num_notes);
+        } else {
             // Show the value
             uint32_t note_value = OC::user_scales[current_scale].notes[current_note];
             uint32_t cents = (note_value * 100) >> 7;
             uint32_t frac_cents = ((note_value * 100000) >> 7) - cents * 1000;
 
-            segment.Print(12, value_editor_y, cents);
-            segment.DecimalPoint(1000); // Go to 3 places after the decimal
-            segment.Print(frac_cents);
-        }
-
-        // Show the length if it's length set mode
-        if (length_set_mode) {
-            segment.Print(22, 50, OC::user_scales[current_scale].num_notes);
+            segment.PrintWhole(12, 52, cents);
+            segment.PrintDecimal(frac_cents, 3, 1000);
         }
     }
 
@@ -252,14 +248,26 @@ private:
     }
 
     void ChangeLength(int direction) {
-        int length = OC::user_scales[current_scale].num_notes + direction;
-        length = constrain(length, 4, 16);
+        int length = OC::user_scales[current_scale].num_notes;
+        if (direction > 0 && OC::user_scales[current_scale].notes[length - 1] + 1 >= (12 <<7)) {
+            // Cannot add a new note because the current top can't be exceeded
+            return;
+        }
+
+        length = constrain(length + direction, 4, 16);
         OC::user_scales[current_scale].num_notes = length;
         if (current_note > (length - 1)) current_note = length - 1;
+
+        // Make sure added notes follow the range rules
+        if (direction > 0 && OC::user_scales[current_scale].notes[length - 1] < OC::user_scales[current_scale].notes[length - 2]) {
+            OC::user_scales[current_scale].notes[length - 1] = OC::user_scales[current_scale].notes[length - 2] + 1;
+        }
 
         // Configure and force requantize for real-time monitoring purposes
         quantizer.Configure(OC::Scales::GetScale(current_scale), 0xffff);
         QuantizeCurrent();
+
+        ResetCursor();
     }
 
     void ChangeValue(int direction) {

@@ -19,9 +19,10 @@ public:
         if (Clock(1)) ForEachChannel(ch) step[ch] = 0;
 
         if (Clock(0)) {
+            bool swap = In(0) >= HEMISPHERE_3V_CV;
             ForEachChannel(ch)
             {
-                if ((pattern[ch] >> step[ch]) & 0x01) ClockOut(ch);
+                if ((pattern[ch] >> step[ch]) & 0x01) ClockOut(swap ? (1 - ch) : ch);
                 step[ch]++;
                 if (step[ch] > end_step[ch]) step[ch] = 0;
             }
@@ -86,7 +87,7 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
-        help[HEMISPHERE_HELP_CVS]      = "";
+        help[HEMISPHERE_HELP_CVS]      = "1=Swap A&B @ 3V";
         help[HEMISPHERE_HELP_OUTS]     = "Trg A=Ch1 B=Ch2";
         help[HEMISPHERE_HELP_ENCODER]  = "T=Set P=Select";
         //                               "------------------" <-- Size Guide
