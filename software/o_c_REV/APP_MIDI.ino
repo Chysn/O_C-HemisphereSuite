@@ -789,6 +789,9 @@ private:
     }
 
     void UpdateLog(bool midi_in, int ch, uint8_t message, uint8_t channel, int16_t data1, int16_t data2) {
+        // Don't log SysEx unless the user is on the log display screen
+        if (message == 5 && display == 0) return;
+
         char io = midi_in ? ('A' + ch) : ('1' + ch);
         log[log_index++] = {midi_in, io, message, channel, data1, data2};
         if (log_index == MIDI_LOG_MAX_SIZE) {
