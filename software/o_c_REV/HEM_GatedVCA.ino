@@ -17,9 +17,11 @@ public:
         output += amp_offset_cv;
         output = constrain(output, -HEMISPHERE_MAX_CV, HEMISPHERE_MAX_CV);
 
-        Out(1, output); // Regular VCA output on B
-        if (Gate(0)) Out(0, output); // Gated VCA output on A
+        if (Gate(0)) Out(0, output); // Normally-off gated VCA output on A
         else Out(0, 0);
+
+        if (Gate(1)) Out(1, 0); // Normally-on ungated VCA output on B
+        else Out(1, output);
     }
 
     void View() {
@@ -49,9 +51,9 @@ public:
 
 protected:
     void SetHelp() {
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Gate Out A";
+        help[HEMISPHERE_HELP_DIGITALS] = "Gt 1=A ON 2=B OFF";
         help[HEMISPHERE_HELP_CVS] = "1=CV signal 2=Amp";
-        help[HEMISPHERE_HELP_OUTS] = "A=Gated out B=Out";
+        help[HEMISPHERE_HELP_OUTS] = "A=Norm off B=N. on";
         help[HEMISPHERE_HELP_ENCODER] = "T=Amp CV Offset";
     }
     
