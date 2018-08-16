@@ -1,3 +1,5 @@
+#define SCHMITT_FLASH_SPEED 1667
+
 class Schmitt : public HemisphereApplet {
 public:
 
@@ -9,6 +11,7 @@ public:
         low = 3200; // ~2.1V
         high = 3968; // ~2.6V
         cursor = 0;
+        gate_countdown = 0;
     }
 
     void Controller() {
@@ -18,6 +21,8 @@ public:
             if (state[ch] && In(ch) < low) state[ch] = 0;
             GateOut(ch, state[ch]);
         }
+
+        if (--gate_countdown < -SCHMITT_FLASH_SPEED) gate_countdown = SCHMITT_FLASH_SPEED;
     }
 
     void View() {
@@ -70,9 +75,14 @@ protected:
     
 private:
     int cursor; // 0 = locked 1 = high threshold, 2 = low threshold
+
+    // Housekeeping
+    bool state[2];
+    int gate_countdown;
+
+    // Settings
     uint16_t low;
     uint16_t high;
-    bool state[2];
 
     void DrawInterface() {
         // Draw two Schmitt Trigger symbols and inputs
@@ -107,9 +117,9 @@ private:
         gfxLine(x + 13, y + 5, x + 13, y + 9); // Scmitt symbol, left
         gfxLine(x + 16, y + 5, x + 16, y + 9); // Schmitt symbol, right
 
-        if (state && CursorBlink()) {
-            gfxLine(x + 30, y + 7, x + 40, y + 4);
-            gfxLine(x + 30, y + 7, x + 40, y + 10);
+        if (state) {
+            if (gate_countdown > 0) gfxLine(x + 30, y + 7, x + 38, y + 4);
+            else gfxLine(x + 30, y + 7, x + 38, y + 10);
         }
     }
 };
