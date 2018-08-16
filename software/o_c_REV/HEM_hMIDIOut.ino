@@ -1,9 +1,5 @@
 // See https://www.pjrc.com/teensy/td_midi.html
 
-#include "braids_quantizer.h"
-#include "braids_quantizer_scales.h"
-#include "OC_scales.h"
-
 // The functions available for each output
 #define HEM_MIDI_CC_IN 0
 #define HEM_MIDI_AT_IN 1
@@ -18,8 +14,6 @@ public:
     }
 
     void Start() {
-        quantizer.Init();
-        quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
         channel = 0; // Default channel 1
         last_channel = 0;
         function = 0;
@@ -44,9 +38,7 @@ public:
         bool note_on = EndOfADCLag(); // If the ADC lag has ended, a note will always be sent
         if (note_on || legato_on) {
             // Get a new reading when gated, or when checking for legato changes
-            quantizer.Process(In(0), 0, 0);
-            uint8_t midi_note = quantizer.MIDINoteNumber() + transpose;
-            midi_note = constrain(midi_note, 0, 127);
+            uint8_t midi_note = CV_MIDINoteNumber(In(0), transpose);
 
             if (legato_on && midi_note != last_note) {
                 // Send note off if the note has changed
@@ -167,9 +159,6 @@ protected:
     }
     
 private:
-    // Quantizer for note numbers
-    braids::Quantizer quantizer;
-
     // Settings
     int channel; // MIDI Out channel
     int function; // Function of B/D output

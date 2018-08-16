@@ -1,9 +1,5 @@
 // See https://www.pjrc.com/teensy/td_midi.html
 
-#include "braids_quantizer.h"
-#include "braids_quantizer_scales.h"
-#include "OC_scales.h"
-
 #define HEM_MIDI_NOTE_ON 1
 #define HEM_MIDI_NOTE_OFF 0
 #define HEM_MIDI_CC 3
@@ -34,8 +30,6 @@ public:
     }
 
     void Start() {
-        quantizer.Init();
-        quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
         first_note = -1;
         channel = 0; // Default channel 1
 
@@ -71,7 +65,7 @@ public:
                     ForEachChannel(ch)
                     {
                         if (function[ch] == HEM_MIDI_NOTE_OUT)
-                            Out(ch, quantizer.Lookup(data1));
+                            Out(ch, MIDINoteNumber_CV(data1));
 
                         if (function[ch] == HEM_MIDI_TRIG_OUT)
                             ClockOut(ch);
@@ -189,9 +183,6 @@ protected:
     }
     
 private:
-    // Quantizer for note numbers
-    braids::Quantizer quantizer;
-
     // Settings
     int channel; // MIDI channel number
     int function[2]; // Function for each channel

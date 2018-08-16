@@ -19,7 +19,7 @@ public:
             freq_sum_ = freq_sum_ + FreqMeasure.read();
             freq_count_ = freq_count_ + 1;
 
-            if (milliseconds_since_last_freq_ > 250) {
+            if (milliseconds_since_last_freq_ > 750) {
                 frequency_ = FreqMeasure.countToFrequency(freq_sum_ / freq_count_);
                 freq_sum_ = 0;
                 freq_count_ = 0;

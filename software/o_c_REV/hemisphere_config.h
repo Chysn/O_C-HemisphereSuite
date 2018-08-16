@@ -8,7 +8,7 @@
 // 0x40 = Audio
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 36
+#define HEMISPHERE_AVAILABLE_APPLETS 35
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
@@ -25,7 +25,6 @@
     DECLARE_APPLET( 30, 0x10, Compare), \
     DECLARE_APPLET( 24, 0x02, CVRec), \
     DECLARE_APPLET(  9, 0x08, DualQuant), \
-    DECLARE_APPLET( 19, 0x01, GameOfLife), \
     DECLARE_APPLET( 29, 0x04, GateDelay), \
     DECLARE_APPLET( 17, 0x50, GatedVCA), \
     DECLARE_APPLET( 16, 0x40, LoFiPCM), \

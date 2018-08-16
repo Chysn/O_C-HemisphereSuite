@@ -240,6 +240,24 @@ private:
     char last_app_code; // The most recent application code received
 };
 
+/* Given a pitch CV value, return the MIDI note number */
+uint8_t CV_MIDINoteNumber(int cv, int transpose = 0) {
+    int octave = cv / (12 << 7);
+    int semitone = (cv % (12 << 7)) / 128;
+    int midi_note_number = (octave * 12) + semitone + transpose + 48;
+    if (midi_note_number > 127) midi_note_number = 127;
+    if (midi_note_number < 0) midi_note_number = 0;
+    return static_cast<uint8_t>(midi_note_number);
+}
+
+/* Given a MIDI note number, return the pitch CV value */
+int MIDINoteNumber_CV(uint8_t midi_note_number, int transpose = 0) {
+    int octave = midi_note_number / 12;
+    int semitone = midi_note_number % 12;
+    int cv = (octave * (12 << 7)) + (semitone * 128) + (transpose * 128) - (4 * (12 << 7));
+    return cv;
+}
+
 #endif /* SYSEX_HANDLER_H_ */
 
 /*

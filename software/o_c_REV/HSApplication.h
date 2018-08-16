@@ -26,12 +26,6 @@ public:
     virtual void View();
     virtual void ScreensaverView();
 
-    int Proportion(int numerator, int denominator, int max_value) {
-        simfloat proportion = int2simfloat((int32_t)numerator) / (int32_t)denominator;
-        int scaled = simfloat2int(proportion * max_value);
-        return scaled;
-    }
-
     void BaseController() {
         for (uint8_t ch = 0; ch < 4; ch++)
         {
@@ -74,6 +68,13 @@ public:
         if (OC::CORE::ticks - last_view_tick < HSAPPLICATION_SCREEN_BLANK_TICKS) ScreensaverView();
     }
 
+    int Proportion(int numerator, int denominator, int max_value) {
+        simfloat proportion = int2simfloat((int32_t)numerator) / (int32_t)denominator;
+        int scaled = simfloat2int(proportion * max_value);
+        return scaled;
+    }
+
+protected:
     /* Check cursor blink cycle. Suppress cursor when screensaver is on */
     bool CursorBlink() {
         return (cursor_countdown > 0 && !screensaver_on);

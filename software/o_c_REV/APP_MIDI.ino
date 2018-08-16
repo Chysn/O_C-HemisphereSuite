@@ -8,9 +8,6 @@
 
 // See https://www.pjrc.com/teensy/td_midi.html
 
-#include "braids_quantizer.h"
-#include "braids_quantizer_scales.h"
-#include "OC_scales.h"
 #include "HSApplication.h"
 #include "SystemExclusiveHandler.h"
 
@@ -186,8 +183,6 @@ public:
         screen = 0;
         display = 0;
         cursor.Init(0, 7);
-        quantizer.Init();
-        quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
         log_index = 0;
         log_view = 0;
         Reset();
@@ -375,9 +370,6 @@ public:
    }
 
 private:
-    // Quantizer for note numbers
-    braids::Quantizer quantizer;
-
     // Housekeeping
     int screen; // 0=Assign 2=Channel 3=Transpose
     bool display; // 0=Setup Edit 1=Log
@@ -538,9 +530,7 @@ private:
 
                 if (note_on || legato_on[ch]) {
                     // Get a new reading when gated, or when checking for legato changes
-                    quantizer.Process(In(ch), 0, 0);
-                    uint8_t midi_note = quantizer.MIDINoteNumber() + get_out_transpose(ch);
-                    midi_note = constrain(midi_note, 0, 127);
+                    uint8_t midi_note = CV_MIDINoteNumber(In(ch), get_out_transpose(ch));
 
                     if (legato_on[ch] && midi_note != note_out[ch]) {
                         // Send note off if the note has changed
@@ -656,7 +646,7 @@ private:
                             int note = data1 + get_in_transpose(ch);
                             note = constrain(note, 0, 127);
                             if (in_in_range(ch, note)) {
-                                Out(ch, quantizer.Lookup(note));
+                                Out(ch, MIDINoteNumber_CV(note));
                                 UpdateLog(1, ch, 0, in_ch, note, data2);
                                 indicator = 1;
                                 note_captured = 1;
