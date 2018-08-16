@@ -8,7 +8,7 @@
 // 0x40 = Audio
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 35
+#define HEMISPHERE_AVAILABLE_APPLETS 36
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
@@ -35,6 +35,7 @@
     DECLARE_APPLET( 33, 0x10, MixerBal), \
     DECLARE_APPLET( 20, 0x02, Palimpsest), \
     DECLARE_APPLET( 26, 0x08, ScaleDuet), \
+    DECLARE_APPLET( 40, 0x14, Schmitt), \
     DECLARE_APPLET( 23, 0x80, Scope), \
     DECLARE_APPLET( 14, 0x02, Sequence5), \
     DECLARE_APPLET( 36, 0x04, Shuffle), \

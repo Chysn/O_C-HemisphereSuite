@@ -51,7 +51,7 @@ public:
 
 protected:
     void SetHelp() {
-        help[HEMISPHERE_HELP_DIGITALS] = "Gt 1=A ON 2=B OFF";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=A Gate 2=B Revrs";
         help[HEMISPHERE_HELP_CVS] = "1=CV signal 2=Amp";
         help[HEMISPHERE_HELP_OUTS] = "A=Norm off B=N. on";
         help[HEMISPHERE_HELP_ENCODER] = "T=Amp CV Offset";
