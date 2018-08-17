@@ -19,10 +19,10 @@ public:
 
         // Output A is summed binary output, where
         // bit 0 = .25V, etc.
-        int sum = (bit[0] * B0Val)
-                + (bit[1] * (2 * B0Val))
-                + (bit[2] * (4 * B0Val))
-                + (bit[3] * (8 * B0Val));
+        int sum = (bit[3] * B0Val)
+                + (bit[2] * (2 * B0Val))
+                + (bit[1] * (4 * B0Val))
+                + (bit[0] * (8 * B0Val));
         Out(0, sum);
 
         // Output B is a count of high binary states, with 1V per state
@@ -56,8 +56,8 @@ public:
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Bit0 2=Bit1";
-        help[HEMISPHERE_HELP_CVS]      = "1=Bit2 2=Bit3";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Bit 3 2=Bit 2";
+        help[HEMISPHERE_HELP_CVS]      = "1=Bit 1 2=Bit 0";
         help[HEMISPHERE_HELP_OUTS]     = "A=Binary B=Count";
         help[HEMISPHERE_HELP_ENCODER]  = "";
         //                               "------------------" <-- Size Guide
@@ -71,7 +71,7 @@ private:
     
     void DrawDisplay() {
         segment.SetPosition(11, 32);
-        for (int b = 3; b >= 0; b--)
+        for (int b = 0; b < 4; b++)
         {
             segment.PrintDigit(static_cast<uint8_t>(bit[b]));
         }
