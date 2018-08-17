@@ -1,4 +1,4 @@
-#define SCHMITT_FLASH_SPEED 1667
+#define SCHMITT_FLASH_SPEED 4000
 
 class Schmitt : public HemisphereApplet {
 public:
@@ -88,7 +88,7 @@ private:
         // Draw two Schmitt Trigger symbols and inputs
         ForEachChannel(ch)
         {
-            uint8_t x = 1 + (15 * ch);
+            uint8_t x = 1 + (14 * ch);
             uint8_t y = 26 + (16 * ch);
             DrawSchmittTriggerAtPositionWithState(x, y, state[ch]);
 
@@ -106,20 +106,22 @@ private:
     }
 
     void DrawSchmittTriggerAtPositionWithState(uint8_t x, uint8_t y, bool state) {
-        gfxLine(x, y + 7, x + 8, y + 7); // Input line
-        gfxLine(x + 8, y, x + 8, y + 14); // Base of triangle
-        gfxLine(x + 8, y, x + 30, y + 7); // Top angle
-        gfxLine(x + 8, y + 14, x + 30, y + 7); // Bottom angle
-        gfxLine(x + 30, y + 7, x + 38, y + 7); // Output line
+        gfxCircle(x + 1, y + 7, 2); // Input point
+        gfxLine(x + 3, y + 7, x + 11, y + 7); // Input line
+        gfxLine(x + 11, y, x + 11, y + 14); // Base of triangle
+        gfxLine(x + 11, y, x + 33, y + 7); // Top angle
+        gfxLine(x + 11, y + 14, x + 33, y + 7); // Bottom angle
+        gfxLine(x + 33, y + 7, x + 41, y + 7); // Output line
+        gfxCircle(x + 43, y + 7, 2); // Output point
 
-        gfxLine(x + 13, y + 5, x + 19, y + 5); // Schmitt symbol, top
-        gfxLine(x + 10, y + 9, x + 16, y + 9); // Schmitt symbol, bottom
-        gfxLine(x + 13, y + 5, x + 13, y + 9); // Scmitt symbol, left
-        gfxLine(x + 16, y + 5, x + 16, y + 9); // Schmitt symbol, right
+        gfxLine(x + 16, y + 5, x + 22, y + 5); // Schmitt symbol, top
+        gfxLine(x + 13, y + 9, x + 19, y + 9); // Schmitt symbol, bottom
+        gfxLine(x + 16, y + 5, x + 16, y + 9); // Scmitt symbol, left
+        gfxLine(x + 19, y + 5, x + 19, y + 9); // Schmitt symbol, right
 
         if (state) {
-            if (gate_countdown > 0) gfxLine(x + 30, y + 7, x + 38, y + 4);
-            else gfxLine(x + 30, y + 7, x + 38, y + 10);
+            if (gate_countdown > 0) gfxCircle(x + 43, y + 7, 1);
+            else gfxCircle(x + 43, y + 7, 4);
         }
     }
 };

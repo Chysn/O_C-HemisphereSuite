@@ -150,6 +150,7 @@ private:
             gfxPrint(wv);
         } else gfxPrint(12, 55, wv);
         gfxPrint(".");
+        if (dv < 10) gfxPrint("0");
         gfxPrint(dv);
         gfxPrint("V");
     }
