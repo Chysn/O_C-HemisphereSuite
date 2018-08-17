@@ -48,6 +48,7 @@ public:
             high += (64 * direction);
             high = constrain(high, low + 64, HEMISPHERE_MAX_CV);
         }
+        ResetCursor();
     }
         
     uint32_t OnDataRequest() {
@@ -88,17 +89,24 @@ private:
         // Draw two Schmitt Trigger symbols and inputs
         ForEachChannel(ch)
         {
-            uint8_t x = 1 + (14 * ch);
+            uint8_t x = 3 + (14 * ch);
             uint8_t y = 26 + (16 * ch);
             DrawSchmittTriggerAtPositionWithState(x, y, state[ch]);
 
             // Input monitor
-            gfxLine(1, 22 + (38 * ch), ProportionCV(ViewIn(ch), 62), 22 + (38 * ch));
+            gfxLine(3, 22 + (38 * ch), ProportionCV(ViewIn(ch), 58) + 3, 22 + (38 * ch));
+
+            // Line to input
+            if (ch == 0) gfxDottedLine(3, 32, 3, 23, 2);
+            else {
+                gfxDottedLine(15, 49, 3, 49, 2);
+                gfxDottedLine(3, 49, 3, 59, 2);
+            }
         }
 
         // Draw the threshold line
-        int lx = ProportionCV(low, 62);
-        int hx = ProportionCV(high, 62);
+        int lx = ProportionCV(low, 58) + 3;
+        int hx = ProportionCV(high, 58) + 3;
         gfxLine(lx, 15, hx, 15);
         if (cursor != 1 || CursorBlink()) gfxLine(lx, 15, lx, 18);
         if (cursor != 2 || CursorBlink()) gfxLine(hx, 15, hx, 18);
@@ -106,22 +114,22 @@ private:
     }
 
     void DrawSchmittTriggerAtPositionWithState(uint8_t x, uint8_t y, bool state) {
-        gfxCircle(x + 1, y + 7, 2); // Input point
-        gfxLine(x + 3, y + 7, x + 11, y + 7); // Input line
-        gfxLine(x + 11, y, x + 11, y + 14); // Base of triangle
-        gfxLine(x + 11, y, x + 33, y + 7); // Top angle
-        gfxLine(x + 11, y + 14, x + 33, y + 7); // Bottom angle
-        gfxLine(x + 33, y + 7, x + 41, y + 7); // Output line
-        gfxCircle(x + 43, y + 7, 2); // Output point
+        gfxCircle(x, y + 7, 2); // Input point
+        gfxLine(x + 2, y + 7, x + 10, y + 7); // Input line
+        gfxLine(x + 10, y, x + 10, y + 14); // Base of triangle
+        gfxLine(x + 10, y, x + 32, y + 7); // Top angle
+        gfxLine(x + 10, y + 14, x + 32, y + 7); // Bottom angle
+        gfxLine(x + 32, y + 7, x + 40, y + 7); // Output line
+        gfxCircle(x + 42, y + 7, 2); // Output point
 
-        gfxLine(x + 16, y + 5, x + 22, y + 5); // Schmitt symbol, top
-        gfxLine(x + 13, y + 9, x + 19, y + 9); // Schmitt symbol, bottom
-        gfxLine(x + 16, y + 5, x + 16, y + 9); // Scmitt symbol, left
-        gfxLine(x + 19, y + 5, x + 19, y + 9); // Schmitt symbol, right
+        gfxLine(x + 15, y + 5, x + 21, y + 5); // Schmitt symbol, top
+        gfxLine(x + 12, y + 9, x + 18, y + 9); // Schmitt symbol, bottom
+        gfxLine(x + 15, y + 5, x + 15, y + 9); // Scmitt symbol, left
+        gfxLine(x + 18, y + 5, x + 18, y + 9); // Schmitt symbol, right
 
         if (state) {
-            if (gate_countdown > 0) gfxCircle(x + 43, y + 7, 1);
-            else gfxCircle(x + 43, y + 7, 4);
+            if (gate_countdown > 0) gfxCircle(x + 42, y + 7, 1);
+            else gfxCircle(x + 42, y + 7, 4);
         }
     }
 };
