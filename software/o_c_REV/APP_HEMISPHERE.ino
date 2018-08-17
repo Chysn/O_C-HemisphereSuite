@@ -65,7 +65,7 @@ public:
         const char* category_list[] = {"Modulator", "Sequencer",
                                        "Clocking", "Quantizer",
                                        "Utility", "MIDI",
-                                       "Audio", "Other", "ALL"};
+                                       "Logic", "Other", "ALL"};
         for (int i = 0; i < 9; i++) category_name[i] = category_list[i];
         filter[0] = 8; // All
         filter[1] = 8;

@@ -34,7 +34,7 @@ public:
         }
 
         if (!freeze) {
-            last_cv = (In(1) * 100) / (12 << 7);
+            last_cv = In(1);
 
             if (--sample_countdown < 1) {
                 sample_countdown = sample_ticks;
@@ -139,20 +139,10 @@ private:
     }
 
     void DrawInput2() {
-        int wv = last_cv / 100; // whole volts
-        int dv = last_cv - (wv * 100); // decimal
-        if (dv < 0) dv = -dv;
-
         gfxLine(0, 53, 63, 53);
         gfxBitmap(1, 55, 8, CV_ICON);
-        if (wv >= 0) {
-            gfxPrint(12, 55, "+");
-            gfxPrint(wv);
-        } else gfxPrint(12, 55, wv);
-        gfxPrint(".");
-        if (dv < 10) gfxPrint("0");
-        gfxPrint(dv);
-        gfxPrint("V");
+        gfxPos(12, 55);
+        gfxPrintVoltage(last_cv);
     }
 };
 
