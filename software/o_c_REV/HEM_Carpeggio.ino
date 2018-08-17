@@ -1,8 +1,4 @@
 #include "hem_arp_chord.h"
-#include "braids_quantizer.h"
-#include "braids_quantizer_scales.h"
-#include "OC_scales.h"
-
 #define HEM_CARPEGGIO_ANIMATION_SPEED 500
 
 class Carpeggio : public HemisphereApplet {
@@ -16,8 +12,6 @@ public:
         step = 0;
         replay = 0;
         transpose = 0;
-        quantizer.Init();
-        quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
         ImprintChord(2);
     }
 
@@ -104,7 +98,6 @@ protected:
     
 private:
     int cursor; // 0=notes, 1=chord
-    braids::Quantizer quantizer;
 
     // Sequencer state
     uint8_t step; // Current step number
@@ -138,14 +131,17 @@ private:
 
         // Coordinates and cursor for tone editing
         if (cursor == 0) {
-            // x,y
+            // x,y: I don't think this is really useful information, so I'm giving the old axe
+            /*
             gfxPrint(32, 40, "(");
             gfxPrint((step % 4) + 1);
             gfxPrint(",");
             gfxPrint((step / 4) + 1);
             gfxPrint(")");
+            */
 
-            gfxPrint(49 + (sequence[step] < 10 ? 8 : 0), 50, sequence[step]);
+            uint8_t midi_note = constrain(sequence[step] + 36 + transpose, 0, 127);
+            gfxPrint(38, 50, midi_note_numbers[midi_note]);
             gfxCursor(32, 58, 30);
         }
     }
@@ -186,8 +182,8 @@ private:
     }
 
     void pitch_out_for_step() {
-        int note = sequence[step] + 48 + transpose;
-        Out(0, quantizer.Lookup(constrain(note, 0, 126)));
+        int note = sequence[step];
+        Out(0, MIDINoteNumber_CV(note + 36, transpose));
     }
 };
 

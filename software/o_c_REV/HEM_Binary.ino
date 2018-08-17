@@ -70,7 +70,7 @@ private:
     SegmentDisplay segment;
     
     void DrawDisplay() {
-        segment.SetPosition(11, 32);
+        segment.SetPosition(11 + (hemisphere * 64), 32);
         for (int b = 0; b < 4; b++)
         {
             segment.PrintDigit(static_cast<uint8_t>(bit[b]));
