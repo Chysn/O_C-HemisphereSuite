@@ -8,13 +8,14 @@
 // 0x40 = Audio
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 36
+#define HEMISPHERE_AVAILABLE_APPLETS 37
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
     DECLARE_APPLET(  8, 0x01, ADSREG), \
     DECLARE_APPLET( 34, 0x01, ADEG), \
     DECLARE_APPLET( 15, 0x02, AnnularFusion), \
+    DECLARE_APPLET( 41, 0x15, Binary), \
     DECLARE_APPLET( 38, 0x80, BowTieSeq), \
     DECLARE_APPLET(  4, 0x14, Brancher), \
     DECLARE_APPLET( 31, 0x04, Burst), \

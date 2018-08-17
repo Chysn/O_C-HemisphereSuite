@@ -62,9 +62,13 @@ public:
         memcpy(&digit, &digits, sizeof(digits));
     }
 
-    void PrintWhole(uint8_t x, uint8_t y, int number, int range = 10000) {
+    void SetPosition(uint8_t x, uint8_t y) {
         x_pos = x;
         y_pos = y;
+    }
+
+    void PrintWhole(uint8_t x, uint8_t y, int number, int range = 10000) {
+        SetPosition(x, y);
 
         uint8_t to_print[5];
         uint8_t q = 0;
@@ -120,6 +124,19 @@ public:
         }
     }
 
+    void PrintDigit(uint8_t d) {
+        for (uint8_t b = 0; b < 7; b++)
+        {
+            if ((digit[d] >> b) & 0x01) segment[b].DrawAt(x_pos, y_pos);
+        }
+        x_pos += DigitWidth();
+    }
+
+    void PrintDigit(uint8_t x, uint8_t y, uint8_t d) {
+        SetPosition(x, y);
+        PrintDigit(d);
+    }
+
 private:
     Segment segment[7];
     uint8_t size;
@@ -128,13 +145,7 @@ private:
     uint8_t y_pos;
     int decimal;
 
-    void PrintDigit(uint8_t d) {
-        for (uint8_t b = 0; b < 7; b++)
-        {
-            if ((digit[d] >> b) & 0x01) segment[b].DrawAt(x_pos, y_pos);
-        }
-        x_pos += DigitWidth();
-    }
+
 
     uint8_t DigitWidth() {
         return (size == SegmentSize::BIG_SEGMENTS ? 10 : 4);
