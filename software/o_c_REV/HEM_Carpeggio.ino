@@ -183,7 +183,7 @@ private:
 
     void pitch_out_for_step() {
         int note = sequence[step];
-        Out(0, MIDINoteNumber_CV(note + 36, transpose));
+        Out(0, MIDIQuantizer::NoteNumber(note + 36, transpose));
     }
 };
 

@@ -29,9 +29,6 @@ const char* const midi_out_functions[11] = {
 const char* const midi_in_functions[12] = {
     "--", "Note", "Gate", "Trig", "Veloc", "Mod", "Aft", "Bend",  "Expr", "Pan", "Hold", "Brth"
 };
-const char* const midi_channels[17] = {
-    "Off", " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11", "12", "13", "14", "15", "16"
-};
 
 #define MIDI_SETUP_PARAMETER_LIST \
 { 0, 0, 11, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },\
@@ -517,7 +514,7 @@ private:
 
                 if (note_on || legato_on[ch]) {
                     // Get a new reading when gated, or when checking for legato changes
-                    uint8_t midi_note = CV_MIDINoteNumber(In(ch), get_out_transpose(ch));
+                    uint8_t midi_note = MIDIQuantizer::CV(In(ch), get_out_transpose(ch));
 
                     if (legato_on[ch] && midi_note != note_out[ch]) {
                         // Send note off if the note has changed
@@ -633,7 +630,7 @@ private:
                             int note = data1 + get_in_transpose(ch);
                             note = constrain(note, 0, 127);
                             if (in_in_range(ch, note)) {
-                                Out(ch, MIDINoteNumber_CV(note));
+                                Out(ch, MIDIQuantizer::NoteNumber(note));
                                 UpdateLog(1, ch, 0, in_ch, note, data2);
                                 indicator = 1;
                                 note_captured = 1;

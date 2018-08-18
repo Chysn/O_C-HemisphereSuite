@@ -2,8 +2,8 @@
 // This file contains MIDI utilities for Hemisphere Suite, including:
 // * System Exclusive Handler base class
 // * Data packing structure
-// * MIDI note number-name table
-// * MIDI note/CV quantizer
+// * MIDI note number-name and MIDI channel tables
+// * MIDI note/CV quantizer functions
 //////////////////////////////////////////////////////////////////////////
 
 #ifndef SYSEX_HANDLER_H_
@@ -22,6 +22,11 @@ const char* const midi_note_numbers[128] = {
     "C8","C#8","D8","D#8","E8","F8","F#8","G8","G#8","A8","A#8","B8",
     "C9","C#9","D9","D#9","E9","F9","F#9","G9"
 };
+
+const char* const midi_channels[17] = {
+    "Off", " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11", "12", "13", "14", "15", "16"
+};
+
 
 /* Hemisphere Suite Data Packing
  *
@@ -256,23 +261,31 @@ private:
     char last_app_code; // The most recent application code received
 };
 
-/* Given a pitch CV value, return the MIDI note number */
-uint8_t CV_MIDINoteNumber(int cv, int transpose = 0) {
-    int octave = cv / (12 << 7);
-    int semitone = (cv % (12 << 7)) / 128;
-    int midi_note_number = (octave * 12) + semitone + transpose + 48;
-    if (midi_note_number > 127) midi_note_number = 127;
-    if (midi_note_number < 0) midi_note_number = 0;
-    return static_cast<uint8_t>(midi_note_number);
-}
+/*
+ * MIDI Quantizer: Converts pitch CV values to MIDI note numbers,
+ * and vice versa. CV values are (12 << 7) steps per volt, or
+ * 128 steps per semitone.
+ */
+class MIDIQuantizer {
+public:
+    /* Given a pitch CV value, return the MIDI note number */
+    static uint8_t NoteNumber(int cv, int transpose = 0) {
+        int octave = cv / (12 << 7);
+        int semitone = (cv % (12 << 7)) / 128;
+        int midi_note_number = (octave * 12) + semitone + transpose + 48;
+        if (midi_note_number > 127) midi_note_number = 127;
+        if (midi_note_number < 0) midi_note_number = 0;
+        return static_cast<uint8_t>(midi_note_number);
+    }
 
-/* Given a MIDI note number, return the pitch CV value */
-int MIDINoteNumber_CV(uint8_t midi_note_number, int transpose = 0) {
-    int octave = midi_note_number / 12;
-    int semitone = midi_note_number % 12;
-    int cv = (octave * (12 << 7)) + (semitone * 128) + (transpose * 128) - (4 * (12 << 7));
-    return cv;
-}
+    /* Given a MIDI note number, return the pitch CV value */
+    static int CV(uint8_t midi_note_number, int transpose = 0) {
+        int octave = midi_note_number / 12;
+        int semitone = midi_note_number % 12;
+        int cv = (octave * (12 << 7)) + (semitone * 128) + (transpose * 128) - (4 * (12 << 7));
+        return cv;
+    }
+};
 
 #endif /* SYSEX_HANDLER_H_ */
 

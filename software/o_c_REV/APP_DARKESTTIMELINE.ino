@@ -32,14 +32,16 @@
 
 #define DT_LENGTH 64
 #define DT_INDEX 65
-#define DARKEST_TIMELINE_SETTING_LAST 66
+#define DT_MIDI_CHANNEL 66
+#define DT_SCALE 67
+#define DARKEST_TIMELINE_SETTING_LAST 68
 
 const int DT_SEQ_STEPS = 64;  // Total number of steps (CV + Probability timelines)
 const int DT_TIMELINE_SIZE = 32; // Total size of each timeline
 const int DT_TIMELINE_CV = 0; // For specifying a CV timeline
 const int DT_TIMELINE_PROBABILITY = 1; // For specifying a Probability timeline
 const int DT_VIEW_HEIGHT = 25; // Height, in pixels, of each view (top for CV, bottom for Probability)
-const int DT_DATA_MAX = 7800; // Highest value from ADC method used
+const int DT_DATA_MAX = (12 << 7); // Highest value from ADC method used
 const int DT_CURSOR_TICKS = 8000; // How many ticks that the cursor blinks on and off when recording
 const int DT_TRIGGER_TICKS = 100; // How many ticks a trigger lasts (about 6ms)
 
@@ -49,6 +51,8 @@ public:
     void Init() {
     		apply_value(DT_LENGTH, 16);
     		apply_value(DT_INDEX, 0);
+    		apply_value(DT_MIDI_CHANNEL, 0); // MIDI Off
+    		apply_value(DT_SCALE, 5); // semitones
     	    cursor = 0; // The sequence's record/play point
     	    clocked  = 0; // If 1, the sequencer needs to handle a clock input
     	    cv_record_enabled = 0; // When 1, CV will be recorded as the cursor moves
@@ -57,9 +61,11 @@ public:
     	    blink_countdown = DT_CURSOR_TICKS; // For record modes to blink the cursor
     	    trigger1_countdown = 0; // ISR cycles remaining for trigger 1
     	    trigger2_countdown = 0; // ISR cycles remaining for trigger 2
-    	    screensaver = 0; // If 1, display a simplified column
     	    respond_to_clock = 1; // If 1, allow the cursor to be moved with the digital ins
     	    last_cv_index = 0; // Allows a manual change to index stick around until changed by CV
+    	    setup_cursor = 0; // Which parameter is being edited on the setup screen
+    	    last_note[0] = -1;
+    	    last_note[1] = -1;
 
     	    for (int i = 0; i < DT_SEQ_STEPS; i++) values_[i] = 0;
 
@@ -84,9 +90,13 @@ public:
     		index_edit_enabled = 0;
     }
 
-    bool ScreenSaverMode(bool s) {
-    		screensaver = s;
-    		return screensaver;
+    void View() {
+        if (setup_cursor) {
+            DrawSetupScreen();
+        } else {
+            DrawCVView();
+            DrawProbabilityView();
+        }
     }
 
     void UpdateInputState() {
@@ -97,15 +107,16 @@ public:
 		if (cv_record_enabled) {
 			adc_value = OC::ADC::raw_pitch_value(ADC_CHANNEL_1);
 			if (adc_value < 0) adc_value = 0; // Constrain CV to positive
-            int32_t pitch = quantizer.Process(adc_value, 0, 0);
-			values_[idx] = (uint16_t)pitch;
+			if (adc_value > DT_DATA_MAX) adc_value = DT_DATA_MAX;
+			values_[idx] = static_cast<int>(adc_value);
 		}
 
 		// Update Probability value if Probability Record is enabled
 		if (prob_record_enabled) {
 			adc_value = OC::ADC::raw_pitch_value(ADC_CHANNEL_2);
 			if (adc_value < 0) adc_value = 0; // Constrain probability to positive
-			values_[idx + DT_TIMELINE_SIZE] = (int)adc_value;
+            if (adc_value > DT_DATA_MAX) adc_value = DT_DATA_MAX;
+			values_[idx + DT_TIMELINE_SIZE] = static_cast<int>(adc_value);
 		}
 
 		// Update Index value
@@ -140,22 +151,44 @@ public:
     		int idx = data_index_at_position(0);
 
     		// Update normal CV value
-    	    OC::DAC::set_pitch(DAC_CHANNEL_A, values_[idx], 0);
+        int32_t pitch = quantizer.Process(values_[idx], 0, 0);
+    	    OC::DAC::set_pitch(DAC_CHANNEL_A, pitch, 0);
 
     	    // Update alternate universe timeline CV value
     	    int alternate_universe = (idx + length()) % DT_TIMELINE_SIZE;
-    	    OC::DAC::set_pitch(DAC_CHANNEL_B, values_[alternate_universe], 0);
+        pitch = quantizer.Process(values_[alternate_universe], 0, 0);
+    	    OC::DAC::set_pitch(DAC_CHANNEL_B, pitch, 0);
 
     	    if (clocked) { // Only do this once for each clock trigger
 			// Check for probability-based normal trigger
 			int prob = DT_DATA_MAX - values_[idx + DT_TIMELINE_SIZE];
 			int comp = random(300, DT_DATA_MAX - 300);
-			if (comp > prob) trigger1_countdown = DT_TRIGGER_TICKS;
+			if (comp > prob) {
+			    trigger1_countdown = DT_TRIGGER_TICKS;
+			    if (last_note[0] > -1) usbMIDI.sendNoteOff(last_note[0], 0, last_channel[0]);
+			    if (midi_channel()) {
+                    last_channel[0] = midi_channel();
+                    last_note[0] = MIDIQuantizer::NoteNumber(values_[idx]);
+                    usbMIDI.sendNoteOn(last_note[0], 100, last_channel[0]);
+                    last_length[0] = OC::CORE::ticks - last_clock[0];
+                    last_clock[0] = OC::CORE::ticks;
+			    }
+			}
 
 			// Check for probability-based alternate trigger (the probability is the complement of the first one)
 			prob = values_[idx + DT_TIMELINE_SIZE];
 			comp = random(300, DT_DATA_MAX - 300);
-			if (comp > prob) trigger2_countdown = DT_TRIGGER_TICKS;
+			if (comp > prob) {
+			    trigger2_countdown = DT_TRIGGER_TICKS;
+                if (last_note[1] > -1) usbMIDI.sendNoteOff(last_note[1], 0, last_channel[1]);
+                if (midi_channel()) {
+                    last_channel[1] = midi_channel() + 1;
+                    last_note[1] = MIDIQuantizer::NoteNumber(values_[alternate_universe]);
+                    usbMIDI.sendNoteOn(last_note[1], 100, last_channel[1]);
+                    last_length[1] = OC::CORE::ticks - last_clock[1];
+                    last_clock[1] = OC::CORE::ticks;
+                }
+			}
 
     	    		clocked = 0; // Reset and wait for next clock
     	    }
@@ -163,10 +196,24 @@ public:
     	    // Update trigger CV values
 		OC::DAC::set_pitch(DAC_CHANNEL_C, 1, (trigger1_countdown > 0) ? 5 : 0);
 		OC::DAC::set_pitch(DAC_CHANNEL_D, 1, (trigger2_countdown > 0) ? 5 : 0);
+
+		// Turn off notes that have been on for too long
+		for (uint8_t ch = 0; ch < 2; ch++)
+		{
+		    if (last_note[ch] > -1 && (OC::CORE::ticks - last_clock[ch]) > (last_length[ch]) * 2) {
+		        usbMIDI.sendNoteOff(last_note[ch], 0, last_channel[ch]);
+		        last_note[ch] = -1;
+		    }
+		}
     }
 
-    void ChangeLength(int direction) {
-    		change_value(DT_LENGTH, direction);
+    void ChangeValue(int direction) {
+        if (setup_cursor == 0) change_value(DT_LENGTH, -direction);
+        if (setup_cursor == 1) change_value(DT_MIDI_CHANNEL, direction);
+        if (setup_cursor == 2) {
+            change_value(DT_SCALE, direction);
+            quantizer.Configure(OC::Scales::GetScale(scale()), 0xffff);
+        }
     }
 
     void Navigate(int direction) {
@@ -187,6 +234,10 @@ public:
 		respond_to_clock = (1 - respond_to_clock);
 	}
 
+    void ToggleSetupScreen() {
+        if (++setup_cursor == 3) setup_cursor = 0;
+    }
+
     void ClearTimeline(int timeline_type) {
     		int offset = (timeline_type == DT_TIMELINE_CV) ? 0 : DT_TIMELINE_SIZE;
     		for (int i = 0; i < DT_TIMELINE_SIZE; i++)
@@ -206,8 +257,9 @@ public:
 
     void DrawHeader() {
 		graphics.setPrintPos(0, 0);
-		graphics.print("Darkest Timeline ");
-		graphics.pretty_print(length());
+		graphics.print("Darkest Timeline   ");
+		graphics.print(length());
+        graphics.drawLine(0, 10, 127, 10);
     }
 
     void DrawView(int timeline_type) {
@@ -231,9 +283,22 @@ public:
 		DrawView(DT_TIMELINE_PROBABILITY);
     }
 
+    void DrawSetupScreen() {
+        graphics.setPrintPos(0, 20);
+        graphics.print("MIDI Out Channel:");
+        graphics.print(midi_channels[values_[DT_MIDI_CHANNEL]]);
+        if (setup_cursor == 1) graphics.drawFrame(0, 18, 127, 11);
+
+        graphics.setPrintPos(0, 35);
+        graphics.print("Scale:");
+        graphics.print(OC::scale_names[values_[DT_SCALE]]);
+        if (setup_cursor == 2) graphics.drawFrame(0, 33, 127, 11);
+    }
+
     void DrawColumn(int position, int y_offset, int data, bool is_recording, bool is_index) {
     		int units_per_pixel = DT_DATA_MAX / DT_VIEW_HEIGHT;
     		int height = data / units_per_pixel;
+    		if (height > 23) height = 23;
     		int width = (128 / length()) / 2;
     		int x_pos = (128 / length()) * position;
     		int x_offset = width / 2;
@@ -245,12 +310,11 @@ public:
     				graphics.invertRect(x_pos, y_offset, width * 2, DT_VIEW_HEIGHT);
     			}
     		} else {
-    			if (screensaver) height = 1;
     			graphics.drawFrame(x_pos + x_offset, y_pos, width, height);
     		}
 
     		if (is_index) {
-    			int start_y = screensaver ? 0 : 10;
+    			int start_y = 10;
 
     			if (index_edit_enabled) {
     				// Draw a solid blinking line if the index edit is enabled
@@ -265,12 +329,22 @@ public:
 		}
     }
 
-    int length() {
-    		return values_[DT_LENGTH];
-    }
+    int length() {return values_[DT_LENGTH];}
 
-    int index() {
-    		return values_[DT_INDEX];
+    int index() {return values_[DT_INDEX];}
+
+    int midi_channel() {return values_[DT_MIDI_CHANNEL];}
+
+    int scale() {return values_[DT_SCALE];}
+
+    void NotesOff() {
+        for (uint8_t ch = 0; ch < 2; ch++)
+        {
+            if (last_note[ch] > -1) {
+                usbMIDI.sendNoteOff(last_note[ch], 0, last_channel[ch]);
+                last_note[ch] = -1;
+            }
+        }
     }
 
     /* When the app is suspended, it sends out a system exclusive dump, generated here */
@@ -317,10 +391,16 @@ private:
     bool clocked;
     bool cv_record_enabled;
     bool prob_record_enabled;
-    bool screensaver;
     bool respond_to_clock;
     bool index_edit_enabled;
     int last_cv_index;
+    uint8_t setup_cursor;
+
+    // Keep track of MIDI events
+    int last_note[2];
+    int last_channel[2];
+    uint32_t last_clock[2];
+    uint32_t last_length[2];
 
     int blink_countdown;
     int trigger1_countdown;
@@ -365,6 +445,8 @@ SETTINGS_DECLARE(DarkestTimeline, DARKEST_TIMELINE_SETTING_LAST) {
 	DO_SIXTEEN_TIMES(DARKEST_TIMELINE_VALUE_ATTRIBUTE)
 	{16, 1, DT_TIMELINE_SIZE, "length", NULL, settings::STORAGE_TYPE_U8},
 	{0, 0, DT_TIMELINE_SIZE - 1, "index", NULL, settings::STORAGE_TYPE_U8},
+    {0, 0, 16, "midi channel", NULL, settings::STORAGE_TYPE_U8},
+    {5, 0, OC::Scales::NUM_SCALES - 1, "scale", NULL, settings::STORAGE_TYPE_U8}
 };
 
 DarkestTimeline timeline_instance;
@@ -395,6 +477,7 @@ void DARKESTTIMELINE_handleAppEvent(OC::AppEvent event) {
     		timeline_instance.Resume();
     }
     if (event == OC::APP_EVENT_SUSPEND) {
+        timeline_instance.NotesOff();
         timeline_instance.OnSendSysEx();
     }
 }
@@ -403,10 +486,8 @@ void DARKESTTIMELINE_loop() {
 }
 
 void DARKESTTIMELINE_menu() {
-	timeline_instance.ScreenSaverMode(0);
 	timeline_instance.DrawHeader();
-	timeline_instance.DrawCVView();
-	timeline_instance.DrawProbabilityView();
+	timeline_instance.View();
 }
 
 void DARKESTTIMELINE_screensaver() {
@@ -435,17 +516,19 @@ void DARKESTTIMELINE_handleButtonEvent(const UI::Event &event) {
 	if (event.control == OC::CONTROL_BUTTON_L) {
 		if (event.type == UI::EVENT_BUTTON_LONG_PRESS) {
 			timeline_instance.RandomizeTimeline();
+		} else {
+		    timeline_instance.ToggleSetupScreen();
 		}
 	}
 }
 
 void DARKESTTIMELINE_handleEncoderEvent(const UI::Event &event) {
 	if (event.control == OC::CONTROL_ENCODER_L) {
-		timeline_instance.ChangeLength(event.value > 0 ? -1 : 1);
+		timeline_instance.ChangeValue(event.value);
 	}
 
 	if (event.control == OC::CONTROL_ENCODER_R) {
-		timeline_instance.Navigate(event.value > 0 ? 1 : -1);
+		timeline_instance.Navigate(event.value);
 	}
 }
 
