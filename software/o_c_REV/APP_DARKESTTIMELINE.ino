@@ -1,6 +1,6 @@
-// Copyright (c) 2018 Beige Maze
+// Copyright (c) 2018, Jason Justian
 //
-// Author: Jason Justian (jjustian@clockworklogic.com)
+// Based on Braids Quantizer, Copyright 2015 Olivier Gillet.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
