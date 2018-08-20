@@ -165,38 +165,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Sequence5 Sequence5_instance[2];
 
-void Sequence5_Start(int hemisphere) {
+void Sequence5_Start(bool hemisphere) {
     Sequence5_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Sequence5_Controller(int hemisphere, bool forwarding) {
+void Sequence5_Controller(bool hemisphere, bool forwarding) {
     Sequence5_instance[hemisphere].BaseController(forwarding);
 }
 
-void Sequence5_View(int hemisphere) {
+void Sequence5_View(bool hemisphere) {
     Sequence5_instance[hemisphere].BaseView();
 }
 
-void Sequence5_Screensaver(int hemisphere) {
+void Sequence5_Screensaver(bool hemisphere) {
     Sequence5_instance[hemisphere].BaseScreensaverView();
 }
 
-void Sequence5_OnButtonPress(int hemisphere) {
+void Sequence5_OnButtonPress(bool hemisphere) {
     Sequence5_instance[hemisphere].OnButtonPress();
 }
 
-void Sequence5_OnEncoderMove(int hemisphere, int direction) {
+void Sequence5_OnEncoderMove(bool hemisphere, int direction) {
     Sequence5_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Sequence5_ToggleHelpScreen(int hemisphere) {
+void Sequence5_ToggleHelpScreen(bool hemisphere) {
     Sequence5_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Sequence5_OnDataRequest(int hemisphere) {
+uint32_t Sequence5_OnDataRequest(bool hemisphere) {
     return Sequence5_instance[hemisphere].OnDataRequest();
 }
 
-void Sequence5_OnDataReceive(int hemisphere, uint32_t data) {
+void Sequence5_OnDataReceive(bool hemisphere, uint32_t data) {
     Sequence5_instance[hemisphere].OnDataReceive(data);
 }

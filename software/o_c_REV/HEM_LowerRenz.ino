@@ -145,38 +145,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 LowerRenz LowerRenz_instance[2];
 
-void LowerRenz_Start(int hemisphere) {
+void LowerRenz_Start(bool hemisphere) {
     LowerRenz_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void LowerRenz_Controller(int hemisphere, bool forwarding) {
+void LowerRenz_Controller(bool hemisphere, bool forwarding) {
     LowerRenz_instance[hemisphere].BaseController(forwarding);
 }
 
-void LowerRenz_View(int hemisphere) {
+void LowerRenz_View(bool hemisphere) {
     LowerRenz_instance[hemisphere].BaseView();
 }
 
-void LowerRenz_Screensaver(int hemisphere) {
+void LowerRenz_Screensaver(bool hemisphere) {
     LowerRenz_instance[hemisphere].BaseScreensaverView();
 }
 
-void LowerRenz_OnButtonPress(int hemisphere) {
+void LowerRenz_OnButtonPress(bool hemisphere) {
     LowerRenz_instance[hemisphere].OnButtonPress();
 }
 
-void LowerRenz_OnEncoderMove(int hemisphere, int direction) {
+void LowerRenz_OnEncoderMove(bool hemisphere, int direction) {
     LowerRenz_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void LowerRenz_ToggleHelpScreen(int hemisphere) {
+void LowerRenz_ToggleHelpScreen(bool hemisphere) {
     LowerRenz_instance[hemisphere].HelpScreen();
 }
 
-uint32_t LowerRenz_OnDataRequest(int hemisphere) {
+uint32_t LowerRenz_OnDataRequest(bool hemisphere) {
     return LowerRenz_instance[hemisphere].OnDataRequest();
 }
 
-void LowerRenz_OnDataReceive(int hemisphere, uint32_t data) {
+void LowerRenz_OnDataReceive(bool hemisphere, uint32_t data) {
     LowerRenz_instance[hemisphere].OnDataReceive(data);
 }

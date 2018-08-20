@@ -165,38 +165,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Schmitt Schmitt_instance[2];
 
-void Schmitt_Start(int hemisphere) {
+void Schmitt_Start(bool hemisphere) {
     Schmitt_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Schmitt_Controller(int hemisphere, bool forwarding) {
+void Schmitt_Controller(bool hemisphere, bool forwarding) {
     Schmitt_instance[hemisphere].BaseController(forwarding);
 }
 
-void Schmitt_View(int hemisphere) {
+void Schmitt_View(bool hemisphere) {
     Schmitt_instance[hemisphere].BaseView();
 }
 
-void Schmitt_Screensaver(int hemisphere) {
+void Schmitt_Screensaver(bool hemisphere) {
     Schmitt_instance[hemisphere].BaseScreensaverView();
 }
 
-void Schmitt_OnButtonPress(int hemisphere) {
+void Schmitt_OnButtonPress(bool hemisphere) {
     Schmitt_instance[hemisphere].OnButtonPress();
 }
 
-void Schmitt_OnEncoderMove(int hemisphere, int direction) {
+void Schmitt_OnEncoderMove(bool hemisphere, int direction) {
     Schmitt_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Schmitt_ToggleHelpScreen(int hemisphere) {
+void Schmitt_ToggleHelpScreen(bool hemisphere) {
     Schmitt_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Schmitt_OnDataRequest(int hemisphere) {
+uint32_t Schmitt_OnDataRequest(bool hemisphere) {
     return Schmitt_instance[hemisphere].OnDataRequest();
 }
 
-void Schmitt_OnDataReceive(int hemisphere, uint32_t data) {
+void Schmitt_OnDataReceive(bool hemisphere, uint32_t data) {
     Schmitt_instance[hemisphere].OnDataReceive(data);
 }

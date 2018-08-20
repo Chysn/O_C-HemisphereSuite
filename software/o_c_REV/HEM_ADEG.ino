@@ -181,38 +181,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 ADEG ADEG_instance[2];
 
-void ADEG_Start(int hemisphere) {
+void ADEG_Start(bool hemisphere) {
     ADEG_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void ADEG_Controller(int hemisphere, bool forwarding) {
+void ADEG_Controller(bool hemisphere, bool forwarding) {
     ADEG_instance[hemisphere].BaseController(forwarding);
 }
 
-void ADEG_View(int hemisphere) {
+void ADEG_View(bool hemisphere) {
     ADEG_instance[hemisphere].BaseView();
 }
 
-void ADEG_Screensaver(int hemisphere) {
+void ADEG_Screensaver(bool hemisphere) {
     ADEG_instance[hemisphere].BaseScreensaverView();
 }
 
-void ADEG_OnButtonPress(int hemisphere) {
+void ADEG_OnButtonPress(bool hemisphere) {
     ADEG_instance[hemisphere].OnButtonPress();
 }
 
-void ADEG_OnEncoderMove(int hemisphere, int direction) {
+void ADEG_OnEncoderMove(bool hemisphere, int direction) {
     ADEG_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void ADEG_ToggleHelpScreen(int hemisphere) {
+void ADEG_ToggleHelpScreen(bool hemisphere) {
     ADEG_instance[hemisphere].HelpScreen();
 }
 
-uint32_t ADEG_OnDataRequest(int hemisphere) {
+uint32_t ADEG_OnDataRequest(bool hemisphere) {
     return ADEG_instance[hemisphere].OnDataRequest();
 }
 
-void ADEG_OnDataReceive(int hemisphere, uint32_t data) {
+void ADEG_OnDataReceive(bool hemisphere, uint32_t data) {
     ADEG_instance[hemisphere].OnDataReceive(data);
 }

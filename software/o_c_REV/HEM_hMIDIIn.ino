@@ -308,38 +308,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 hMIDIIn hMIDIIn_instance[2];
 
-void hMIDIIn_Start(int hemisphere) {
+void hMIDIIn_Start(bool hemisphere) {
     hMIDIIn_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void hMIDIIn_Controller(int hemisphere, bool forwarding) {
+void hMIDIIn_Controller(bool hemisphere, bool forwarding) {
     hMIDIIn_instance[hemisphere].BaseController(forwarding);
 }
 
-void hMIDIIn_View(int hemisphere) {
+void hMIDIIn_View(bool hemisphere) {
     hMIDIIn_instance[hemisphere].BaseView();
 }
 
-void hMIDIIn_Screensaver(int hemisphere) {
+void hMIDIIn_Screensaver(bool hemisphere) {
     hMIDIIn_instance[hemisphere].BaseScreensaverView();
 }
 
-void hMIDIIn_OnButtonPress(int hemisphere) {
+void hMIDIIn_OnButtonPress(bool hemisphere) {
     hMIDIIn_instance[hemisphere].OnButtonPress();
 }
 
-void hMIDIIn_OnEncoderMove(int hemisphere, int direction) {
+void hMIDIIn_OnEncoderMove(bool hemisphere, int direction) {
     hMIDIIn_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void hMIDIIn_ToggleHelpScreen(int hemisphere) {
+void hMIDIIn_ToggleHelpScreen(bool hemisphere) {
     hMIDIIn_instance[hemisphere].HelpScreen();
 }
 
-uint32_t hMIDIIn_OnDataRequest(int hemisphere) {
+uint32_t hMIDIIn_OnDataRequest(bool hemisphere) {
     return hMIDIIn_instance[hemisphere].OnDataRequest();
 }
 
-void hMIDIIn_OnDataReceive(int hemisphere, uint32_t data) {
+void hMIDIIn_OnDataReceive(bool hemisphere, uint32_t data) {
     hMIDIIn_instance[hemisphere].OnDataReceive(data);
 }

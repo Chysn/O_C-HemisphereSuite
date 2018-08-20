@@ -115,38 +115,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Switch Switch_instance[2];
 
-void Switch_Start(int hemisphere) {
+void Switch_Start(bool hemisphere) {
     Switch_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Switch_Controller(int hemisphere, bool forwarding) {
+void Switch_Controller(bool hemisphere, bool forwarding) {
     Switch_instance[hemisphere].BaseController(forwarding);
 }
 
-void Switch_View(int hemisphere) {
+void Switch_View(bool hemisphere) {
     Switch_instance[hemisphere].BaseView();
 }
 
-void Switch_Screensaver(int hemisphere) {
+void Switch_Screensaver(bool hemisphere) {
     Switch_instance[hemisphere].BaseScreensaverView();
 }
 
-void Switch_OnButtonPress(int hemisphere) {
+void Switch_OnButtonPress(bool hemisphere) {
     Switch_instance[hemisphere].OnButtonPress();
 }
 
-void Switch_OnEncoderMove(int hemisphere, int direction) {
+void Switch_OnEncoderMove(bool hemisphere, int direction) {
     Switch_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Switch_ToggleHelpScreen(int hemisphere) {
+void Switch_ToggleHelpScreen(bool hemisphere) {
     Switch_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Switch_OnDataRequest(int hemisphere) {
+uint32_t Switch_OnDataRequest(bool hemisphere) {
     return Switch_instance[hemisphere].OnDataRequest();
 }
 
-void Switch_OnDataReceive(int hemisphere, uint32_t data) {
+void Switch_OnDataReceive(bool hemisphere, uint32_t data) {
     Switch_instance[hemisphere].OnDataReceive(data);
 }

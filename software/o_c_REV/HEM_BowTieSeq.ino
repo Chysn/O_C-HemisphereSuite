@@ -98,38 +98,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 BowTieSeq BowTieSeq_instance[2];
 
-void BowTieSeq_Start(int hemisphere) {
+void BowTieSeq_Start(bool hemisphere) {
     BowTieSeq_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void BowTieSeq_Controller(int hemisphere, bool forwarding) {
+void BowTieSeq_Controller(bool hemisphere, bool forwarding) {
     BowTieSeq_instance[hemisphere].BaseController(forwarding);
 }
 
-void BowTieSeq_View(int hemisphere) {
+void BowTieSeq_View(bool hemisphere) {
     BowTieSeq_instance[hemisphere].BaseView();
 }
 
-void BowTieSeq_Screensaver(int hemisphere) {
+void BowTieSeq_Screensaver(bool hemisphere) {
     BowTieSeq_instance[hemisphere].BaseScreensaverView();
 }
 
-void BowTieSeq_OnButtonPress(int hemisphere) {
+void BowTieSeq_OnButtonPress(bool hemisphere) {
     BowTieSeq_instance[hemisphere].OnButtonPress();
 }
 
-void BowTieSeq_OnEncoderMove(int hemisphere, int direction) {
+void BowTieSeq_OnEncoderMove(bool hemisphere, int direction) {
     BowTieSeq_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void BowTieSeq_ToggleHelpScreen(int hemisphere) {
+void BowTieSeq_ToggleHelpScreen(bool hemisphere) {
     BowTieSeq_instance[hemisphere].HelpScreen();
 }
 
-uint32_t BowTieSeq_OnDataRequest(int hemisphere) {
+uint32_t BowTieSeq_OnDataRequest(bool hemisphere) {
     return BowTieSeq_instance[hemisphere].OnDataRequest();
 }
 
-void BowTieSeq_OnDataReceive(int hemisphere, uint32_t data) {
+void BowTieSeq_OnDataReceive(bool hemisphere, uint32_t data) {
     BowTieSeq_instance[hemisphere].OnDataReceive(data);
 }

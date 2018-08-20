@@ -143,38 +143,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 DualQuant DualQuant_instance[2];
 
-void DualQuant_Start(int hemisphere) {
+void DualQuant_Start(bool hemisphere) {
     DualQuant_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void DualQuant_Controller(int hemisphere, bool forwarding) {
+void DualQuant_Controller(bool hemisphere, bool forwarding) {
     DualQuant_instance[hemisphere].BaseController(forwarding);
 }
 
-void DualQuant_View(int hemisphere) {
+void DualQuant_View(bool hemisphere) {
     DualQuant_instance[hemisphere].BaseView();
 }
 
-void DualQuant_Screensaver(int hemisphere) {
+void DualQuant_Screensaver(bool hemisphere) {
     DualQuant_instance[hemisphere].BaseScreensaverView();
 }
 
-void DualQuant_OnButtonPress(int hemisphere) {
+void DualQuant_OnButtonPress(bool hemisphere) {
     DualQuant_instance[hemisphere].OnButtonPress();
 }
 
-void DualQuant_OnEncoderMove(int hemisphere, int direction) {
+void DualQuant_OnEncoderMove(bool hemisphere, int direction) {
     DualQuant_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void DualQuant_ToggleHelpScreen(int hemisphere) {
+void DualQuant_ToggleHelpScreen(bool hemisphere) {
     DualQuant_instance[hemisphere].HelpScreen();
 }
 
-uint32_t DualQuant_OnDataRequest(int hemisphere) {
+uint32_t DualQuant_OnDataRequest(bool hemisphere) {
     return DualQuant_instance[hemisphere].OnDataRequest();
 }
 
-void DualQuant_OnDataReceive(int hemisphere, uint32_t data) {
+void DualQuant_OnDataReceive(bool hemisphere, uint32_t data) {
     DualQuant_instance[hemisphere].OnDataReceive(data);
 }

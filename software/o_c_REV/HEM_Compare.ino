@@ -115,38 +115,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Compare Compare_instance[2];
 
-void Compare_Start(int hemisphere) {
+void Compare_Start(bool hemisphere) {
     Compare_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Compare_Controller(int hemisphere, bool forwarding) {
+void Compare_Controller(bool hemisphere, bool forwarding) {
     Compare_instance[hemisphere].BaseController(forwarding);
 }
 
-void Compare_View(int hemisphere) {
+void Compare_View(bool hemisphere) {
     Compare_instance[hemisphere].BaseView();
 }
 
-void Compare_Screensaver(int hemisphere) {
+void Compare_Screensaver(bool hemisphere) {
     Compare_instance[hemisphere].BaseScreensaverView();
 }
 
-void Compare_OnButtonPress(int hemisphere) {
+void Compare_OnButtonPress(bool hemisphere) {
     Compare_instance[hemisphere].OnButtonPress();
 }
 
-void Compare_OnEncoderMove(int hemisphere, int direction) {
+void Compare_OnEncoderMove(bool hemisphere, int direction) {
     Compare_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Compare_ToggleHelpScreen(int hemisphere) {
+void Compare_ToggleHelpScreen(bool hemisphere) {
     Compare_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Compare_OnDataRequest(int hemisphere) {
+uint32_t Compare_OnDataRequest(bool hemisphere) {
     return Compare_instance[hemisphere].OnDataRequest();
 }
 
-void Compare_OnDataReceive(int hemisphere, uint32_t data) {
+void Compare_OnDataReceive(bool hemisphere, uint32_t data) {
     Compare_instance[hemisphere].OnDataReceive(data);
 }

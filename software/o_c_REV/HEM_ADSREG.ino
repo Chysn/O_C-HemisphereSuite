@@ -277,38 +277,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 ADSREG ADSREG_instance[2];
 
-void ADSREG_Start(int hemisphere) {
+void ADSREG_Start(bool hemisphere) {
     ADSREG_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void ADSREG_Controller(int hemisphere, bool forwarding) {
+void ADSREG_Controller(bool hemisphere, bool forwarding) {
     ADSREG_instance[hemisphere].BaseController(forwarding);
 }
 
-void ADSREG_View(int hemisphere) {
+void ADSREG_View(bool hemisphere) {
     ADSREG_instance[hemisphere].BaseView();
 }
 
-void ADSREG_Screensaver(int hemisphere) {
+void ADSREG_Screensaver(bool hemisphere) {
     ADSREG_instance[hemisphere].BaseScreensaverView();
 }
 
-void ADSREG_OnButtonPress(int hemisphere) {
+void ADSREG_OnButtonPress(bool hemisphere) {
     ADSREG_instance[hemisphere].OnButtonPress();
 }
 
-void ADSREG_OnEncoderMove(int hemisphere, int direction) {
+void ADSREG_OnEncoderMove(bool hemisphere, int direction) {
     ADSREG_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void ADSREG_ToggleHelpScreen(int hemisphere) {
+void ADSREG_ToggleHelpScreen(bool hemisphere) {
     ADSREG_instance[hemisphere].HelpScreen();
 }
 
-uint32_t ADSREG_OnDataRequest(int hemisphere) {
+uint32_t ADSREG_OnDataRequest(bool hemisphere) {
     return ADSREG_instance[hemisphere].OnDataRequest();
 }
 
-void ADSREG_OnDataReceive(int hemisphere, uint32_t data) {
+void ADSREG_OnDataReceive(bool hemisphere, uint32_t data) {
     ADSREG_instance[hemisphere].OnDataReceive(data);
 }

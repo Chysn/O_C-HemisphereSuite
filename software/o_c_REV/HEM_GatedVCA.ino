@@ -99,38 +99,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 GatedVCA GatedVCA_instance[2];
 
-void GatedVCA_Start(int hemisphere) {
+void GatedVCA_Start(bool hemisphere) {
     GatedVCA_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void GatedVCA_Controller(int hemisphere, bool forwarding) {
+void GatedVCA_Controller(bool hemisphere, bool forwarding) {
     GatedVCA_instance[hemisphere].BaseController(forwarding);
 }
 
-void GatedVCA_View(int hemisphere) {
+void GatedVCA_View(bool hemisphere) {
     GatedVCA_instance[hemisphere].BaseView();
 }
 
-void GatedVCA_Screensaver(int hemisphere) {
+void GatedVCA_Screensaver(bool hemisphere) {
     GatedVCA_instance[hemisphere].BaseScreensaverView();
 }
 
-void GatedVCA_OnButtonPress(int hemisphere) {
+void GatedVCA_OnButtonPress(bool hemisphere) {
     GatedVCA_instance[hemisphere].OnButtonPress();
 }
 
-void GatedVCA_OnEncoderMove(int hemisphere, int direction) {
+void GatedVCA_OnEncoderMove(bool hemisphere, int direction) {
     GatedVCA_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void GatedVCA_ToggleHelpScreen(int hemisphere) {
+void GatedVCA_ToggleHelpScreen(bool hemisphere) {
     GatedVCA_instance[hemisphere].HelpScreen();
 }
 
-uint32_t GatedVCA_OnDataRequest(int hemisphere) {
+uint32_t GatedVCA_OnDataRequest(bool hemisphere) {
     return GatedVCA_instance[hemisphere].OnDataRequest();
 }
 
-void GatedVCA_OnDataReceive(int hemisphere, uint32_t data) {
+void GatedVCA_OnDataReceive(bool hemisphere, uint32_t data) {
     GatedVCA_instance[hemisphere].OnDataReceive(data);
 }

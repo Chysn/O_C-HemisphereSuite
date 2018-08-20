@@ -148,38 +148,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Shuffle Shuffle_instance[2];
 
-void Shuffle_Start(int hemisphere) {
+void Shuffle_Start(bool hemisphere) {
     Shuffle_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Shuffle_Controller(int hemisphere, bool forwarding) {
+void Shuffle_Controller(bool hemisphere, bool forwarding) {
     Shuffle_instance[hemisphere].BaseController(forwarding);
 }
 
-void Shuffle_View(int hemisphere) {
+void Shuffle_View(bool hemisphere) {
     Shuffle_instance[hemisphere].BaseView();
 }
 
-void Shuffle_Screensaver(int hemisphere) {
+void Shuffle_Screensaver(bool hemisphere) {
     Shuffle_instance[hemisphere].BaseScreensaverView();
 }
 
-void Shuffle_OnButtonPress(int hemisphere) {
+void Shuffle_OnButtonPress(bool hemisphere) {
     Shuffle_instance[hemisphere].OnButtonPress();
 }
 
-void Shuffle_OnEncoderMove(int hemisphere, int direction) {
+void Shuffle_OnEncoderMove(bool hemisphere, int direction) {
     Shuffle_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Shuffle_ToggleHelpScreen(int hemisphere) {
+void Shuffle_ToggleHelpScreen(bool hemisphere) {
     Shuffle_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Shuffle_OnDataRequest(int hemisphere) {
+uint32_t Shuffle_OnDataRequest(bool hemisphere) {
     return Shuffle_instance[hemisphere].OnDataRequest();
 }
 
-void Shuffle_OnDataReceive(int hemisphere, uint32_t data) {
+void Shuffle_OnDataReceive(bool hemisphere, uint32_t data) {
     Shuffle_instance[hemisphere].OnDataReceive(data);
 }

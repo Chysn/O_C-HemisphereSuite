@@ -109,38 +109,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 EnvFollow EnvFollow_instance[2];
 
-void EnvFollow_Start(int hemisphere) {
+void EnvFollow_Start(bool hemisphere) {
     EnvFollow_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void EnvFollow_Controller(int hemisphere, bool forwarding) {
+void EnvFollow_Controller(bool hemisphere, bool forwarding) {
     EnvFollow_instance[hemisphere].BaseController(forwarding);
 }
 
-void EnvFollow_View(int hemisphere) {
+void EnvFollow_View(bool hemisphere) {
     EnvFollow_instance[hemisphere].BaseView();
 }
 
-void EnvFollow_Screensaver(int hemisphere) {
+void EnvFollow_Screensaver(bool hemisphere) {
     EnvFollow_instance[hemisphere].BaseScreensaverView();
 }
 
-void EnvFollow_OnButtonPress(int hemisphere) {
+void EnvFollow_OnButtonPress(bool hemisphere) {
     EnvFollow_instance[hemisphere].OnButtonPress();
 }
 
-void EnvFollow_OnEncoderMove(int hemisphere, int direction) {
+void EnvFollow_OnEncoderMove(bool hemisphere, int direction) {
     EnvFollow_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void EnvFollow_ToggleHelpScreen(int hemisphere) {
+void EnvFollow_ToggleHelpScreen(bool hemisphere) {
     EnvFollow_instance[hemisphere].HelpScreen();
 }
 
-uint32_t EnvFollow_OnDataRequest(int hemisphere) {
+uint32_t EnvFollow_OnDataRequest(bool hemisphere) {
     return EnvFollow_instance[hemisphere].OnDataRequest();
 }
 
-void EnvFollow_OnDataReceive(int hemisphere, uint32_t data) {
+void EnvFollow_OnDataReceive(bool hemisphere, uint32_t data) {
     EnvFollow_instance[hemisphere].OnDataReceive(data);
 }

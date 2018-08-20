@@ -166,38 +166,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 ScaleDuet ScaleDuet_instance[2];
 
-void ScaleDuet_Start(int hemisphere) {
+void ScaleDuet_Start(bool hemisphere) {
     ScaleDuet_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void ScaleDuet_Controller(int hemisphere, bool forwarding) {
+void ScaleDuet_Controller(bool hemisphere, bool forwarding) {
     ScaleDuet_instance[hemisphere].BaseController(forwarding);
 }
 
-void ScaleDuet_View(int hemisphere) {
+void ScaleDuet_View(bool hemisphere) {
     ScaleDuet_instance[hemisphere].BaseView();
 }
 
-void ScaleDuet_Screensaver(int hemisphere) {
+void ScaleDuet_Screensaver(bool hemisphere) {
     ScaleDuet_instance[hemisphere].BaseScreensaverView();
 }
 
-void ScaleDuet_OnButtonPress(int hemisphere) {
+void ScaleDuet_OnButtonPress(bool hemisphere) {
     ScaleDuet_instance[hemisphere].OnButtonPress();
 }
 
-void ScaleDuet_OnEncoderMove(int hemisphere, int direction) {
+void ScaleDuet_OnEncoderMove(bool hemisphere, int direction) {
     ScaleDuet_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void ScaleDuet_ToggleHelpScreen(int hemisphere) {
+void ScaleDuet_ToggleHelpScreen(bool hemisphere) {
     ScaleDuet_instance[hemisphere].HelpScreen();
 }
 
-uint32_t ScaleDuet_OnDataRequest(int hemisphere) {
+uint32_t ScaleDuet_OnDataRequest(bool hemisphere) {
     return ScaleDuet_instance[hemisphere].OnDataRequest();
 }
 
-void ScaleDuet_OnDataReceive(int hemisphere, uint32_t data) {
+void ScaleDuet_OnDataReceive(bool hemisphere, uint32_t data) {
     ScaleDuet_instance[hemisphere].OnDataReceive(data);
 }

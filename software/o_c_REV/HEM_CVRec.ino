@@ -169,38 +169,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 CVRec CVRec_instance[2];
 
-void CVRec_Start(int hemisphere) {
+void CVRec_Start(bool hemisphere) {
     CVRec_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void CVRec_Controller(int hemisphere, bool forwarding) {
+void CVRec_Controller(bool hemisphere, bool forwarding) {
     CVRec_instance[hemisphere].BaseController(forwarding);
 }
 
-void CVRec_View(int hemisphere) {
+void CVRec_View(bool hemisphere) {
     CVRec_instance[hemisphere].BaseView();
 }
 
-void CVRec_Screensaver(int hemisphere) {
+void CVRec_Screensaver(bool hemisphere) {
     CVRec_instance[hemisphere].BaseScreensaverView();
 }
 
-void CVRec_OnButtonPress(int hemisphere) {
+void CVRec_OnButtonPress(bool hemisphere) {
     CVRec_instance[hemisphere].OnButtonPress();
 }
 
-void CVRec_OnEncoderMove(int hemisphere, int direction) {
+void CVRec_OnEncoderMove(bool hemisphere, int direction) {
     CVRec_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void CVRec_ToggleHelpScreen(int hemisphere) {
+void CVRec_ToggleHelpScreen(bool hemisphere) {
     CVRec_instance[hemisphere].HelpScreen();
 }
 
-uint32_t CVRec_OnDataRequest(int hemisphere) {
+uint32_t CVRec_OnDataRequest(bool hemisphere) {
     return CVRec_instance[hemisphere].OnDataRequest();
 }
 
-void CVRec_OnDataReceive(int hemisphere, uint32_t data) {
+void CVRec_OnDataReceive(bool hemisphere, uint32_t data) {
     CVRec_instance[hemisphere].OnDataReceive(data);
 }

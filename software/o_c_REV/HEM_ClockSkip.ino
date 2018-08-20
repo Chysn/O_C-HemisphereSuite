@@ -124,38 +124,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 ClockSkip ClockSkip_instance[2];
 
-void ClockSkip_Start(int hemisphere) {
+void ClockSkip_Start(bool hemisphere) {
     ClockSkip_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void ClockSkip_Controller(int hemisphere, bool forwarding) {
+void ClockSkip_Controller(bool hemisphere, bool forwarding) {
     ClockSkip_instance[hemisphere].BaseController(forwarding);
 }
 
-void ClockSkip_View(int hemisphere) {
+void ClockSkip_View(bool hemisphere) {
     ClockSkip_instance[hemisphere].BaseView();
 }
 
-void ClockSkip_Screensaver(int hemisphere) {
+void ClockSkip_Screensaver(bool hemisphere) {
     ClockSkip_instance[hemisphere].BaseScreensaverView();
 }
 
-void ClockSkip_OnButtonPress(int hemisphere) {
+void ClockSkip_OnButtonPress(bool hemisphere) {
     ClockSkip_instance[hemisphere].OnButtonPress();
 }
 
-void ClockSkip_OnEncoderMove(int hemisphere, int direction) {
+void ClockSkip_OnEncoderMove(bool hemisphere, int direction) {
     ClockSkip_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void ClockSkip_ToggleHelpScreen(int hemisphere) {
+void ClockSkip_ToggleHelpScreen(bool hemisphere) {
     ClockSkip_instance[hemisphere].HelpScreen();
 }
 
-uint32_t ClockSkip_OnDataRequest(int hemisphere) {
+uint32_t ClockSkip_OnDataRequest(bool hemisphere) {
     return ClockSkip_instance[hemisphere].OnDataRequest();
 }
 
-void ClockSkip_OnDataReceive(int hemisphere, uint32_t data) {
+void ClockSkip_OnDataReceive(bool hemisphere, uint32_t data) {
     ClockSkip_instance[hemisphere].OnDataReceive(data);
 }

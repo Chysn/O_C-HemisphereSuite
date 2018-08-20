@@ -112,38 +112,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Binary Binary_instance[2];
 
-void Binary_Start(int hemisphere) {
+void Binary_Start(bool hemisphere) {
     Binary_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Binary_Controller(int hemisphere, bool forwarding) {
+void Binary_Controller(bool hemisphere, bool forwarding) {
     Binary_instance[hemisphere].BaseController(forwarding);
 }
 
-void Binary_View(int hemisphere) {
+void Binary_View(bool hemisphere) {
     Binary_instance[hemisphere].BaseView();
 }
 
-void Binary_Screensaver(int hemisphere) {
+void Binary_Screensaver(bool hemisphere) {
     Binary_instance[hemisphere].BaseScreensaverView();
 }
 
-void Binary_OnButtonPress(int hemisphere) {
+void Binary_OnButtonPress(bool hemisphere) {
     Binary_instance[hemisphere].OnButtonPress();
 }
 
-void Binary_OnEncoderMove(int hemisphere, int direction) {
+void Binary_OnEncoderMove(bool hemisphere, int direction) {
     Binary_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Binary_ToggleHelpScreen(int hemisphere) {
+void Binary_ToggleHelpScreen(bool hemisphere) {
     Binary_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Binary_OnDataRequest(int hemisphere) {
+uint32_t Binary_OnDataRequest(bool hemisphere) {
     return Binary_instance[hemisphere].OnDataRequest();
 }
 
-void Binary_OnDataReceive(int hemisphere, uint32_t data) {
+void Binary_OnDataReceive(bool hemisphere, uint32_t data) {
     Binary_instance[hemisphere].OnDataReceive(data);
 }

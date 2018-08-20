@@ -150,38 +150,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 GateDelay GateDelay_instance[2];
 
-void GateDelay_Start(int hemisphere) {
+void GateDelay_Start(bool hemisphere) {
     GateDelay_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void GateDelay_Controller(int hemisphere, bool forwarding) {
+void GateDelay_Controller(bool hemisphere, bool forwarding) {
     GateDelay_instance[hemisphere].BaseController(forwarding);
 }
 
-void GateDelay_View(int hemisphere) {
+void GateDelay_View(bool hemisphere) {
     GateDelay_instance[hemisphere].BaseView();
 }
 
-void GateDelay_Screensaver(int hemisphere) {
+void GateDelay_Screensaver(bool hemisphere) {
     GateDelay_instance[hemisphere].BaseScreensaverView();
 }
 
-void GateDelay_OnButtonPress(int hemisphere) {
+void GateDelay_OnButtonPress(bool hemisphere) {
     GateDelay_instance[hemisphere].OnButtonPress();
 }
 
-void GateDelay_OnEncoderMove(int hemisphere, int direction) {
+void GateDelay_OnEncoderMove(bool hemisphere, int direction) {
     GateDelay_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void GateDelay_ToggleHelpScreen(int hemisphere) {
+void GateDelay_ToggleHelpScreen(bool hemisphere) {
     GateDelay_instance[hemisphere].HelpScreen();
 }
 
-uint32_t GateDelay_OnDataRequest(int hemisphere) {
+uint32_t GateDelay_OnDataRequest(bool hemisphere) {
     return GateDelay_instance[hemisphere].OnDataRequest();
 }
 
-void GateDelay_OnDataReceive(int hemisphere, uint32_t data) {
+void GateDelay_OnDataReceive(bool hemisphere, uint32_t data) {
     GateDelay_instance[hemisphere].OnDataReceive(data);
 }

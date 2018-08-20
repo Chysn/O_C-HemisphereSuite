@@ -304,38 +304,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 hMIDIOut hMIDIOut_instance[2];
 
-void hMIDIOut_Start(int hemisphere) {
+void hMIDIOut_Start(bool hemisphere) {
     hMIDIOut_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void hMIDIOut_Controller(int hemisphere, bool forwarding) {
+void hMIDIOut_Controller(bool hemisphere, bool forwarding) {
     hMIDIOut_instance[hemisphere].BaseController(forwarding);
 }
 
-void hMIDIOut_View(int hemisphere) {
+void hMIDIOut_View(bool hemisphere) {
     hMIDIOut_instance[hemisphere].BaseView();
 }
 
-void hMIDIOut_Screensaver(int hemisphere) {
+void hMIDIOut_Screensaver(bool hemisphere) {
     hMIDIOut_instance[hemisphere].BaseScreensaverView();
 }
 
-void hMIDIOut_OnButtonPress(int hemisphere) {
+void hMIDIOut_OnButtonPress(bool hemisphere) {
     hMIDIOut_instance[hemisphere].OnButtonPress();
 }
 
-void hMIDIOut_OnEncoderMove(int hemisphere, int direction) {
+void hMIDIOut_OnEncoderMove(bool hemisphere, int direction) {
     hMIDIOut_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void hMIDIOut_ToggleHelpScreen(int hemisphere) {
+void hMIDIOut_ToggleHelpScreen(bool hemisphere) {
     hMIDIOut_instance[hemisphere].HelpScreen();
 }
 
-uint32_t hMIDIOut_OnDataRequest(int hemisphere) {
+uint32_t hMIDIOut_OnDataRequest(bool hemisphere) {
     return hMIDIOut_instance[hemisphere].OnDataRequest();
 }
 
-void hMIDIOut_OnDataReceive(int hemisphere, uint32_t data) {
+void hMIDIOut_OnDataReceive(bool hemisphere, uint32_t data) {
     hMIDIOut_instance[hemisphere].OnDataReceive(data);
 }

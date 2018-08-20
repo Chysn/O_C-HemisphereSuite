@@ -97,38 +97,12 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 ClassName ClassName_instance[2];
 
-void ClassName_Start(int hemisphere) {
-    ClassName_instance[hemisphere].BaseStart(hemisphere);
-}
-
-void ClassName_Controller(int hemisphere, bool forwarding) {
-    ClassName_instance[hemisphere].BaseController(forwarding);
-}
-
-void ClassName_View(int hemisphere) {
-    ClassName_instance[hemisphere].BaseView();
-}
-
-void ClassName_Screensaver(int hemisphere) {
-    ClassName_instance[hemisphere].BaseScreensaverView();
-}
-
-void ClassName_OnButtonPress(int hemisphere) {
-    ClassName_instance[hemisphere].OnButtonPress();
-}
-
-void ClassName_OnEncoderMove(int hemisphere, int direction) {
-    ClassName_instance[hemisphere].OnEncoderMove(direction);
-}
-
-void ClassName_ToggleHelpScreen(int hemisphere) {
-    ClassName_instance[hemisphere].HelpScreen();
-}
-
-uint32_t ClassName_OnDataRequest(int hemisphere) {
-    return ClassName_instance[hemisphere].OnDataRequest();
-}
-
-void ClassName_OnDataReceive(int hemisphere, uint32_t data) {
-    ClassName_instance[hemisphere].OnDataReceive(data);
-}
+void ClassName_Start(bool hemisphere) {ClassName_instance[hemisphere].BaseStart(hemisphere);}
+void ClassName_Controller(bool hemisphere, bool forwarding) {ClassName_instance[hemisphere].BaseController(forwarding);}
+void ClassName_View(bool hemisphere) {ClassName_instance[hemisphere].BaseView();}
+void ClassName_Screensaver(bool hemisphere) {ClassName_instance[hemisphere].BaseScreensaverView();}
+void ClassName_OnButtonPress(bool hemisphere) {ClassName_instance[hemisphere].OnButtonPress();}
+void ClassName_OnEncoderMove(bool hemisphere, int direction) {ClassName_instance[hemisphere].OnEncoderMove(direction);}
+void ClassName_ToggleHelpScreen(bool hemisphere) {ClassName_instance[hemisphere].HelpScreen();}
+uint32_t ClassName_OnDataRequest(bool hemisphere) {return ClassName_instance[hemisphere].OnDataRequest();}
+void ClassName_OnDataReceive(bool hemisphere, uint32_t data) {ClassName_instance[hemisphere].OnDataReceive(data);}

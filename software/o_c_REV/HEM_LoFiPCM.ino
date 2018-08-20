@@ -181,38 +181,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 LoFiPCM LoFiPCM_instance[2];
 
-void LoFiPCM_Start(int hemisphere) {
+void LoFiPCM_Start(bool hemisphere) {
     LoFiPCM_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void LoFiPCM_Controller(int hemisphere, bool forwarding) {
+void LoFiPCM_Controller(bool hemisphere, bool forwarding) {
     LoFiPCM_instance[hemisphere].BaseController(forwarding);
 }
 
-void LoFiPCM_View(int hemisphere) {
+void LoFiPCM_View(bool hemisphere) {
     LoFiPCM_instance[hemisphere].BaseView();
 }
 
-void LoFiPCM_Screensaver(int hemisphere) {
+void LoFiPCM_Screensaver(bool hemisphere) {
     LoFiPCM_instance[hemisphere].BaseScreensaverView();
 }
 
-void LoFiPCM_OnButtonPress(int hemisphere) {
+void LoFiPCM_OnButtonPress(bool hemisphere) {
     LoFiPCM_instance[hemisphere].OnButtonPress();
 }
 
-void LoFiPCM_OnEncoderMove(int hemisphere, int direction) {
+void LoFiPCM_OnEncoderMove(bool hemisphere, int direction) {
     LoFiPCM_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void LoFiPCM_ToggleHelpScreen(int hemisphere) {
+void LoFiPCM_ToggleHelpScreen(bool hemisphere) {
     LoFiPCM_instance[hemisphere].HelpScreen();
 }
 
-uint32_t LoFiPCM_OnDataRequest(int hemisphere) {
+uint32_t LoFiPCM_OnDataRequest(bool hemisphere) {
     return LoFiPCM_instance[hemisphere].OnDataRequest();
 }
 
-void LoFiPCM_OnDataReceive(int hemisphere, uint32_t data) {
+void LoFiPCM_OnDataReceive(bool hemisphere, uint32_t data) {
     LoFiPCM_instance[hemisphere].OnDataReceive(data);
 }

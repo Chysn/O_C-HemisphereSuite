@@ -155,38 +155,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Slew Slew_instance[2];
 
-void Slew_Start(int hemisphere) {
+void Slew_Start(bool hemisphere) {
     Slew_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Slew_Controller(int hemisphere, bool forwarding) {
+void Slew_Controller(bool hemisphere, bool forwarding) {
     Slew_instance[hemisphere].BaseController(forwarding);
 }
 
-void Slew_View(int hemisphere) {
+void Slew_View(bool hemisphere) {
     Slew_instance[hemisphere].BaseView();
 }
 
-void Slew_Screensaver(int hemisphere) {
+void Slew_Screensaver(bool hemisphere) {
     Slew_instance[hemisphere].BaseScreensaverView();
 }
 
-void Slew_OnButtonPress(int hemisphere) {
+void Slew_OnButtonPress(bool hemisphere) {
     Slew_instance[hemisphere].OnButtonPress();
 }
 
-void Slew_OnEncoderMove(int hemisphere, int direction) {
+void Slew_OnEncoderMove(bool hemisphere, int direction) {
     Slew_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Slew_ToggleHelpScreen(int hemisphere) {
+void Slew_ToggleHelpScreen(bool hemisphere) {
     Slew_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Slew_OnDataRequest(int hemisphere) {
+uint32_t Slew_OnDataRequest(bool hemisphere) {
     return Slew_instance[hemisphere].OnDataRequest();
 }
 
-void Slew_OnDataReceive(int hemisphere, uint32_t data) {
+void Slew_OnDataReceive(bool hemisphere, uint32_t data) {
     Slew_instance[hemisphere].OnDataReceive(data);
 }

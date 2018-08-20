@@ -170,38 +170,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 TLNeuron TLNeuron_instance[2];
 
-void TLNeuron_Start(int hemisphere) {
+void TLNeuron_Start(bool hemisphere) {
     TLNeuron_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void TLNeuron_Controller(int hemisphere, bool forwarding) {
+void TLNeuron_Controller(bool hemisphere, bool forwarding) {
     TLNeuron_instance[hemisphere].BaseController(forwarding);
 }
 
-void TLNeuron_View(int hemisphere) {
+void TLNeuron_View(bool hemisphere) {
     TLNeuron_instance[hemisphere].BaseView();
 }
 
-void TLNeuron_Screensaver(int hemisphere) {
+void TLNeuron_Screensaver(bool hemisphere) {
     TLNeuron_instance[hemisphere].BaseScreensaverView();
 }
 
-void TLNeuron_OnButtonPress(int hemisphere) {
+void TLNeuron_OnButtonPress(bool hemisphere) {
     TLNeuron_instance[hemisphere].OnButtonPress();
 }
 
-void TLNeuron_OnEncoderMove(int hemisphere, int direction) {
+void TLNeuron_OnEncoderMove(bool hemisphere, int direction) {
     TLNeuron_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void TLNeuron_ToggleHelpScreen(int hemisphere) {
+void TLNeuron_ToggleHelpScreen(bool hemisphere) {
     TLNeuron_instance[hemisphere].HelpScreen();
 }
 
-uint32_t TLNeuron_OnDataRequest(int hemisphere) {
+uint32_t TLNeuron_OnDataRequest(bool hemisphere) {
     return TLNeuron_instance[hemisphere].OnDataRequest();
 }
 
-void TLNeuron_OnDataReceive(int hemisphere, uint32_t data) {
+void TLNeuron_OnDataReceive(bool hemisphere, uint32_t data) {
     TLNeuron_instance[hemisphere].OnDataReceive(data);
 }

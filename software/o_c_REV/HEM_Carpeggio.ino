@@ -220,38 +220,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Carpeggio Carpeggio_instance[2];
 
-void Carpeggio_Start(int hemisphere) {
+void Carpeggio_Start(bool hemisphere) {
     Carpeggio_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Carpeggio_Controller(int hemisphere, bool forwarding) {
+void Carpeggio_Controller(bool hemisphere, bool forwarding) {
     Carpeggio_instance[hemisphere].BaseController(forwarding);
 }
 
-void Carpeggio_View(int hemisphere) {
+void Carpeggio_View(bool hemisphere) {
     Carpeggio_instance[hemisphere].BaseView();
 }
 
-void Carpeggio_Screensaver(int hemisphere) {
+void Carpeggio_Screensaver(bool hemisphere) {
     Carpeggio_instance[hemisphere].BaseScreensaverView();
 }
 
-void Carpeggio_OnButtonPress(int hemisphere) {
+void Carpeggio_OnButtonPress(bool hemisphere) {
     Carpeggio_instance[hemisphere].OnButtonPress();
 }
 
-void Carpeggio_OnEncoderMove(int hemisphere, int direction) {
+void Carpeggio_OnEncoderMove(bool hemisphere, int direction) {
     Carpeggio_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Carpeggio_ToggleHelpScreen(int hemisphere) {
+void Carpeggio_ToggleHelpScreen(bool hemisphere) {
     Carpeggio_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Carpeggio_OnDataRequest(int hemisphere) {
+uint32_t Carpeggio_OnDataRequest(bool hemisphere) {
     return Carpeggio_instance[hemisphere].OnDataRequest();
 }
 
-void Carpeggio_OnDataReceive(int hemisphere, uint32_t data) {
+void Carpeggio_OnDataReceive(bool hemisphere, uint32_t data) {
     Carpeggio_instance[hemisphere].OnDataReceive(data);
 }

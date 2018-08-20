@@ -160,38 +160,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Palimpsest Palimpsest_instance[2];
 
-void Palimpsest_Start(int hemisphere) {
+void Palimpsest_Start(bool hemisphere) {
     Palimpsest_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Palimpsest_Controller(int hemisphere, bool forwarding) {
+void Palimpsest_Controller(bool hemisphere, bool forwarding) {
     Palimpsest_instance[hemisphere].BaseController(forwarding);
 }
 
-void Palimpsest_View(int hemisphere) {
+void Palimpsest_View(bool hemisphere) {
     Palimpsest_instance[hemisphere].BaseView();
 }
 
-void Palimpsest_Screensaver(int hemisphere) {
+void Palimpsest_Screensaver(bool hemisphere) {
     Palimpsest_instance[hemisphere].BaseScreensaverView();
 }
 
-void Palimpsest_OnButtonPress(int hemisphere) {
+void Palimpsest_OnButtonPress(bool hemisphere) {
     Palimpsest_instance[hemisphere].OnButtonPress();
 }
 
-void Palimpsest_OnEncoderMove(int hemisphere, int direction) {
+void Palimpsest_OnEncoderMove(bool hemisphere, int direction) {
     Palimpsest_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Palimpsest_ToggleHelpScreen(int hemisphere) {
+void Palimpsest_ToggleHelpScreen(bool hemisphere) {
     Palimpsest_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Palimpsest_OnDataRequest(int hemisphere) {
+uint32_t Palimpsest_OnDataRequest(bool hemisphere) {
     return Palimpsest_instance[hemisphere].OnDataRequest();
 }
 
-void Palimpsest_OnDataReceive(int hemisphere, uint32_t data) {
+void Palimpsest_OnDataReceive(bool hemisphere, uint32_t data) {
     Palimpsest_instance[hemisphere].OnDataReceive(data);
 }

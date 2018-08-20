@@ -94,38 +94,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 MIDISeq MIDISeq_instance[2];
 
-void MIDISeq_Start(int hemisphere) {
+void MIDISeq_Start(bool hemisphere) {
     MIDISeq_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void MIDISeq_Controller(int hemisphere, bool forwarding) {
+void MIDISeq_Controller(bool hemisphere, bool forwarding) {
     MIDISeq_instance[hemisphere].BaseController(forwarding);
 }
 
-void MIDISeq_View(int hemisphere) {
+void MIDISeq_View(bool hemisphere) {
     MIDISeq_instance[hemisphere].BaseView();
 }
 
-void MIDISeq_Screensaver(int hemisphere) {
+void MIDISeq_Screensaver(bool hemisphere) {
     MIDISeq_instance[hemisphere].BaseScreensaverView();
 }
 
-void MIDISeq_OnButtonPress(int hemisphere) {
+void MIDISeq_OnButtonPress(bool hemisphere) {
     MIDISeq_instance[hemisphere].OnButtonPress();
 }
 
-void MIDISeq_OnEncoderMove(int hemisphere, int direction) {
+void MIDISeq_OnEncoderMove(bool hemisphere, int direction) {
     MIDISeq_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void MIDISeq_ToggleHelpScreen(int hemisphere) {
+void MIDISeq_ToggleHelpScreen(bool hemisphere) {
     MIDISeq_instance[hemisphere].HelpScreen();
 }
 
-uint32_t MIDISeq_OnDataRequest(int hemisphere) {
+uint32_t MIDISeq_OnDataRequest(bool hemisphere) {
     return MIDISeq_instance[hemisphere].OnDataRequest();
 }
 
-void MIDISeq_OnDataReceive(int hemisphere, uint32_t data) {
+void MIDISeq_OnDataReceive(bool hemisphere, uint32_t data) {
     MIDISeq_instance[hemisphere].OnDataReceive(data);
 }

@@ -182,38 +182,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 TM TM_instance[2];
 
-void TM_Start(int hemisphere) {
+void TM_Start(bool hemisphere) {
     TM_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void TM_Controller(int hemisphere, bool forwarding) {
+void TM_Controller(bool hemisphere, bool forwarding) {
     TM_instance[hemisphere].BaseController(forwarding);
 }
 
-void TM_View(int hemisphere) {
+void TM_View(bool hemisphere) {
     TM_instance[hemisphere].BaseView();
 }
 
-void TM_Screensaver(int hemisphere) {
+void TM_Screensaver(bool hemisphere) {
     TM_instance[hemisphere].BaseScreensaverView();
 }
 
-void TM_OnButtonPress(int hemisphere) {
+void TM_OnButtonPress(bool hemisphere) {
     TM_instance[hemisphere].OnButtonPress();
 }
 
-void TM_OnEncoderMove(int hemisphere, int direction) {
+void TM_OnEncoderMove(bool hemisphere, int direction) {
     TM_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void TM_ToggleHelpScreen(int hemisphere) {
+void TM_ToggleHelpScreen(bool hemisphere) {
     TM_instance[hemisphere].HelpScreen();
 }
 
-uint32_t TM_OnDataRequest(int hemisphere) {
+uint32_t TM_OnDataRequest(bool hemisphere) {
     return TM_instance[hemisphere].OnDataRequest();
 }
 
-void TM_OnDataReceive(int hemisphere, uint32_t data) {
+void TM_OnDataReceive(bool hemisphere, uint32_t data) {
     TM_instance[hemisphere].OnDataReceive(data);
 }

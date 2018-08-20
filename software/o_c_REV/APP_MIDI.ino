@@ -35,22 +35,22 @@ const int MIDI_CURRENT_SETUP = MIDI_PARAMETER_COUNT * 4;
 const int MIDI_SETTING_LAST = MIDI_CURRENT_SETUP + 1;
 const int MIDI_LOG_MAX_SIZE = 101;
 
-const char* const midi_out_functions[11] = {
-    "--", "Note", "Leg.", "Veloc", "Mod", "Aft", "Bend", "Expr", "Pan", "Hold", "Brth"
+const char* const midi_in_functions[13] = {
+    "--", "Note", "Gate", "Trig", "Veloc", "Mod", "Aft", "Bend",  "Expr", "Pan", "Hold", "Brth", "yAxis"
 };
-const char* const midi_in_functions[12] = {
-    "--", "Note", "Gate", "Trig", "Veloc", "Mod", "Aft", "Bend",  "Expr", "Pan", "Hold", "Brth"
+const char* const midi_out_functions[12] = {
+    "--", "Note", "Leg.", "Veloc", "Mod", "Aft", "Bend", "Expr", "Pan", "Hold", "Brth", "yAxis"
 };
 
 #define MIDI_SETUP_PARAMETER_LIST \
-{ 0, 0, 11, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 11, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 11, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 11, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 10, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 10, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 10, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
-{ 0, 0, 10, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 12, "MIDI > A", midi_in_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 12, "MIDI > B", midi_in_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 12, "MIDI > C", midi_in_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 12, "MIDI > D", midi_in_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 11, "1 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 11, "2 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 11, "3 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
+{ 0, 0, 11, "4 > MIDI", midi_out_functions, settings::STORAGE_TYPE_U8 },\
 { 0, 0, 16, "MIDI > A", midi_channels, settings::STORAGE_TYPE_U8 },\
 { 0, 0, 16, "MIDI > B", midi_channels, settings::STORAGE_TYPE_U8 },\
 { 0, 0, 16, "MIDI > C", midi_channels, settings::STORAGE_TYPE_U8 },\
@@ -96,7 +96,8 @@ enum MIDI_IN_FUNCTION {
     MIDI_IN_EXPRESSION,
     MIDI_IN_PAN,
     MIDI_IN_HOLD,
-    MIDI_IN_BREATH
+    MIDI_IN_BREATH,
+    MIDI_IN_Y_AXIS
 };
 
 enum MIDI_OUT_FUNCTION {
@@ -110,7 +111,8 @@ enum MIDI_OUT_FUNCTION {
     MIDI_OUT_EXPRESSION,
     MIDI_OUT_PAN,
     MIDI_OUT_HOLD,
-    MIDI_OUT_BREATH
+    MIDI_OUT_BREATH,
+    MIDI_OUT_Y_AXIS,
 };
 
 const char* const midi_messages[6] = {
@@ -142,23 +144,23 @@ struct CaptainMIDILog {
             if (!midi_in) graphics.print(">");
             graphics.print(" ");
             graphics.print(midi_channels[channel]);
-            graphics.setPrintPos(36, y);
+            graphics.setPrintPos(37, y);
 
             graphics.print(midi_messages[message]);
-            graphics.setPrintPos(72, y);
+            graphics.setPrintPos(73, y);
 
             uint8_t x_offset = (data2 < 100) ? 6 : 0;
             x_offset += (data2 < 10) ? 6 : 0;
 
             if (message == 0 || message == 1) {
                 graphics.print(midi_note_numbers[data1]);
-                graphics.setPrintPos(102 + x_offset, y);
+                graphics.setPrintPos(103 + x_offset, y);
                 graphics.print(data2); // Velocity
             }
 
             if (message == 2 || message == 3) {
                 if (message == 2) graphics.print(data1); // Controller number
-                graphics.setPrintPos(102 + x_offset, y);
+                graphics.setPrintPos(103 + x_offset, y);
                 graphics.print(data2); // Value
             }
 
@@ -395,8 +397,7 @@ private:
         const uint8_t note_icon[8] = {0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08};
 
         // Create the header, showing the current Setup and Screen name
-        menu::DefaultTitleBar::Draw();
-        graphics.print("Setup ");
+        gfxHeader("Setup ");
         graphics.print(get_setup_number() + 1);
         if (screen == 0) graphics.print("   MIDI Assign");
         if (screen == 1) graphics.print("  MIDI Channel");
@@ -457,9 +458,7 @@ private:
     }
 
     void DrawLogScreen() {
-        menu::DefaultTitleBar::Draw();
-        graphics.setPrintPos(0,1);
-        graphics.print("IO Ch Type  Values");
+        gfxHeader("IO Ch Type  Values");
         if (log_index) {
             for (int l = 0; l < 6; l++)
             {
@@ -480,9 +479,7 @@ private:
     }
 
     void DrawCopyScreen() {
-        menu::DefaultTitleBar::Draw();
-        graphics.setPrintPos(0,1);
-        graphics.print("Copy");
+        gfxHeader("Copy");
 
         graphics.setPrintPos(8, 28);
         graphics.print("Setup ");
@@ -576,11 +573,12 @@ private:
 
                 // Modulation wheel
                 if (out_fn == MIDI_OUT_MOD || out_fn >= MIDI_OUT_EXPRESSION) {
-                    int cc = 1; // Modulation
+                    int cc = 1; // Modulation wheel
                     if (out_fn == MIDI_OUT_EXPRESSION) cc = 11;
                     if (out_fn == MIDI_OUT_PAN) cc = 10;
                     if (out_fn == MIDI_OUT_HOLD) cc = 64;
                     if (out_fn == MIDI_OUT_BREATH) cc = 2;
+                    if (out_fn == MIDI_OUT_Y_AXIS) cc = 74;
 
                     int value = Proportion(this_cv, HSAPPLICATION_5V, 127);
                     value = constrain(value, 0, 127);
@@ -691,11 +689,13 @@ private:
 
                 bool cc = (in_fn == MIDI_IN_MOD || in_fn >= MIDI_IN_EXPRESSION);
                 if (cc && message == MIDI_MSG_MIDI_CC && in_ch == channel) {
-                    uint8_t cc = 1;
+                    uint8_t cc = 1; // Modulation wheel
                     if (in_fn == MIDI_IN_EXPRESSION) cc = 11;
                     if (in_fn == MIDI_IN_PAN) cc = 10;
                     if (in_fn == MIDI_IN_HOLD) cc = 64;
                     if (in_fn == MIDI_IN_BREATH) cc = 2;
+                    if (in_fn == MIDI_IN_Y_AXIS) cc = 74;
+
                     // Send CC wheel to CV
                     if (data1 == cc) {
                         if (in_fn == MIDI_IN_HOLD && data2 > 0) data2 = 127;

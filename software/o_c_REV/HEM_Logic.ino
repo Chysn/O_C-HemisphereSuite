@@ -158,38 +158,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Logic Logic_instance[2];
 
-void Logic_Start(int hemisphere) {
+void Logic_Start(bool hemisphere) {
     Logic_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Logic_Controller(int hemisphere, bool forwarding) {
+void Logic_Controller(bool hemisphere, bool forwarding) {
     Logic_instance[hemisphere].BaseController(forwarding);
 }
 
-void Logic_View(int hemisphere) {
+void Logic_View(bool hemisphere) {
     Logic_instance[hemisphere].BaseView();
 }
 
-void Logic_Screensaver(int hemisphere) {
+void Logic_Screensaver(bool hemisphere) {
     Logic_instance[hemisphere].BaseScreensaverView();
 }
 
-void Logic_OnButtonPress(int hemisphere) {
+void Logic_OnButtonPress(bool hemisphere) {
     Logic_instance[hemisphere].OnButtonPress();
 }
 
-void Logic_OnEncoderMove(int hemisphere, int direction) {
+void Logic_OnEncoderMove(bool hemisphere, int direction) {
     Logic_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Logic_ToggleHelpScreen(int hemisphere) {
+void Logic_ToggleHelpScreen(bool hemisphere) {
     Logic_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Logic_OnDataRequest(int hemisphere) {
+uint32_t Logic_OnDataRequest(bool hemisphere) {
     return Logic_instance[hemisphere].OnDataRequest();
 }
 
-void Logic_OnDataReceive(int hemisphere, uint32_t data) {
+void Logic_OnDataReceive(bool hemisphere, uint32_t data) {
     Logic_instance[hemisphere].OnDataReceive(data);
 }

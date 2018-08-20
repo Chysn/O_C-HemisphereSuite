@@ -150,38 +150,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Calculate Calculate_instance[2];
 
-void Calculate_Start(int hemisphere) {
+void Calculate_Start(bool hemisphere) {
     Calculate_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Calculate_Controller(int hemisphere, bool forwarding) {
+void Calculate_Controller(bool hemisphere, bool forwarding) {
     Calculate_instance[hemisphere].BaseController(forwarding);
 }
 
-void Calculate_View(int hemisphere) {
+void Calculate_View(bool hemisphere) {
     Calculate_instance[hemisphere].BaseView();
 }
 
-void Calculate_Screensaver(int hemisphere) {
+void Calculate_Screensaver(bool hemisphere) {
     Calculate_instance[hemisphere].BaseScreensaverView();
 }
 
-void Calculate_OnButtonPress(int hemisphere) {
+void Calculate_OnButtonPress(bool hemisphere) {
     Calculate_instance[hemisphere].OnButtonPress();
 }
 
-void Calculate_OnEncoderMove(int hemisphere, int direction) {
+void Calculate_OnEncoderMove(bool hemisphere, int direction) {
     Calculate_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Calculate_ToggleHelpScreen(int hemisphere) {
+void Calculate_ToggleHelpScreen(bool hemisphere) {
     Calculate_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Calculate_OnDataRequest(int hemisphere) {
+uint32_t Calculate_OnDataRequest(bool hemisphere) {
     return Calculate_instance[hemisphere].OnDataRequest();
 }
 
-void Calculate_OnDataReceive(int hemisphere, uint32_t data) {
+void Calculate_OnDataReceive(bool hemisphere, uint32_t data) {
     Calculate_instance[hemisphere].OnDataReceive(data);
 }

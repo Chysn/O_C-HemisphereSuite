@@ -40,15 +40,15 @@ namespace menu = OC::menu;
 typedef struct Applet {
   int id;
   uint8_t categories;
-  void (*Start)(int); // Initialize when selected
-  void (*Controller)(int, bool);  // Interrupt Service Routine
-  void (*View)(int);  // Draw main view
-  void (*Screensaver)(int); // Draw screensaver view
-  void (*OnButtonPress)(int); // Encoder button has been pressed
-  void (*OnEncoderMove)(int, int); // Encoder has been rotated
-  void (*ToggleHelpScreen)(int); // Help Screen has been requested
-  uint32_t (*OnDataRequest)(int); // Get a data int from the applet
-  void (*OnDataReceive)(int, uint32_t); // Send a data int to the applet
+  void (*Start)(bool); // Initialize when selected
+  void (*Controller)(bool, bool);  // Interrupt Service Routine
+  void (*View)(bool);  // Draw main view
+  void (*Screensaver)(bool); // Draw screensaver view
+  void (*OnButtonPress)(bool); // Encoder button has been pressed
+  void (*OnEncoderMove)(bool, int); // Encoder has been rotated
+  void (*ToggleHelpScreen)(bool); // Help Screen has been requested
+  uint32_t (*OnDataRequest)(bool); // Get a data int from the applet
+  void (*OnDataReceive)(bool, uint32_t); // Send a data int to the applet
 } Applet;
 
 // The settings specify the selected applets, and 32 bits of data for each applet

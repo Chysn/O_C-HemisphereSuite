@@ -177,38 +177,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Scope Scope_instance[2];
 
-void Scope_Start(int hemisphere) {
+void Scope_Start(bool hemisphere) {
     Scope_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Scope_Controller(int hemisphere, bool forwarding) {
+void Scope_Controller(bool hemisphere, bool forwarding) {
     Scope_instance[hemisphere].BaseController(forwarding);
 }
 
-void Scope_View(int hemisphere) {
+void Scope_View(bool hemisphere) {
     Scope_instance[hemisphere].BaseView();
 }
 
-void Scope_Screensaver(int hemisphere) {
+void Scope_Screensaver(bool hemisphere) {
     Scope_instance[hemisphere].BaseScreensaverView();
 }
 
-void Scope_OnButtonPress(int hemisphere) {
+void Scope_OnButtonPress(bool hemisphere) {
     Scope_instance[hemisphere].OnButtonPress();
 }
 
-void Scope_OnEncoderMove(int hemisphere, int direction) {
+void Scope_OnEncoderMove(bool hemisphere, int direction) {
     Scope_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Scope_ToggleHelpScreen(int hemisphere) {
+void Scope_ToggleHelpScreen(bool hemisphere) {
     Scope_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Scope_OnDataRequest(int hemisphere) {
+uint32_t Scope_OnDataRequest(bool hemisphere) {
     return Scope_instance[hemisphere].OnDataRequest();
 }
 
-void Scope_OnDataReceive(int hemisphere, uint32_t data) {
+void Scope_OnDataReceive(bool hemisphere, uint32_t data) {
     Scope_instance[hemisphere].OnDataReceive(data);
 }

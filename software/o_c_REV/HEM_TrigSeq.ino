@@ -175,38 +175,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 TrigSeq TrigSeq_instance[2];
 
-void TrigSeq_Start(int hemisphere) {
+void TrigSeq_Start(bool hemisphere) {
     TrigSeq_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void TrigSeq_Controller(int hemisphere, bool forwarding) {
+void TrigSeq_Controller(bool hemisphere, bool forwarding) {
     TrigSeq_instance[hemisphere].BaseController(forwarding);
 }
 
-void TrigSeq_View(int hemisphere) {
+void TrigSeq_View(bool hemisphere) {
     TrigSeq_instance[hemisphere].BaseView();
 }
 
-void TrigSeq_Screensaver(int hemisphere) {
+void TrigSeq_Screensaver(bool hemisphere) {
     TrigSeq_instance[hemisphere].BaseScreensaverView();
 }
 
-void TrigSeq_OnButtonPress(int hemisphere) {
+void TrigSeq_OnButtonPress(bool hemisphere) {
     TrigSeq_instance[hemisphere].OnButtonPress();
 }
 
-void TrigSeq_OnEncoderMove(int hemisphere, int direction) {
+void TrigSeq_OnEncoderMove(bool hemisphere, int direction) {
     TrigSeq_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void TrigSeq_ToggleHelpScreen(int hemisphere) {
+void TrigSeq_ToggleHelpScreen(bool hemisphere) {
     TrigSeq_instance[hemisphere].HelpScreen();
 }
 
-uint32_t TrigSeq_OnDataRequest(int hemisphere) {
+uint32_t TrigSeq_OnDataRequest(bool hemisphere) {
     return TrigSeq_instance[hemisphere].OnDataRequest();
 }
 
-void TrigSeq_OnDataReceive(int hemisphere, uint32_t data) {
+void TrigSeq_OnDataReceive(bool hemisphere, uint32_t data) {
     TrigSeq_instance[hemisphere].OnDataReceive(data);
 }

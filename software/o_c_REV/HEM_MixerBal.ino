@@ -105,38 +105,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 MixerBal MixerBal_instance[2];
 
-void MixerBal_Start(int hemisphere) {
+void MixerBal_Start(bool hemisphere) {
     MixerBal_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void MixerBal_Controller(int hemisphere, bool forwarding) {
+void MixerBal_Controller(bool hemisphere, bool forwarding) {
     MixerBal_instance[hemisphere].BaseController(forwarding);
 }
 
-void MixerBal_View(int hemisphere) {
+void MixerBal_View(bool hemisphere) {
     MixerBal_instance[hemisphere].BaseView();
 }
 
-void MixerBal_Screensaver(int hemisphere) {
+void MixerBal_Screensaver(bool hemisphere) {
     MixerBal_instance[hemisphere].BaseScreensaverView();
 }
 
-void MixerBal_OnButtonPress(int hemisphere) {
+void MixerBal_OnButtonPress(bool hemisphere) {
     MixerBal_instance[hemisphere].OnButtonPress();
 }
 
-void MixerBal_OnEncoderMove(int hemisphere, int direction) {
+void MixerBal_OnEncoderMove(bool hemisphere, int direction) {
     MixerBal_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void MixerBal_ToggleHelpScreen(int hemisphere) {
+void MixerBal_ToggleHelpScreen(bool hemisphere) {
     MixerBal_instance[hemisphere].HelpScreen();
 }
 
-uint32_t MixerBal_OnDataRequest(int hemisphere) {
+uint32_t MixerBal_OnDataRequest(bool hemisphere) {
     return MixerBal_instance[hemisphere].OnDataRequest();
 }
 
-void MixerBal_OnDataReceive(int hemisphere, uint32_t data) {
+void MixerBal_OnDataReceive(bool hemisphere, uint32_t data) {
     MixerBal_instance[hemisphere].OnDataReceive(data);
 }

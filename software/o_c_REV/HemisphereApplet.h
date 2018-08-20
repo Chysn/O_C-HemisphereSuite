@@ -76,10 +76,10 @@ public:
     virtual void View();
     virtual void ScreensaverView();
 
-    void BaseStart(int h) {
-        hemisphere = h;
-        gfx_offset = h * 64;
-        io_offset = h * 2;
+    void BaseStart(bool hemisphere_) {
+        hemisphere = hemisphere_;
+        gfx_offset = hemisphere * 64;
+        io_offset = hemisphere * 2;
         screensaver_on = 0;
 
         // Initialize some things for startup
@@ -345,7 +345,7 @@ public:
     int TimeSinceClock(int ch) {return TicksSinceClock(ch) / 17;} // in approx. ms
 
 protected:
-    int hemisphere; // Which hemisphere (0, 1) this applet uses
+    bool hemisphere; // Which hemisphere (0, 1) this applet uses
     const char* help[4];
     virtual void SetHelp();
     bool screensaver_on; // Is the screensaver active?

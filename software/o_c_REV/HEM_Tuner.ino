@@ -179,38 +179,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Tuner Tuner_instance[2];
 
-void Tuner_Start(int hemisphere) {
+void Tuner_Start(bool hemisphere) {
     Tuner_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Tuner_Controller(int hemisphere, bool forwarding) {
+void Tuner_Controller(bool hemisphere, bool forwarding) {
     Tuner_instance[hemisphere].BaseController(forwarding);
 }
 
-void Tuner_View(int hemisphere) {
+void Tuner_View(bool hemisphere) {
     Tuner_instance[hemisphere].BaseView();
 }
 
-void Tuner_Screensaver(int hemisphere) {
+void Tuner_Screensaver(bool hemisphere) {
     Tuner_instance[hemisphere].BaseScreensaverView();
 }
 
-void Tuner_OnButtonPress(int hemisphere) {
+void Tuner_OnButtonPress(bool hemisphere) {
     Tuner_instance[hemisphere].OnButtonPress();
 }
 
-void Tuner_OnEncoderMove(int hemisphere, int direction) {
+void Tuner_OnEncoderMove(bool hemisphere, int direction) {
     Tuner_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Tuner_ToggleHelpScreen(int hemisphere) {
+void Tuner_ToggleHelpScreen(bool hemisphere) {
     Tuner_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Tuner_OnDataRequest(int hemisphere) {
+uint32_t Tuner_OnDataRequest(bool hemisphere) {
     return Tuner_instance[hemisphere].OnDataRequest();
 }
 
-void Tuner_OnDataReceive(int hemisphere, uint32_t data) {
+void Tuner_OnDataReceive(bool hemisphere, uint32_t data) {
     Tuner_instance[hemisphere].OnDataReceive(data);
 }

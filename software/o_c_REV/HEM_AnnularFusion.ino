@@ -248,38 +248,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 AnnularFusion AnnularFusion_instance[2];
 
-void AnnularFusion_Start(int hemisphere) {
+void AnnularFusion_Start(bool hemisphere) {
     AnnularFusion_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void AnnularFusion_Controller(int hemisphere, bool forwarding) {
+void AnnularFusion_Controller(bool hemisphere, bool forwarding) {
     AnnularFusion_instance[hemisphere].BaseController(forwarding);
 }
 
-void AnnularFusion_View(int hemisphere) {
+void AnnularFusion_View(bool hemisphere) {
     AnnularFusion_instance[hemisphere].BaseView();
 }
 
-void AnnularFusion_Screensaver(int hemisphere) {
+void AnnularFusion_Screensaver(bool hemisphere) {
     AnnularFusion_instance[hemisphere].BaseScreensaverView();
 }
 
-void AnnularFusion_OnButtonPress(int hemisphere) {
+void AnnularFusion_OnButtonPress(bool hemisphere) {
     AnnularFusion_instance[hemisphere].OnButtonPress();
 }
 
-void AnnularFusion_OnEncoderMove(int hemisphere, int direction) {
+void AnnularFusion_OnEncoderMove(bool hemisphere, int direction) {
     AnnularFusion_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void AnnularFusion_ToggleHelpScreen(int hemisphere) {
+void AnnularFusion_ToggleHelpScreen(bool hemisphere) {
     AnnularFusion_instance[hemisphere].HelpScreen();
 }
 
-uint32_t AnnularFusion_OnDataRequest(int hemisphere) {
+uint32_t AnnularFusion_OnDataRequest(bool hemisphere) {
     return AnnularFusion_instance[hemisphere].OnDataRequest();
 }
 
-void AnnularFusion_OnDataReceive(int hemisphere, uint32_t data) {
+void AnnularFusion_OnDataReceive(bool hemisphere, uint32_t data) {
     AnnularFusion_instance[hemisphere].OnDataReceive(data);
 }

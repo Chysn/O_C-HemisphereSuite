@@ -111,38 +111,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 Brancher Brancher_instance[2];
 
-void Brancher_Start(int hemisphere) {
+void Brancher_Start(bool hemisphere) {
     Brancher_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void Brancher_Controller(int hemisphere, bool forwarding) {
+void Brancher_Controller(bool hemisphere, bool forwarding) {
 	Brancher_instance[hemisphere].BaseController(forwarding);
 }
 
-void Brancher_View(int hemisphere) {
+void Brancher_View(bool hemisphere) {
     Brancher_instance[hemisphere].BaseView();
 }
 
-void Brancher_Screensaver(int hemisphere) {
+void Brancher_Screensaver(bool hemisphere) {
     Brancher_instance[hemisphere].BaseScreensaverView();
 }
 
-void Brancher_OnButtonPress(int hemisphere) {
+void Brancher_OnButtonPress(bool hemisphere) {
     Brancher_instance[hemisphere].OnButtonPress();
 }
 
-void Brancher_OnEncoderMove(int hemisphere, int direction) {
+void Brancher_OnEncoderMove(bool hemisphere, int direction) {
     Brancher_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void Brancher_ToggleHelpScreen(int hemisphere) {
+void Brancher_ToggleHelpScreen(bool hemisphere) {
     Brancher_instance[hemisphere].HelpScreen();
 }
 
-uint32_t Brancher_OnDataRequest(int hemisphere) {
+uint32_t Brancher_OnDataRequest(bool hemisphere) {
     return Brancher_instance[hemisphere].OnDataRequest();
 }
 
-void Brancher_OnDataReceive(int hemisphere, uint32_t data) {
+void Brancher_OnDataReceive(bool hemisphere, uint32_t data) {
     Brancher_instance[hemisphere].OnDataReceive(data);
 }

@@ -172,38 +172,38 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 SkewedLFO SkewedLFO_instance[2];
 
-void SkewedLFO_Start(int hemisphere) {
+void SkewedLFO_Start(bool hemisphere) {
     SkewedLFO_instance[hemisphere].BaseStart(hemisphere);
 }
 
-void SkewedLFO_Controller(int hemisphere, bool forwarding) {
+void SkewedLFO_Controller(bool hemisphere, bool forwarding) {
     SkewedLFO_instance[hemisphere].BaseController(forwarding);
 }
 
-void SkewedLFO_View(int hemisphere) {
+void SkewedLFO_View(bool hemisphere) {
     SkewedLFO_instance[hemisphere].BaseView();
 }
 
-void SkewedLFO_Screensaver(int hemisphere) {
+void SkewedLFO_Screensaver(bool hemisphere) {
     SkewedLFO_instance[hemisphere].BaseScreensaverView();
 }
 
-void SkewedLFO_OnButtonPress(int hemisphere) {
+void SkewedLFO_OnButtonPress(bool hemisphere) {
     SkewedLFO_instance[hemisphere].OnButtonPress();
 }
 
-void SkewedLFO_OnEncoderMove(int hemisphere, int direction) {
+void SkewedLFO_OnEncoderMove(bool hemisphere, int direction) {
     SkewedLFO_instance[hemisphere].OnEncoderMove(direction);
 }
 
-void SkewedLFO_ToggleHelpScreen(int hemisphere) {
+void SkewedLFO_ToggleHelpScreen(bool hemisphere) {
     SkewedLFO_instance[hemisphere].HelpScreen();
 }
 
-uint32_t SkewedLFO_OnDataRequest(int hemisphere) {
+uint32_t SkewedLFO_OnDataRequest(bool hemisphere) {
     return SkewedLFO_instance[hemisphere].OnDataRequest();
 }
 
-void SkewedLFO_OnDataReceive(int hemisphere, uint32_t data) {
+void SkewedLFO_OnDataReceive(bool hemisphere, uint32_t data) {
     SkewedLFO_instance[hemisphere].OnDataReceive(data);
 }
