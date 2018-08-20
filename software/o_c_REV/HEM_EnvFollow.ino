@@ -39,6 +39,7 @@ public:
             ForEachChannel(ch)
             {
                 target[ch] = max[ch] * gain;
+                if (ch) target[ch] = HEMISPHERE_MAX_CV - target[ch]; // Ch 2 is ducking
                 target[ch] = constrain(target[ch], 0, HEMISPHERE_MAX_CV);
                 max[ch] = 0;
             }
@@ -85,7 +86,7 @@ protected:
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "";
         help[HEMISPHERE_HELP_CVS]      = "Inputs 1,2";
-        help[HEMISPHERE_HELP_OUTS]     = "Outputs 1,2";
+        help[HEMISPHERE_HELP_OUTS]     = "1=Follower 2=Duck";
         help[HEMISPHERE_HELP_ENCODER]  = "Gain";
         //                               "------------------" <-- Size Guide
     }

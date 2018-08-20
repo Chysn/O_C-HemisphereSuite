@@ -41,7 +41,6 @@ public:
             last_note[ch] = 0;
             continuous[ch] = 1;
         }
-        adc_lag_countdown = 0;
     }
 
     void Controller() {
@@ -54,11 +53,9 @@ public:
 
             if (continuous[ch] || EndOfADCLag(ch)) {
                 int32_t pitch = In(ch);
-                int32_t quantized = quantizer[ch].Process(pitch, 0, 0);
+                int32_t quantized = quantizer[ch].Process(pitch, root[ch] << 7, 0);
                 Out(ch, quantized);
-                if (last_note[ch] != quantized) {
-                    last_note[ch] = quantized;
-                }
+                last_note[ch] = quantized;
             }
         }
     }
@@ -73,28 +70,41 @@ public:
     }
 
     void OnButtonPress() {
-        cursor = 1 - cursor;
+        if (++cursor > 3) cursor = 0;
         ResetCursor();
     }
 
     void OnEncoderMove(int direction) {
-        scale[cursor] += direction;
-        if (scale[cursor] == OC::Scales::NUM_SCALES) scale[cursor] = 0;
-        if (scale[cursor] < 0) scale[cursor] = OC::Scales::NUM_SCALES - 1;
-        quantizer[cursor].Configure(OC::Scales::GetScale(scale[cursor]), 0xffff);
-        continuous[cursor] = 1; // Re-enable continuous mode when scale is changed
+        uint8_t ch = cursor / 2;
+        if (cursor == 0 || cursor == 2) {
+            // Scale selection
+            scale[ch] += direction;
+            if (scale[ch] == OC::Scales::NUM_SCALES) scale[ch] = 0;
+            if (scale[ch] < 0) scale[cursor] = OC::Scales::NUM_SCALES - 1;
+            quantizer[ch].Configure(OC::Scales::GetScale(scale[ch]), 0xffff);
+            continuous[ch] = 1; // Re-enable continuous mode when scale is changed
+        } else {
+            // Root selection
+            root[ch] = constrain(root[ch] + direction, 0, 11);
+        }
     }
 
     uint32_t OnDataRequest() {
         uint32_t data = 0;
         Pack(data, PackLocation {0,16}, scale[0]);
         Pack(data, PackLocation {16,16}, scale[1]);
+        Pack(data, PackLocation {16,4}, root[0]);
+        Pack(data, PackLocation {20,4}, root[1]);
         return data;
     }
 
     void OnDataReceive(uint32_t data) {
         scale[0] = Unpack(data, PackLocation {0,16});
         scale[1] = Unpack(data, PackLocation {16,16});
+        root[0] = Unpack(data, PackLocation {16,4});
+        root[1] = Unpack(data, PackLocation {20,4});
+
+        ForEachChannel(ch) root[0] = constrain(root[0], 0, 11);
     }
 
 protected:
@@ -103,31 +113,45 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "Clock 1=Ch1 2=Ch2";
         help[HEMISPHERE_HELP_CVS] = "CV 1=Ch1 2=Ch2";
         help[HEMISPHERE_HELP_OUTS] = "Pitch A=Ch1 B=Ch2";
-        help[HEMISPHERE_HELP_ENCODER] = "Scale";
+        help[HEMISPHERE_HELP_ENCODER] = "Scale/Root";
     }
     
 private:
     braids::Quantizer quantizer[2];
-    int scale[2]; // Scale per channel
     int last_note[2]; // Last quantized note
     bool continuous[2]; // Each channel starts as continuous and becomes clocked when a clock is received
     int cursor;
-    int adc_lag_countdown;
-    const uint8_t notes[2][8] = {{0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08},
-                                 {0xc0, 0xa0, 0xa0, 0xa0, 0x7f, 0x00, 0x00, 0x00}};
+
+    // Settings
+    int scale[2]; // Scale per channel
+    uint8_t root[2]; // Root per channel
 
     void DrawSelector()
     {
+        const uint8_t notes[2][8] = {{0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08},
+                                     {0xc0, 0xa0, 0xa0, 0xa0, 0x7f, 0x00, 0x00, 0x00}};
+
         ForEachChannel(ch)
         {
-            gfxBitmap(0 + (31 * ch), 15, 8, notes[ch]);
-            if (!continuous[ch]) gfxBitmap(10 + (31 * ch), 15,  8, CLOCK_ICON); // Display icon if clocked
+            // Draw settings
+            gfxPrint((31 * ch), 15, OC::scale_names_short[scale[ch]]);
+            gfxBitmap(0 + (31 * ch), 25, 8, notes[ch]);
+            gfxPrint(10 + (31 * ch), 25, OC::Strings::note_names_unpadded[root[ch]]);
 
-            gfxPrint(0 + (31 * ch), 25, OC::scale_names_short[scale[ch]]);
-            if (ch == cursor) gfxCursor(0 + (31 * ch), 33, 30);
+            // Draw cursor
+            int cursor_ch = cursor / 2;
+            if (ch == cursor_ch) {
+                if (cursor == 0 || cursor == 2) gfxCursor(0 + (31 * ch), 23, 30);
+                else gfxCursor(10 + (31 * ch), 33, 12);
+            }
 
-            // Little notes
-            gfxBitmap(ProportionCV(last_note[ch], 54), 41 + (10 * ch), 8, notes[ch]);
+            // Little note display
+            if (!continuous[ch]) gfxBitmap(1, 41 + (10 * ch),  8, CLOCK_ICON); // Display icon if clocked
+            // This is for relative visual purposes only, so I don't really care if this isn't a semitone
+            // scale, or even if it has 12 notes in it:
+            int semitone = (last_note[ch] / 128) % 12;
+            int note_x = semitone * 4; // 4 pixels per semitone
+            gfxBitmap(10 + note_x, 41 + (10 * ch), 8, notes[ch]);
         }
     }
 };
