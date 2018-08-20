@@ -91,16 +91,16 @@ public:
 
     uint32_t OnDataRequest() {
         uint32_t data = 0;
-        Pack(data, PackLocation {0,16}, scale[0]);
-        Pack(data, PackLocation {16,16}, scale[1]);
+        Pack(data, PackLocation {0,8}, scale[0]);
+        Pack(data, PackLocation {8,8}, scale[1]);
         Pack(data, PackLocation {16,4}, root[0]);
         Pack(data, PackLocation {20,4}, root[1]);
         return data;
     }
 
     void OnDataReceive(uint32_t data) {
-        scale[0] = Unpack(data, PackLocation {0,16});
-        scale[1] = Unpack(data, PackLocation {16,16});
+        scale[0] = Unpack(data, PackLocation {0,8});
+        scale[1] = Unpack(data, PackLocation {8,8});
         root[0] = Unpack(data, PackLocation {16,4});
         root[1] = Unpack(data, PackLocation {20,4});
 

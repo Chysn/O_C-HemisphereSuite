@@ -28,9 +28,11 @@ public:
     }
 
     void Start() {
-        max[0] = 0;
-        max[1] = 0;
-        gain = 5;
+        ForEachChannel(ch)
+        {
+            max[ch] = 0;
+            gain[ch] = 10;
+        }
         countdown = HEM_ENV_FOLLOWER_SAMPLES;
     }
 
@@ -38,7 +40,7 @@ public:
         if (--countdown == 0) {
             ForEachChannel(ch)
             {
-                target[ch] = max[ch] * gain;
+                target[ch] = max[ch] * gain[ch];
                 if (ch) target[ch] = HEMISPHERE_MAX_CV - target[ch]; // Ch 2 is ducking
                 target[ch] = constrain(target[ch], 0, HEMISPHERE_MAX_CV);
                 max[ch] = 0;
@@ -58,6 +60,7 @@ public:
     void View() {
         gfxHeader(applet_name());
         gfxSkyline();
+        DrawInterface();
     }
 
     void ScreensaverView() {
@@ -65,20 +68,24 @@ public:
     }
 
     void OnButtonPress() {
+        cursor = 1 - cursor;
+        ResetCursor();
     }
 
     void OnEncoderMove(int direction) {
-        gain = constrain(gain + direction, 0, 31);
+        gain[cursor] = constrain(gain[cursor] + direction, 1, 31);
     }
         
     uint32_t OnDataRequest() {
         uint32_t data = 0;
-        Pack(data, PackLocation {0,5}, gain);
+        Pack(data, PackLocation {0,5}, gain[0]);
+        Pack(data, PackLocation {5,5}, gain[1]);
         return data;
     }
 
     void OnDataReceive(uint32_t data) {
-        gain = Unpack(data, PackLocation {0,5});
+        gain[0] = Unpack(data, PackLocation {0,5});
+        gain[1] = Unpack(data, PackLocation {5,5});
     }
 
 protected:
@@ -92,11 +99,24 @@ protected:
     }
     
 private:
+    uint8_t cursor;
     int max[2];
     uint8_t countdown;
-    int gain;
     int signal[2];
     int target[2];
+
+    // Setting
+    uint8_t gain[2];
+
+    void DrawInterface() {
+        ForEachChannel(ch)
+        {
+            gfxPrint(1 + (41 * ch) + (gain[ch] < 10 ? 6 : 0), 15, gain[ch]);
+            gfxPrint("x");
+        }
+        gfxCursor(1 + (41 * cursor), 23, 12);
+    }
+
 };
 
 
@@ -110,38 +130,12 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 EnvFollow EnvFollow_instance[2];
 
-void EnvFollow_Start(bool hemisphere) {
-    EnvFollow_instance[hemisphere].BaseStart(hemisphere);
-}
-
-void EnvFollow_Controller(bool hemisphere, bool forwarding) {
-    EnvFollow_instance[hemisphere].BaseController(forwarding);
-}
-
-void EnvFollow_View(bool hemisphere) {
-    EnvFollow_instance[hemisphere].BaseView();
-}
-
-void EnvFollow_Screensaver(bool hemisphere) {
-    EnvFollow_instance[hemisphere].BaseScreensaverView();
-}
-
-void EnvFollow_OnButtonPress(bool hemisphere) {
-    EnvFollow_instance[hemisphere].OnButtonPress();
-}
-
-void EnvFollow_OnEncoderMove(bool hemisphere, int direction) {
-    EnvFollow_instance[hemisphere].OnEncoderMove(direction);
-}
-
-void EnvFollow_ToggleHelpScreen(bool hemisphere) {
-    EnvFollow_instance[hemisphere].HelpScreen();
-}
-
-uint32_t EnvFollow_OnDataRequest(bool hemisphere) {
-    return EnvFollow_instance[hemisphere].OnDataRequest();
-}
-
-void EnvFollow_OnDataReceive(bool hemisphere, uint32_t data) {
-    EnvFollow_instance[hemisphere].OnDataReceive(data);
-}
+void EnvFollow_Start(bool hemisphere) {EnvFollow_instance[hemisphere].BaseStart(hemisphere);}
+void EnvFollow_Controller(bool hemisphere, bool forwarding) {EnvFollow_instance[hemisphere].BaseController(forwarding);}
+void EnvFollow_View(bool hemisphere) {EnvFollow_instance[hemisphere].BaseView();}
+void EnvFollow_Screensaver(bool hemisphere) {EnvFollow_instance[hemisphere].BaseScreensaverView();}
+void EnvFollow_OnButtonPress(bool hemisphere) {EnvFollow_instance[hemisphere].OnButtonPress();}
+void EnvFollow_OnEncoderMove(bool hemisphere, int direction) {EnvFollow_instance[hemisphere].OnEncoderMove(direction);}
+void EnvFollow_ToggleHelpScreen(bool hemisphere) {EnvFollow_instance[hemisphere].HelpScreen();}
+uint32_t EnvFollow_OnDataRequest(bool hemisphere) {return EnvFollow_instance[hemisphere].OnDataRequest();}
+void EnvFollow_OnDataReceive(bool hemisphere, uint32_t data) {EnvFollow_instance[hemisphere].OnDataReceive(data);}

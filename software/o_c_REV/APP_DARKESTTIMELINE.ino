@@ -41,7 +41,7 @@ const int DT_TIMELINE_SIZE = 32; // Total size of each timeline
 const int DT_TIMELINE_CV = 0; // For specifying a CV timeline
 const int DT_TIMELINE_PROBABILITY = 1; // For specifying a Probability timeline
 const int DT_VIEW_HEIGHT = 25; // Height, in pixels, of each view (top for CV, bottom for Probability)
-const int DT_DATA_MAX = (12 << 7); // Highest value from ADC method used
+const int DT_DATA_MAX = 7680; // Value at 5V from ADC method used (12 << 7) * 5
 const int DT_CURSOR_TICKS = 8000; // How many ticks that the cursor blinks on and off when recording
 const int DT_TRIGGER_TICKS = 100; // How many ticks a trigger lasts (about 6ms)
 
