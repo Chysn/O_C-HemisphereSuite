@@ -118,7 +118,7 @@ private:
             gfxPrintVoltage(cv);
             gfxPrint(0, 25 + (ch * 20), gate[ch] ? "  G-On" : "  G-Off");
 
-            if (view[ch]) gfxInvert(0, 14 + (ch * 20), 8, 9);
+            if (view[ch]) gfxInvert(0, 14 + (ch * 20), 7, 9);
         }
 
         int ch = cursor / 2;

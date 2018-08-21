@@ -92,8 +92,8 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
-        help[HEMISPHERE_HELP_CVS]      = "1=Tr1 2=Tr2";
-        help[HEMISPHERE_HELP_OUTS]     = "A=Tr1 B=Tr2";
+        help[HEMISPHERE_HELP_CVS]      = "1=Track1 2=Trk2";
+        help[HEMISPHERE_HELP_OUTS]     = "A=Trk1 B=Trk2";
         help[HEMISPHERE_HELP_ENCODER]  = "T=Length P=Record";
         //                               "------------------" <-- Size Guide
     }

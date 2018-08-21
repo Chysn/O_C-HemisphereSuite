@@ -69,7 +69,7 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        time[cursor] = constrain(time[cursor] += (direction * 10), 0, 2000);
+        time[cursor] = constrain(time[cursor] += direction, 0, 2000);
     }
         
     uint32_t OnDataRequest() {
