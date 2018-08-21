@@ -2,7 +2,7 @@ Release
 .cproject
 .gitignore.swp
 .settings/
-Hemisphere.ino
+*.ino
 sloeber.ino.cpp
 .gitignore
 bin
