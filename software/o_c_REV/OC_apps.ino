@@ -37,7 +37,7 @@
 #ifdef BORING_APP_NAMES
 OC::App available_apps[] = {
   DECLARE_APP('H','S', "Hemisphere", HEMISPHERE, HEMISPHERE_isr),
-  DECLARE_APP('D','T', "Darkest Timeline", DARKESTTIMELINE, DARKESTTIMELINE_isr),
+  DECLARE_APP('D','2', "Darkest Timeline", TheDarkestTimeline, TheDarkestTimeline_isr),
   DECLARE_APP('M','I', "MIDI Interface", MIDI, MIDI_isr),
   DECLARE_APP('P','O', "Pong", PONGGAME, PONGGAME_isr),
   DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
@@ -47,7 +47,7 @@ OC::App available_apps[] = {
 #else 
 OC::App available_apps[] = {
   DECLARE_APP('H','S', "Hemisphere", HEMISPHERE, HEMISPHERE_isr),
-  DECLARE_APP('D','T', "Darkest Timeline", DARKESTTIMELINE, DARKESTTIMELINE_isr),
+  DECLARE_APP('D','2', "Darkest Timeline", TheDarkestTimeline, TheDarkestTimeline_isr),
   DECLARE_APP('M','I', "Captain MIDI", MIDI, MIDI_isr),
   DECLARE_APP('P','O', "Pong", PONGGAME, PONGGAME_isr),
   DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),

@@ -115,6 +115,11 @@ protected:
         return inputs[ch];
     }
 
+    // Apply small center detent to input, so it reads zero before a threshold
+    int DetentedIn(int ch) {
+        return (In(ch) > 180 || In(ch) < -180) ? In(ch) : 0;
+    }
+
     bool Gate(int ch) {
         bool high = 0;
         if (ch == 0) high = OC::DigitalInputs::read_immediate<OC::DIGITAL_INPUT_1>();
@@ -169,6 +174,10 @@ protected:
     ////////////////////////////////////////////////////////////////////////////////
     void gfxCursor(int x, int y, int w) {
         if (CursorBlink()) gfxLine(x, y, x + w - 1, y);
+    }
+
+    void gfxPos(int x, int y) {
+        graphics.setPrintPos(x, y);
     }
 
     void gfxPrint(int x, int y, const char *str) {

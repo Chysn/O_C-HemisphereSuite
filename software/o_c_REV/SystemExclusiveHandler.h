@@ -22,12 +22,21 @@
 // This file contains MIDI utilities for Hemisphere Suite, including:
 // * System Exclusive Handler base class
 // * Data packing structure
+// * Teensyduino USB MIDI message number table
 // * MIDI note number-name and MIDI channel tables
 // * MIDI note/CV quantizer functions
 //////////////////////////////////////////////////////////////////////////
 
 #ifndef SYSEX_HANDLER_H_
 #define SYSEX_HANDLER_H_
+
+// Teensyduino USB MIDI Library message numbers
+const uint8_t MIDI_MSG_NOTE_ON = 1;
+const uint8_t MIDI_MSG_NOTE_OFF = 0;
+const uint8_t MIDI_MSG_MIDI_CC = 3;
+const uint8_t MIDI_MSG_AFTERTOUCH = 5;
+const uint8_t MIDI_MSG_PITCHBEND = 6;
+const uint8_t MIDI_MSG_SYSEX = 7;
 
 const char* const midi_note_numbers[128] = {
     "C-1","C#-1","D-1","D#-1","E-1","F-1","F#-1","G-1","G#-1","A-1","A#-1","B-1",
@@ -44,7 +53,8 @@ const char* const midi_note_numbers[128] = {
 };
 
 const char* const midi_channels[17] = {
-    "Off", " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8", " 9", "10", "11", "12", "13", "14", "15", "16"
+    "Off", "  1", "  2", "  3", "  4", "  5", "  6", "  7", "  8",
+    "  9", " 10", " 11", " 12", " 13", " 14", " 15", " 16"
 };
 
 

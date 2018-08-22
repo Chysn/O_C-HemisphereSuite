@@ -1,5 +1,7 @@
 // Copyright (c) 2018, Jason Justian
 //
+// Menu & screen cursor Copyright (c) 2016 Patrick Dowling
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -23,12 +25,6 @@
 #include "HSApplication.h"
 #include "SystemExclusiveHandler.h"
 
-const uint8_t MIDI_MSG_NOTE_ON = 1;
-const uint8_t MIDI_MSG_NOTE_OFF = 0;
-const uint8_t MIDI_MSG_MIDI_CC = 3;
-const uint8_t MIDI_MSG_AFTERTOUCH = 5;
-const uint8_t MIDI_MSG_PITCHBEND = 6;
-const uint8_t MIDI_MSG_SYSEX = 7;
 const uint16_t MIDI_INDICATOR_COUNTDOWN = 2000;
 const int MIDI_PARAMETER_COUNT = 40;
 const int MIDI_CURRENT_SETUP = MIDI_PARAMETER_COUNT * 4;
