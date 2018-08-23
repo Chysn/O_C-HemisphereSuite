@@ -28,7 +28,7 @@
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
 #include "HSApplication.h"
-#include "SystemExclusiveHandler.h"
+#include "HSMIDI.h"
 
 const bool DT_CV_TIMELINE = 0;
 const bool DT_PROBABILITY_TIMELINE = 1;

@@ -22,7 +22,7 @@
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
 #include "HSApplication.h"
-#include "SystemExclusiveHandler.h"
+#include "HSMIDI.h"
 #include "SegmentDisplay.h"
 
 class ScaleEditor : public HSApplication, public SystemExclusiveHandler {

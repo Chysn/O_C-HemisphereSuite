@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 #include "HSApplication.h"
-#include "SystemExclusiveHandler.h"
+#include "HSMIDI.h"
 
 class ClassName : public HSApplication, public SystemExclusiveHandler {
 public:

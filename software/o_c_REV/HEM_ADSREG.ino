@@ -23,13 +23,13 @@
 #define HEM_EG_SUSTAIN 2
 #define HEM_EG_RELEASE 3
 #define HEM_EG_NO_STAGE -1
-#define HEM_EG_MAX_VALUE 200
+#define HEM_EG_MAX_VALUE 255
 
 #define HEM_SUSTAIN_CONST 35
 #define HEM_EG_DISPLAY_HEIGHT 30
 
 // About four seconds
-#define HEM_EG_MAX_TICKS_AD 66667
+#define HEM_EG_MAX_TICKS_AD 33333
 
 // About eight seconds
 #define HEM_EG_MAX_TICKS_R 133333
@@ -145,10 +145,10 @@ protected:
     
 private:
     int edit_stage;
-    int attack; // Attack rate from 1-200 where 1 is fast
-    int decay; // Decay rate from 1-200 where 1 is fast
-    int sustain; // Sustain level from 1-200 where 1 is low
-    int release; // Release rate from 1-200 where 1 is fast
+    int attack; // Attack rate from 1-255 where 1 is fast
+    int decay; // Decay rate from 1-255 where 1 is fast
+    int sustain; // Sustain level from 1-255 where 1 is low
+    int release; // Release rate from 1-255 where 1 is fast
     int attack_mod; // Modification to attack from CV1
     int release_mod; // Modification to release from CV2
 
@@ -245,10 +245,10 @@ private:
     }
 
     void ReleaseAmplitude(int ch) {
-        int effective_release = constrain(release + release_mod, 1, HEM_EG_MAX_VALUE);
+        int effective_release = constrain(release + release_mod, 1, HEM_EG_MAX_VALUE) - 1;
         int total_stage_ticks = Proportion(effective_release, HEM_EG_MAX_VALUE, HEM_EG_MAX_TICKS_R);
         int ticks_remaining = total_stage_ticks - stage_ticks[ch];
-        if (effective_release == 1) ticks_remaining = 0;
+        if (effective_release == 0) ticks_remaining = 0;
         if (ticks_remaining <= 0 || amplitude[ch] <= 0) { // End of release; turn off envelope
             stage[ch] = HEM_EG_NO_STAGE;
             stage_ticks[ch] = 0;

@@ -2,7 +2,6 @@ Release
 .cproject
 .gitignore.swp
 .settings/
-*.ino
 sloeber.ino.cpp
 .gitignore
 bin

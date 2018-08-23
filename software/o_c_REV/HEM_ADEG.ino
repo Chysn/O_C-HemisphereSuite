@@ -19,7 +19,7 @@
 // SOFTWARE.
 
 #define HEM_ADEG_MAX_VALUE 255
-#define HEM_ADEG_MAX_TICKS 32000
+#define HEM_ADEG_MAX_TICKS 33333
 
 class ADEG : public HemisphereApplet {
 public:

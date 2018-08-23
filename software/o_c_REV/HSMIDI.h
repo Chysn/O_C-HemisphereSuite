@@ -27,16 +27,18 @@
 // * MIDI note/CV quantizer functions
 //////////////////////////////////////////////////////////////////////////
 
-#ifndef SYSEX_HANDLER_H_
-#define SYSEX_HANDLER_H_
+#ifndef HSMIDI_H
+#define HSMIDI_H
 
 // Teensyduino USB MIDI Library message numbers
+// See https://www.pjrc.com/teensy/td_midi.html
 const uint8_t MIDI_MSG_NOTE_ON = 1;
 const uint8_t MIDI_MSG_NOTE_OFF = 0;
 const uint8_t MIDI_MSG_MIDI_CC = 3;
 const uint8_t MIDI_MSG_AFTERTOUCH = 5;
 const uint8_t MIDI_MSG_PITCHBEND = 6;
 const uint8_t MIDI_MSG_SYSEX = 7;
+const uint8_t MIDI_MSG_REALTIME = 8;
 
 const char* const midi_note_numbers[128] = {
     "C-1","C#-1","D-1","D#-1","E-1","F-1","F#-1","G-1","G#-1","A-1","A#-1","B-1",
@@ -53,8 +55,8 @@ const char* const midi_note_numbers[128] = {
 };
 
 const char* const midi_channels[17] = {
-    "Off", "  1", "  2", "  3", "  4", "  5", "  6", "  7", "  8",
-    "  9", " 10", " 11", " 12", " 13", " 14", " 15", " 16"
+    "Off", " 1", " 2", " 3", " 4", " 5", " 6", " 7", " 8",
+    " 9", "10", "11", "12", "13", "14", "15", "16"
 };
 
 
@@ -315,4 +317,4 @@ public:
     }
 };
 
-#endif /* SYSEX_HANDLER_H_ */
+#endif /* HSMIDI_H */

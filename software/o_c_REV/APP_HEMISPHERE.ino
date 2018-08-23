@@ -27,7 +27,7 @@ namespace menu = OC::menu;
 
 #include "hemisphere_config.h"
 #include "HemisphereApplet.h"
-#include "SystemExclusiveHandler.h"
+#include "HSMIDI.h"
 
 #define DECLARE_APPLET(id, categories, class_name) \
 { id, categories, class_name ## _Start, class_name ## _Controller, class_name ## _View, class_name ## _Screensaver, \
