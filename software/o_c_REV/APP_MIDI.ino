@@ -121,12 +121,13 @@ enum MIDI_OUT_FUNCTION {
 };
 
 const char* const midi_messages[7] = {
-    "Note", "Off", "CC#", "Aft", "Bend", "SysEx", "Clock"
+    "Note", "Off", "CC#", "Aft", "Bend", "SysEx", "Diag"
 };
+//#define MIDI_DIAGNOSTIC
 struct CaptainMIDILog {
     bool midi_in; // 0 = out, 1 = in
     char io; // 1, 2, 3, 4, A, B, C, D
-    uint8_t message; // 0 = Note On, 1 = Note Off, 2 = CC, 3 = Aftertouch, 4 = Bend, 5 = SysEx, 6 = Clock
+    uint8_t message; // 0 = Note On, 1 = Note Off, 2 = CC, 3 = Aftertouch, 4 = Bend, 5 = SysEx, 6 = Diagnostic
     uint8_t channel; // MIDI channel
     int16_t data1;
     int16_t data2;
@@ -748,6 +749,12 @@ private:
                     uint8_t mod = get_clock_mod(in_fn);
                     if (clock_count % mod == 0) ClockOut(ch);
                 }
+
+                #ifdef MIDI_DIAGNOTIC
+                if (message > 0) {
+                    UpdateLog(1, ch, 6, message, data1, data2);
+                }
+                #endif
 
                 if (indicator) indicator_in[ch] = MIDI_INDICATOR_COUNTDOWN;
             }
