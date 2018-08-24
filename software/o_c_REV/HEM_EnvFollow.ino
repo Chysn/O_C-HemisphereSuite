@@ -111,7 +111,7 @@ private:
     void DrawInterface() {
         ForEachChannel(ch)
         {
-            gfxPrint(1 + (41 * ch) + (gain[ch] < 10 ? 6 : 0), 15, gain[ch]);
+            gfxPrint(1 + (41 * ch) + pad(10, gain[ch]), 15, gain[ch]);
             gfxPrint("x");
         }
         gfxCursor(1 + (41 * cursor), 23, 12);

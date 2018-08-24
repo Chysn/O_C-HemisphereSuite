@@ -83,7 +83,7 @@ private:
 
     void DrawInterface() {
         gfxPrint(0, 15, "Offset:");
-        gfxPrint(amp_offset_pct);
+        gfxPrint(pad(100, amp_offset_pct), amp_offset_pct);
         gfxSkyline();
     }
 };
