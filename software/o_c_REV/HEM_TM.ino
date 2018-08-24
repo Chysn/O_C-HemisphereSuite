@@ -136,13 +136,13 @@ private:
 
     void DrawSelector() {
         gfxBitmap(1, 14, 8, NOTE_ICON);
-        gfxPrint(12, 15, length);
+        gfxPrint(12 + pad(10, length), 15, length);
         gfxPrint(32, 15, "p=");
         if (cursor == 1) {
             gfxCursor(45, 23, 18); // Probability Cursor
-            gfxPrint(p);
+            gfxPrint(pad(100, p), p);
         } else {
-            gfxPrint(" -");
+            gfxBitmap(49, 14, 8, LOCK_ICON);
         }
         gfxBitmap(1, 24, 8, SCALE_ICON);
         gfxPrint(12, 25, OC::scale_names_short[scale]);

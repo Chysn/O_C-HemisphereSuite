@@ -60,6 +60,7 @@ const uint8_t AFTERTOUCH_ICON[8] = {0x00, 0x00, 0x20, 0x42, 0xf5, 0x48, 0x20, 0x
 const uint8_t MIDI_ICON[8]       = {0x3c, 0x42, 0x91, 0x45, 0x45, 0x91, 0x42, 0x3c};
 const uint8_t CV_ICON[8]         = {0x1f, 0x11, 0x11, 0x00, 0x07, 0x18, 0x07, 0x00};
 const uint8_t SCALE_ICON[8]      = {0x81, 0x7f, 0x9f, 0x81, 0x7f, 0x9f, 0x81, 0x7f};
+const uint8_t LOCK_ICON[8]       = {0x00, 0xf8, 0xfe, 0xc9, 0xc9, 0xfe, 0xf8, 0x00};
 
 // Specifies where data goes in flash storage for each selcted applet, and how big it is
 typedef struct PackLocation {
@@ -203,6 +204,11 @@ public:
         graphics.print(num);
     }
 
+    void gfxPrint(int x_adv, int num) { // Print number with character padding
+        for (int c = 0; c < (x_adv / 6); c++) gfxPrint(" ");
+        gfxPrint(num);
+    }
+
     void gfxPrint(const char *str) {
         graphics.print(str);
     }
@@ -260,6 +266,16 @@ public:
 
     void gfxBitmap(int x, int y, int w, const uint8_t *data) {
         graphics.drawBitmap8(x + gfx_offset, y, w, data);
+    }
+
+    uint8_t pad(int range, int number) {
+        uint8_t padding = 0;
+        while (range > 1)
+        {
+            if (number < range) padding += 6;
+            range = range / 10;
+        }
+        return padding;
     }
 
     //////////////// Hemisphere-specific graphics methods
