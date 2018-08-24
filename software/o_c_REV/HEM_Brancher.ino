@@ -90,7 +90,7 @@ private:
 	void DrawInterface() {
         // Show the probability in the middle
         gfxPrint(1, 15, "p=");
-        gfxPrint(15, 15, p);
+        gfxPrint(15 + pad(100, p), 15, p);
         gfxPrint(33, 15, hemisphere ? "% C" : "% A");
         gfxCursor(15, 23, 18);
 

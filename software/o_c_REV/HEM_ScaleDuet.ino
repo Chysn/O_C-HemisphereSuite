@@ -105,7 +105,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=ScaleSel";
         help[HEMISPHERE_HELP_CVS]      = "1=CV";
         help[HEMISPHERE_HELP_OUTS]     = "A=Pitch";
-        help[HEMISPHERE_HELP_ENCODER]  = "T=Select P=Toggle";
+        help[HEMISPHERE_HELP_ENCODER]  = "T=Note P=Toggle";
         //                               "------------------" <-- Size Guide
     }
     

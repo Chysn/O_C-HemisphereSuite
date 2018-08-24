@@ -110,7 +110,7 @@ private:
         {
             int16_t d = delay[i];
             gfxBitmap(i * 12, 15 + (i * 10), 8, X_NOTE_ICON);
-            gfxPrint(32 + (d < 10 ? 6 : 0), 15 + (i * 10), d);
+            gfxPrint(32 + pad(10, d), 15 + (i * 10), d);
             gfxPrint("%");
             if (cursor == i) gfxCursor(32, 23 + (i * 10), 18);
         }

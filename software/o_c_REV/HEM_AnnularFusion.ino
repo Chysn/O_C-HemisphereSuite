@@ -168,12 +168,12 @@ private:
 
         // Length cursor
         gfxBitmap(1, 15, 8, METER_ICON);
-        gfxPrint(12, 15, length[ch]);
+        gfxPrint(12 + pad(10, length[ch]), 15, length[ch]);
         if (f == 0) gfxCursor(13, 23, 12);
 
         // Beats cursor
         gfxBitmap(1, 25, 8, X_NOTE_ICON);
-        gfxPrint(12, 25, beats[ch]);
+        gfxPrint(12 + pad(10, beats[ch]), 25, beats[ch]);
         if (f == 1) gfxCursor(13, 33, 12);
 
         // Ring indicator

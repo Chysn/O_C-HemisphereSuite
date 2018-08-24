@@ -27,6 +27,7 @@ public:
 
     void Start() {
         step = -1;
+        end = 7;
     }
 
     void Controller() {
@@ -35,7 +36,7 @@ public:
         uint16_t cv = (1000 * step) + 400;
         Out(0, cv);
 
-        if (Clock(0)) if (++step > 7) step = 0;
+        if (Clock(0)) if (++step > end) step = 0;
     }
 
     void View() {
@@ -52,17 +53,17 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        step += direction;
-        if (step > 7) step = 0;
-        if (step < 0) step = 7;
+        end = constrain(end += direction, 0, 7);
     }
         
     uint32_t OnDataRequest() {
         uint32_t data = 0;
+        Pack(data, PackLocation {0,4}, end);
         return data;
     }
 
     void OnDataReceive(uint32_t data) {
+        end = Unpack(data, PackLocation {0,4});
     }
 
 protected:
@@ -71,15 +72,16 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
         help[HEMISPHERE_HELP_CVS]      = "";
         help[HEMISPHERE_HELP_OUTS]     = "";
-        help[HEMISPHERE_HELP_ENCODER]  = "T=Step P=Reset";
+        help[HEMISPHERE_HELP_ENCODER]  = "T=Length P=Reset";
         //                               "------------------" <-- Size Guide
     }
     
 private:
     int8_t step;
+    int8_t end;
     
     void DrawIndicator() {
-        for (uint8_t s = 0; s < 8; s++)
+        for (uint8_t s = 0; s < end + 1; s++)
         {
             if (s == step) gfxRect(8 * s, 30, 7, 7);
             else gfxFrame(8 * s, 30, 7, 7);
