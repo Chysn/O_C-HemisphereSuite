@@ -101,7 +101,8 @@ public:
             OC::user_scales[current_scale].span = (int16_t)(high << 8) | low;
 
             // Decode length
-            OC::user_scales[current_scale].num_notes = V[ix++];
+            uint8_t num_notes = V[ix++];
+            OC::user_scales[current_scale].num_notes = constrain(num_notes, 4, 16);
 
             // Decode values
             for (int i = 0; i < 16; i++)
@@ -111,13 +112,17 @@ public:
                 OC::user_scales[current_scale].notes[i] = (uint16_t)(high << 8) | low;
             }
         }
+
+        current_note = 0;
+        undo_value = OC::user_scales[current_scale].notes[current_note];
     }
 
     /////////////////////////////////////////////////////////////////
     // Control handlers
     /////////////////////////////////////////////////////////////////
     void OnLeftButtonPress() {
-        Undo();
+        if (import_mode) import_mode = 0;
+        else Undo();
     }
 
     void OnLeftButtonLongPress() {

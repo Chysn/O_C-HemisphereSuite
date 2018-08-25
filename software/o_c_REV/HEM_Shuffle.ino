@@ -109,11 +109,18 @@ private:
         for (int i = 0; i < 2; i++)
         {
             int16_t d = delay[i];
-            gfxBitmap(i * 12, 15 + (i * 10), 8, X_NOTE_ICON);
             gfxPrint(32 + pad(10, d), 15 + (i * 10), d);
             gfxPrint("%");
             if (cursor == i) gfxCursor(32, 23 + (i * 10), 18);
         }
+
+        // Lines to the first parameter
+        int x = Proportion(delay[0], 100, 20) + 8;
+        gfxDottedLine(x, 41, x, 19, 3);
+        gfxDottedLine(x, 19, 30, 19, 3);
+
+        // Line to the second parameter
+        gfxDottedLine(Proportion(delay[1], 100, 20) + 28, 45, 41, 33, 3);
     }
 
     void DrawIndicator() {
