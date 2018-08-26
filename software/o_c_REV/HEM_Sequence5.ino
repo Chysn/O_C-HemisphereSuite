@@ -44,19 +44,23 @@ public:
             ClockOut(1);
         }
 
-        int transpose = Proportion(In(0), HEMISPHERE_MAX_CV / 2, 12);
-        transpose = constrain(transpose, -12, 12);
+        int transpose = 0;
+        if (DetentedIn(0)) {
+            transpose = In(0) / 128; // 128 ADC steps per semitone
+        }
+        int play_note = note[step] + 48 + transpose;
+        play_note = constrain(play_note, 0, 127);
 
         if (Clock(0)) StartADCLag();
 
         if (EndOfADCLag()) {
-            Out(0, quantizer.Lookup(note[step] + 48 + transpose));
+            Out(0, quantizer.Lookup(play_note));
             Advance(step);
             if (step == 0) ClockOut(1);
         }
 
         if (play) {
-            Out(0, quantizer.Lookup(note[step] + 48 + transpose));
+            Out(0, quantizer.Lookup(play_note));
         }
     }
 

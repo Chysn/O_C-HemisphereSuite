@@ -117,7 +117,7 @@ protected:
 
     // Apply small center detent to input, so it reads zero before a threshold
     int DetentedIn(int ch) {
-        return (In(ch) > 180 || In(ch) < -180) ? In(ch) : 0;
+        return (In(ch) > 64 || In(ch) < -64) ? In(ch) : 0;
     }
 
     bool Gate(int ch) {

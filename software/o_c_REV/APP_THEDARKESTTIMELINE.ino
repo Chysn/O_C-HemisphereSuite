@@ -143,12 +143,8 @@ public:
             cv = get_data_at(idx, tl);
 
             // Get transpose value from CV 4 over a range of 1 octave
-            int transpose = 0;
             int transpose_cv = DetentedIn(3);
-            if (transpose_cv) {
-                transpose = Proportion(transpose_cv, HSAPPLICATION_3V, 12);
-                transpose = constrain(transpose, -12, 12);
-            }
+            int transpose = transpose_cv / 128;
 
             if (tl == 0) {
                 // This is a CV Timeline, so output the normal universe note

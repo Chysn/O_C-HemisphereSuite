@@ -111,10 +111,14 @@ public:
                 uint8_t high = V[ix++];
                 OC::user_scales[current_scale].notes[i] = (uint16_t)(high << 8) | low;
             }
-        }
 
-        current_note = 0;
-        undo_value = OC::user_scales[current_scale].notes[current_note];
+            // Reset
+            current_note = 0;
+            undo_value = OC::user_scales[current_scale].notes[current_note];
+            // Configure and force requantize for real-time monitoring purposes
+            quantizer.Configure(OC::Scales::GetScale(current_scale), 0xffff);
+            QuantizeCurrent();
+        }
     }
 
     /////////////////////////////////////////////////////////////////
