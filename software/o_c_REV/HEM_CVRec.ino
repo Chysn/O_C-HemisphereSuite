@@ -37,7 +37,12 @@ public:
 
         if (Clock(0)) {
             if (record) {
-                ForEachChannel(ch) sequence[step + (ch * 64)] = In(ch);
+                ForEachChannel(ch)
+                {
+                    int cv = In(ch);
+                    cv = constrain(cv, 0, HEMISPHERE_MAX_CV);
+                    sequence[step + (ch * 64)] = cv;
+                }
                 if (--punch_in == 0) record = 0;
             }
             ForEachChannel(ch) Out(ch, sequence[step + (ch * 64)]);
