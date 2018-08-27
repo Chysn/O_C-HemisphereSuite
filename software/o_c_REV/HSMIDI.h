@@ -300,6 +300,7 @@ class MIDIQuantizer {
 public:
     /* Given a pitch CV value, return the MIDI note number */
     static uint8_t NoteNumber(int cv, int transpose = 0) {
+        cv += 25; // CV controllers might be right on the border between voltages, so provide 1/8 tone offset
         int octave = cv / (12 << 7);
         int semitone = (cv % (12 << 7)) / 128;
         int midi_note_number = (octave * 12) + semitone + transpose + 48;

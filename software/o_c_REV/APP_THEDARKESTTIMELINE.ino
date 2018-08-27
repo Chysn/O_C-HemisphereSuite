@@ -187,18 +187,18 @@ public:
                 prob = random(0, HSAPPLICATION_5V);
                 if (prob < (HSAPPLICATION_5V - cv) || Gate(3)) {
                     ClockOut(3);
-                }
 
-                // Send the MIDI Note On for Alternate Universe
-                if (last_midi_note[1] > -1) usbMIDI.sendNoteOff(last_midi_note[1], 0, last_midi_channel[1]);
-                if (midi_channel_alt()) {
-                    last_midi_channel[1] = midi_channel_alt();
-                    uint8_t alt_idx = (idx + length()) % 32;
-                    last_midi_note[1] = MIDIQuantizer::NoteNumber(get_data_at(alt_idx, DT_CV_TIMELINE));
-                    vel = Proportion(get_data_at(alt_idx, DT_PROBABILITY_TIMELINE), HSAPPLICATION_5V, 127);
-                    usbMIDI.sendNoteOn(last_midi_note[1], vel, last_midi_channel[1]);
-                    last_length[1] = OC::CORE::ticks - last_clock[1];
-                    last_clock[1] = OC::CORE::ticks;
+                    // Send the MIDI Note On for Alternate Universe
+                    if (last_midi_note[1] > -1) usbMIDI.sendNoteOff(last_midi_note[1], 0, last_midi_channel[1]);
+                    if (midi_channel_alt()) {
+                        last_midi_channel[1] = midi_channel_alt();
+                        uint8_t alt_idx = (idx + length()) % 32;
+                        last_midi_note[1] = MIDIQuantizer::NoteNumber(get_data_at(alt_idx, DT_CV_TIMELINE));
+                        vel = Proportion(get_data_at(alt_idx, DT_PROBABILITY_TIMELINE), HSAPPLICATION_5V, 127);
+                        usbMIDI.sendNoteOn(last_midi_note[1], vel, last_midi_channel[1]);
+                        last_length[1] = OC::CORE::ticks - last_clock[1];
+                        last_clock[1] = OC::CORE::ticks;
+                    }
                 }
             } // Thus ends the processing of the Probability Timeline
         }

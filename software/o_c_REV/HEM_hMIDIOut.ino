@@ -58,7 +58,7 @@ public:
         bool note_on = EndOfADCLag(); // If the ADC lag has ended, a note will always be sent
         if (note_on || legato_on) {
             // Get a new reading when gated, or when checking for legato changes
-            uint8_t midi_note = MIDIQuantizer::CV(In(0), transpose);
+            uint8_t midi_note = MIDIQuantizer::NoteNumber(In(0), transpose);
 
             if (legato_on && midi_note != last_note) {
                 // Send note off if the note has changed

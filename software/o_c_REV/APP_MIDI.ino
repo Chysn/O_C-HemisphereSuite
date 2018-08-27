@@ -541,7 +541,7 @@ private:
 
                 if (note_on || legato_on[ch]) {
                     // Get a new reading when gated, or when checking for legato changes
-                    uint8_t midi_note = MIDIQuantizer::CV(In(ch), get_out_transpose(ch));
+                    uint8_t midi_note = MIDIQuantizer::NoteNumber(In(ch), get_out_transpose(ch));
 
                     if (legato_on[ch] && midi_note != note_out[ch]) {
                         // Send note off if the note has changed
@@ -664,7 +664,7 @@ private:
                             int note = data1 + get_in_transpose(ch);
                             note = constrain(note, 0, 127);
                             if (in_in_range(ch, note)) {
-                                Out(ch, MIDIQuantizer::NoteNumber(note));
+                                Out(ch, MIDIQuantizer::CV(note));
                                 UpdateLog(1, ch, 0, in_ch, note, data2);
                                 indicator = 1;
                                 note_captured = 1;

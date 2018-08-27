@@ -85,7 +85,7 @@ public:
                     ForEachChannel(ch)
                     {
                         if (function[ch] == HEM_MIDI_NOTE_OUT)
-                            Out(ch, MIDIQuantizer::NoteNumber(data1));
+                            Out(ch, MIDIQuantizer::CV(data1));
 
                         if (function[ch] == HEM_MIDI_TRIG_OUT)
                             ClockOut(ch);
