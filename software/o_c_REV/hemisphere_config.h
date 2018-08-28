@@ -40,6 +40,7 @@
     DECLARE_APPLET( 40, 0x40, Schmitt), \
     DECLARE_APPLET( 23, 0x80, Scope), \
     DECLARE_APPLET( 14, 0x02, Sequence5), \
+    DECLARE_APPLET( 18, 0x02, TM), \
     DECLARE_APPLET( 36, 0x04, Shuffle), \
     DECLARE_APPLET(  7, 0x01, SkewedLFO), \
     DECLARE_APPLET(  3, 0x10, Switch), \
@@ -49,6 +50,5 @@
     DECLARE_APPLET( 11, 0x06, TrigSeq), \
     DECLARE_APPLET( 25, 0x06, TrigSeq16), \
     DECLARE_APPLET( 39, 0x80, Tuner), \
-    DECLARE_APPLET( 18, 0x02, TM), \
     DECLARE_APPLET( 43, 0x10, Voltage), \
 }

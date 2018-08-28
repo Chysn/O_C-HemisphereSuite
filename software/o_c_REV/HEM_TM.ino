@@ -35,7 +35,7 @@ class TM : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "Turing";
+        return "ShiftReg";
     }
 
     void Start() {
@@ -156,7 +156,7 @@ private:
         for (int b = 0; b < 16; b++)
         {
             int v = (reg >> b) & 0x01;
-            if (v) gfxRect(4 * b, 42, 3, 19);
+            if (v) gfxRect(60 - (4 * b), 42, 3, 19);
         }
     }
 

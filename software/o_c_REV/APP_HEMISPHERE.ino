@@ -411,7 +411,7 @@ size_t HEMISPHERE_restore(const void *storage) {
     return s;
 }
 
-void HEMISPHERE_isr() {
+void FASTRUN HEMISPHERE_isr() {
     manager.ExecuteControllers();
 }
 

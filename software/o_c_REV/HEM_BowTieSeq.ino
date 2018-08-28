@@ -71,7 +71,7 @@ protected:
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
         help[HEMISPHERE_HELP_CVS]      = "";
-        help[HEMISPHERE_HELP_OUTS]     = "";
+        help[HEMISPHERE_HELP_OUTS]     = "A=CV";
         help[HEMISPHERE_HELP_ENCODER]  = "T=Length P=Reset";
         //                               "------------------" <-- Size Guide
     }

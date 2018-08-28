@@ -23,6 +23,7 @@
 
 #include "streams_lorenz_generator.h"
 #include "util/util_math.h"
+#include "HSLorenzGeneratorManager.h" // Singleton Lorenz manager
 
 class LowerRenz : public HemisphereApplet {
 public:
@@ -34,30 +35,26 @@ public:
     void Start() {
         freq = 128;
         rho = 64;
-        lorenz.Init(0);
-        lorenz.Init(1);
     }
 
     void Controller() {
         if (!Gate(1)) { // Freeze if gated
-            bool reset = Clock(0);
             int freq_cv = Proportion(In(0), HEMISPHERE_MAX_CV, 63);
             int rho_cv = Proportion(In(1), HEMISPHERE_MAX_CV, 31);
 
+            int32_t freq_h = SCALE8_16(constrain(freq + freq_cv, 0, 255));
+            freq_h = USAT16(freq_h);
+            lorenz_m->SetFreq(hemisphere, freq_h);
 
-            int32_t freq1 = SCALE8_16(constrain(freq + freq_cv, 0, 255));
-            freq1 = USAT16(freq1);
+            int32_t rho_h = SCALE8_16(constrain(rho + rho_cv, 4, 127));
+            lorenz_m->SetRho(hemisphere, USAT16(rho_h));
 
-            int32_t rho1 = SCALE8_16(constrain(rho + rho_cv, 4, 127));
-            lorenz.set_rho1(USAT16(rho1));
-
-            lorenz.set_out_a(0); // X
-            lorenz.set_out_b(1); // Y
-            lorenz.Process(freq1, 0, reset, 0, 2, 2);
+            if (Clock(0)) lorenz_m->Reset(hemisphere);
+            lorenz_m->Process();
 
             // The scaling here is based on observation of the value range
-            int x = Proportion(lorenz.dac_code(0) - 17000, 25000, HEMISPHERE_MAX_CV);
-            int y = Proportion(lorenz.dac_code(1) - 17000, 25000, HEMISPHERE_MAX_CV);
+            int x = Proportion(lorenz_m->GetOut(0 + (hemisphere * 2)) - 17000, 25000, HEMISPHERE_MAX_CV);
+            int y = Proportion(lorenz_m->GetOut(1 + (hemisphere * 2)) - 17000, 25000, HEMISPHERE_MAX_CV);
 
             Out(0, x);
             Out(1, y);
@@ -107,7 +104,7 @@ protected:
     }
     
 private:
-    streams::LorenzGenerator lorenz;
+    LorenzGeneratorManager *lorenz_m = lorenz_m->get();
     int freq;
     int rho;
     int cursor; // 0 = Frequency, 1 = Rho
