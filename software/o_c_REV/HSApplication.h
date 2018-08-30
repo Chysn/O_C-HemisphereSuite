@@ -25,29 +25,13 @@
  * for consistency in development, or ease of porting apps or applets in either direction.
  */
 
-// Icons
-#ifndef HS_ICON_SET
-#define HS_ICON_SET
-const uint8_t CHECK_ICON[8]      = {0x00, 0xf0, 0x40, 0x20, 0x10, 0x08, 0x04, 0x00};
-const uint8_t X_NOTE_ICON[8]     = {0x00, 0xa0, 0x40, 0xa0, 0x1f, 0x02, 0x0c, 0x00};
-const uint8_t METER_ICON[8]      = {0x00, 0xff, 0x00, 0xfc, 0x00, 0xff, 0x00, 0xfc};
-const uint8_t NOTE_ICON[8]       = {0xc0, 0xe0, 0xe0, 0xe0, 0x7f, 0x02, 0x14, 0x08};
-const uint8_t CLOCK_ICON[8]      = {0x9c, 0xa2, 0xc1, 0xcf, 0xc9, 0xa2, 0x9c, 0x00};
-const uint8_t MOD_ICON[8]        = {0x30, 0x08, 0x04, 0x08, 0x10, 0x20, 0x10, 0x0c};
-const uint8_t BEND_ICON[8]       = {0x20, 0x70, 0x70, 0x3f, 0x20, 0x14, 0x0c, 0x1c};
-const uint8_t AFTERTOUCH_ICON[8] = {0x00, 0x00, 0x20, 0x42, 0xf5, 0x48, 0x20, 0x00};
-const uint8_t MIDI_ICON[8]       = {0x3c, 0x42, 0x91, 0x45, 0x45, 0x91, 0x42, 0x3c};
-const uint8_t CV_ICON[8]         = {0x1f, 0x11, 0x11, 0x00, 0x07, 0x18, 0x07, 0x00};
-const uint8_t SCALE_ICON[8]      = {0x81, 0x7f, 0x9f, 0x81, 0x7f, 0x9f, 0x81, 0x7f};
-const uint8_t LOCK_ICON[8]       = {0x00, 0xf8, 0xfe, 0xf9, 0x89, 0xf9, 0xfe, 0xf8};
-const uint8_t FAVORITE_ICON[8]   = {0x0e, 0x15, 0x31, 0x62, 0x62, 0x31, 0x15, 0x0e};
-#endif // HS_ICON_SET
-
 #ifndef int2simfloat
 #define int2simfloat(x) (x << 14)
 #define simfloat2int(x) (x >> 14)
 typedef int32_t simfloat;
 #endif
+
+#include "HSicons.h"
 
 #ifndef HSAPPLICATION_H_
 #define HSAPPLICATION_H_
@@ -110,16 +94,6 @@ public:
         simfloat proportion = int2simfloat((int32_t)numerator) / (int32_t)denominator;
         int scaled = simfloat2int(proportion * max_value);
         return scaled;
-    }
-
-protected:
-    /* Check cursor blink cycle. Suppress cursor when screensaver is on */
-    bool CursorBlink() {
-        return (cursor_countdown > 0 && !screensaver_on);
-    }
-
-    void ResetCursor() {
-        cursor_countdown = HSAPPLICATION_CURSOR_TICKS;
     }
 
     //////////////// Hemisphere-like IO methods
@@ -263,6 +237,16 @@ protected:
          gfxPrint(1, 2, str);
          gfxLine(0, 10, 127, 10);
          gfxLine(0, 12, 127, 12);
+    }
+
+protected:
+    /* Check cursor blink cycle. Suppress cursor when screensaver is on */
+    bool CursorBlink() {
+        return (cursor_countdown > 0 && !screensaver_on);
+    }
+
+    void ResetCursor() {
+        cursor_countdown = HSAPPLICATION_CURSOR_TICKS;
     }
 
 private:

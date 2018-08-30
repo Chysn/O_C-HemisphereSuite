@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include "hem_arp_chord.h"
+#include "HSMIDI.h"
 #define HEM_CARPEGGIO_ANIMATION_SPEED 500
 
 class Carpeggio : public HemisphereApplet {
@@ -90,7 +91,7 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        if (cursor == 0) sequence[step] = constrain(sequence[step] += direction, 0, 60);
+        if (cursor == 0) sequence[step] = constrain(sequence[step] += direction, -24, 60);
         if (cursor == 1) chord = constrain(chord += direction, 0, Nr_of_arp_chords - 1);
         if (cursor == 2) transpose = constrain(transpose += direction, -24, 24);
         if (cursor != 1) replay = 1;
@@ -151,21 +152,10 @@ private:
         gfxPrint(transpose);
         if (cursor == 2) gfxCursor(32, 33, 30);
 
-        // Coordinates and cursor for tone editing
-        if (cursor == 0) {
-            // x,y: I don't think this is really useful information, so I'm giving the old axe
-            /*
-            gfxPrint(32, 40, "(");
-            gfxPrint((step % 4) + 1);
-            gfxPrint(",");
-            gfxPrint((step / 4) + 1);
-            gfxPrint(")");
-            */
-
-            uint8_t midi_note = constrain(sequence[step] + 36 + transpose, 0, 127);
-            gfxPrint(38, 50, midi_note_numbers[midi_note]);
-            gfxCursor(32, 58, 30);
-        }
+        // Note name editor
+        uint8_t midi_note = constrain(sequence[step] + 36 + transpose, 0, 127);
+        gfxPrint(38, 50, midi_note_numbers[midi_note]);
+        if (cursor == 0) gfxCursor(32, 58, 30);
     }
 
     void DrawGrid() {
@@ -205,7 +195,7 @@ private:
 
     void pitch_out_for_step() {
         int note = sequence[step];
-        Out(0, MIDIQuantizer::NoteNumber(note + 36, transpose));
+        Out(0, MIDIQuantizer::CV(note + 36, transpose));
     }
 };
 
