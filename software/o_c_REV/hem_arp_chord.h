@@ -35,8 +35,6 @@ const int Nr_of_arp_chords = 55; // counting from 0....
 
 const hem_arp_chord Arp_Chords[] = {
   //ARPEGGIATE
-  {"Octaves",{0},1,1},
-  {"1 5",{0, 7},2,1},
   {"Maj triad",{0, 4, 7}, 3,1},
   {"Maj inv 1",{4, 7, 12}, 3,1},
   {"Maj inv 2",{7, 12, 16}, 3,1},
@@ -44,6 +42,8 @@ const hem_arp_chord Arp_Chords[] = {
   {"min inv 1",{3, 7, 12}, 3,1},
   {"min inv 2",{7, 12, 15}, 3,1},
   {"dim triad",{0, 3, 6},3,1},
+  {"Octaves",{0},1,1},
+  {"1 5",{0, 7},2,1},
 
   {"aug triad",{0, 4, 8},3,1},
   {"sus2",{0,2,7},3,1},

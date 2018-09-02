@@ -132,7 +132,8 @@ UiMode Ui::DispatchEvents(App *app) {
     MENU_REDRAW = 1;
   }
 
-  if (idle_time() > screensaver_timeout())
+  // Turning screensaver seconds into screen-blanking minutes with the * 60 (chysn 9/2/2018)
+  if (idle_time() > (screensaver_timeout() * 60))
     screensaver_ = true;
 
   if (screensaver_)
@@ -168,20 +169,20 @@ UiMode Ui::Splashscreen(bool &reset_settings) {
 
     menu::DefaultTitleBar::Draw();
     #ifdef BUCHLA_cOC
-      graphics.print("NLM card O_C");
+      graphics.print("NLM card HS");
     #else
       graphics.print("Hemisphere Suite");
     #endif
     weegfx::coord_t y = menu::CalcLineY(0);
 
     graphics.setPrintPos(menu::kIndentDx, y + menu::kTextDy);
-    graphics.print("[L] => Calibration");
+    graphics.print("[L] => Calibrate");
     if (UI_MODE_CALIBRATE == mode)
       graphics.invertRect(menu::kIndentDx, y, 128, menu::kMenuLineH);
 
     y += menu::kMenuLineH;
     graphics.setPrintPos(menu::kIndentDx, y + menu::kTextDy);
-    graphics.print("[R] => Select app");
+    graphics.print("[R] => Main Menu");
     if (UI_MODE_APP_SETTINGS == mode)
       graphics.invertRect(menu::kIndentDx, y, 128, menu::kMenuLineH);
 

@@ -37,7 +37,6 @@ typedef int32_t simfloat;
 #define HSAPPLICATION_H_
 
 #define HSAPPLICATION_CURSOR_TICKS 12000
-#define HSAPPLICATION_SCREEN_BLANK_TICKS 30000000
 #define HSAPPLICATION_5V 7680
 #define HSAPPLICATION_3V 4608
 
@@ -46,7 +45,6 @@ public:
     virtual void Start();
     virtual void Controller();
     virtual void View();
-    virtual void ScreensaverView();
 
     void BaseController() {
         for (uint8_t ch = 0; ch < 4; ch++)
@@ -66,8 +64,6 @@ public:
     }
 
     void BaseStart() {
-        screensaver_on = 0;
-
         // Initialize some things for startup
         for (uint8_t ch = 0; ch < 4; ch++)
         {
@@ -82,12 +78,6 @@ public:
     void BaseView() {
         View();
         last_view_tick = OC::CORE::ticks;
-        screensaver_on = 0;
-    }
-
-    void BaseScreensaverView() {
-        screensaver_on = 1;
-        if (OC::CORE::ticks - last_view_tick < HSAPPLICATION_SCREEN_BLANK_TICKS) ScreensaverView();
     }
 
     int Proportion(int numerator, int denominator, int max_value) {
@@ -240,9 +230,9 @@ public:
     }
 
 protected:
-    /* Check cursor blink cycle. Suppress cursor when screensaver is on */
+    // Check cursor blink cycle
     bool CursorBlink() {
-        return (cursor_countdown > 0 && !screensaver_on);
+        return (cursor_countdown > 0);
     }
 
     void ResetCursor() {
@@ -253,7 +243,6 @@ private:
     int clock_countdown[4]; // For clock output timing
     int adc_lag_countdown[4]; // Lag countdown for each input channel
     int cursor_countdown; // Timer for cursor blinkin'
-    bool screensaver_on; // Is the screensaver active?
     uint32_t last_view_tick; // Time since the last view, for activating screen blanking
     int inputs[4]; // Last ADC values
     int outputs[4]; // Last DAC values; inputs[] and outputs[] are used to allow access to values in Views

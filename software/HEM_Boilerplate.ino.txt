@@ -51,11 +51,6 @@ public:
         // Add other view code as private methods
     }
 
-	/* Draw the screensaver */
-    void ScreensaverView() {
-        gfxSkyline();
-    }
-
 	/* Called when the encoder button for this hemisphere is pressed */
     void OnButtonPress() {
     }

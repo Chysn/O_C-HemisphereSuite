@@ -224,10 +224,6 @@ public:
         DrawInterface();
     }
 
-    void ScreensaverView() {
-        DrawInterface();
-    }
-
     /* When the app is suspended, it sends out a system exclusive dump, generated here */
     void OnSendSysEx() {
         uint8_t V[35];
@@ -546,9 +542,7 @@ void TheDarkestTimeline_menu() {
     TheDarkestTimeline_instance.BaseView();
 }
 
-void TheDarkestTimeline_screensaver() {
-    TheDarkestTimeline_instance.BaseScreensaverView();
-}
+void TheDarkestTimeline_screensaver() {}
 
 void TheDarkestTimeline_handleButtonEvent(const UI::Event &event) {
     // For left encoder, handle press and long press

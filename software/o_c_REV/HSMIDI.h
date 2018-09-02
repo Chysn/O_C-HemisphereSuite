@@ -303,7 +303,7 @@ public:
         cv += 25; // CV controllers might be right on the border between voltages, so provide 1/8 tone offset
         int octave = cv / (12 << 7);
         int semitone = (cv % (12 << 7)) / 128;
-        int midi_note_number = (octave * 12) + semitone + transpose + 48;
+        int midi_note_number = (octave * 12) + semitone + transpose + 60;
         if (midi_note_number > 127) midi_note_number = 127;
         if (midi_note_number < 0) midi_note_number = 0;
         return static_cast<uint8_t>(midi_note_number);
@@ -313,7 +313,7 @@ public:
     static int CV(uint8_t midi_note_number, int transpose = 0) {
         int octave = midi_note_number / 12;
         int semitone = midi_note_number % 12;
-        int cv = (octave * (12 << 7)) + (semitone * 128) + (transpose * 128) - (4 * (12 << 7));
+        int cv = (octave * (12 << 7)) + (semitone * 128) + (transpose * 128) - (5 * (12 << 7));
         return cv;
     }
 };

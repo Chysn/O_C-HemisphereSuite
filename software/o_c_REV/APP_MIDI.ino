@@ -227,10 +227,6 @@ public:
         else DrawLogScreen();
     }
 
-    void ScreensaverView() {
-        DrawSetupScreens();
-    }
-
     void SelectSetup(int setup_number, int new_screen = -1) {
         // Stay the same if not provided
         if (new_screen == -1) new_screen = screen;
@@ -877,16 +873,13 @@ void MIDI_handleAppEvent(OC::AppEvent event) {
     }
 }
 
-void MIDI_loop() {
-}
+void MIDI_loop() {}
 
 void MIDI_menu() {
     captain_midi_instance.BaseView();
 }
 
-void MIDI_screensaver() {
-    captain_midi_instance.BaseScreensaverView();
-}
+void MIDI_screensaver() {}
 
 void MIDI_handleButtonEvent(const UI::Event &event) {
     if (event.control == OC::CONTROL_BUTTON_R && event.type == UI::EVENT_BUTTON_PRESS)

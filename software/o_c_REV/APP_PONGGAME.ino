@@ -338,14 +338,7 @@ void PONGGAME_menu() {
 
 }
 
-/* I want to see the game all the time, so the screensaver is the same as the main display
- * routine. OLED burn-in is a real thing, so you shouldn't be playing O_C Pong 24/7. And I suppose
- * I could improve this by removing the frame and the score. But really, this is just an
- * instructional app.
- */
-void PONGGAME_screensaver() {
-	PONGGAME_menu();
-}
+void PONGGAME_screensaver() {}
 
 /* Controlling the game with the buttons is the worst experience ever, so this is really just here
  * to demonstrate how the buttons work.

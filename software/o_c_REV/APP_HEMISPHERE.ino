@@ -27,10 +27,11 @@ namespace menu = OC::menu;
 
 #include "hemisphere_config.h"
 #include "HemisphereApplet.h"
+#include "HSicons.h"
 #include "HSMIDI.h"
 
 #define DECLARE_APPLET(id, categories, class_name) \
-{ id, categories, class_name ## _Start, class_name ## _Controller, class_name ## _View, class_name ## _Screensaver, \
+{ id, categories, class_name ## _Start, class_name ## _Controller, class_name ## _View, \
   class_name ## _OnButtonPress, class_name ## _OnEncoderMove, class_name ## _ToggleHelpScreen, \
   class_name ## _OnDataRequest, class_name ## _OnDataReceive \
 }
@@ -43,7 +44,6 @@ typedef struct Applet {
   void (*Start)(bool); // Initialize when selected
   void (*Controller)(bool, bool);  // Interrupt Service Routine
   void (*View)(bool);  // Draw main view
-  void (*Screensaver)(bool); // Draw screensaver view
   void (*OnButtonPress)(bool); // Encoder button has been pressed
   void (*OnEncoderMove)(bool, int); // Encoder has been rotated
   void (*ToggleHelpScreen)(bool); // Help Screen has been requested
@@ -155,17 +155,6 @@ public:
 
             if (select_mode == LEFT_HEMISPHERE) graphics.drawFrame(0, 0, 64, 64);
             if (select_mode == RIGHT_HEMISPHERE) graphics.drawFrame(64, 0, 64, 64);
-        }
-    }
-
-    void DrawScreensavers() {
-        if (help_hemisphere > -1) DrawViews();
-        else {
-            for (int h = 0; h < 2; h++)
-            {
-                int index = my_applet[h];
-                available_applets[index].Screensaver(h);
-            }
         }
     }
 
@@ -427,9 +416,7 @@ void HEMISPHERE_menu() {
     manager.DrawViews();
 }
 
-void HEMISPHERE_screensaver() {
-    manager.DrawScreensavers();
-}
+void HEMISPHERE_screensaver() {} // Deprecated in favor of screen blanking
 
 void HEMISPHERE_handleButtonEvent(const UI::Event &event) {
     if (event.type == UI::EVENT_BUTTON_PRESS) {

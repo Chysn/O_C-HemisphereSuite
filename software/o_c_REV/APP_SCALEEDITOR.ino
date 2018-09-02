@@ -58,10 +58,6 @@ public:
         else DrawInterface();
     }
 
-    void ScreensaverView() {
-        View();
-    }
-
     /* Send SysEx on app suspend and when the left encoder is pressed */
     void OnSendSysEx() { // Left Enc Push
         uint8_t V[35];
@@ -369,9 +365,7 @@ void SCALEEDITOR_menu() {
     scale_editor_instance.BaseView();
 }
 
-void SCALEEDITOR_screensaver() {
-    scale_editor_instance.BaseScreensaverView();
-}
+void SCALEEDITOR_screensaver() {}
 
 void SCALEEDITOR_handleButtonEvent(const UI::Event &event) {
     // For left encoder, handle press and long press

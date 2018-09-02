@@ -48,10 +48,6 @@ public:
         // Add other view code as private methods
     }
 
-    void ScreensaverView() {
-        gfxSkyline();
-    }
-
     void OnButtonPress() {
     }
 

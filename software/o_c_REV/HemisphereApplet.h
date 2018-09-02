@@ -30,7 +30,6 @@
 #define HEMISPHERE_3V_CV 4608
 #define HEMISPHERE_CLOCK_TICKS 100
 #define HEMISPHERE_CURSOR_TICKS 12000
-#define HEMISPHERE_SCREEN_BLANK_TICKS 30000000
 #define HEMISPHERE_ADC_LAG 96;
 
 // Codes for help system sections
@@ -63,13 +62,11 @@ public:
     virtual void Start();
     virtual void Controller();
     virtual void View();
-    virtual void ScreensaverView();
 
     void BaseStart(bool hemisphere_) {
         hemisphere = hemisphere_;
         gfx_offset = hemisphere * 64;
         io_offset = hemisphere * 2;
-        screensaver_on = 0;
 
         // Initialize some things for startup
         ForEachChannel(ch)
@@ -123,22 +120,20 @@ public:
             DrawNotifications();
         }
         last_view_tick = OC::CORE::ticks;
-        screensaver_on = 0;
     }
 
-    void BaseScreensaverView() {
-        screensaver_on = 1;
-        if (OC::CORE::ticks - last_view_tick < HEMISPHERE_SCREEN_BLANK_TICKS) ScreensaverView();
-    }
+    // Screensavers are deprecated in favor of screen blanking, but the BaseScreensaverView() remains
+    // to avoid breaking applets based on the old boilerplate
+    void BaseScreensaverView() {}
 
     /* Help Screen Toggle */
     void HelpScreen() {
         help_active = 1 - help_active;
     }
 
-    /* Check cursor blink cycle. Suppress cursor when screensaver is on */
+    /* Check cursor blink cycle. */
     bool CursorBlink() {
-        return (cursor_countdown > 0 && !screensaver_on);
+        return (cursor_countdown > 0);
     }
 
     void ResetCursor() {
@@ -352,7 +347,6 @@ protected:
     bool hemisphere; // Which hemisphere (0, 1) this applet uses
     const char* help[4];
     virtual void SetHelp();
-    bool screensaver_on; // Is the screensaver active?
 
     /* Forces applet's Start() method to run the next time the applet is selected. This
      * allows an applet to start up the same way every time, regardless of previous state.

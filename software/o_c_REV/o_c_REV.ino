@@ -172,7 +172,8 @@ void FASTRUN loop() {
           OC::apps::current_app->DrawMenu();
           ++menu_redraws;
         } else {
-          OC::apps::current_app->DrawScreensaver();
+          //Blank the screen instead of drawing the screensaver (chysn 9/2/2018)
+          //OC::apps::current_app->DrawScreensaver();
         }
         MENU_REDRAW = 0;
         LAST_REDRAW_TIME = millis();
