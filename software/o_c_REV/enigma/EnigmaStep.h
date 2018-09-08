@@ -50,7 +50,8 @@ public:
         tk = (track_ << 6) | (tk & 0x3f);
     }
     void set_tm(byte tm_) {
-        if (tm_ > 63) tm_ = 63;
+        if (tm_ > 39) tm_ = 39;
+        if (tm_ == 0xff) tm_ = 0;
         tk = (tk & 0xc0) | tm_;
     }
     void set_p(byte p_) {

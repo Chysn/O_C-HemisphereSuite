@@ -149,23 +149,13 @@ public:
             // TODO: Sysex out
         }
         if (mode == ENIGMA_MODE_ASSIGN) assign_audition = 0;
-        if (mode == ENIGMA_MODE_SONG) {
-            // Add a step to the end of the current track
-            if (last_track_step_index < 99) {
-                track_step[last_track_step_index++] = total_steps;
-                song_step[total_steps++].Init(track_cursor);
-            }
-        }
+        if (mode == ENIGMA_MODE_SONG) InsertStep();
     }
 
     void OnDownButtonPress() {
-        if (mode == ENIGMA_MODE_LIBRARY) {
-            tm_state.Reset();
-        }
+        if (mode == ENIGMA_MODE_LIBRARY) tm_state.Reset();
         if (mode == ENIGMA_MODE_ASSIGN) assign_audition = 1;
-        if (mode == ENIGMA_MODE_SONG) {
-            // TODO: Delete Step
-        }
+        if (mode == ENIGMA_MODE_SONG) DeleteStep();
     }
 
     void OnDownButtonLongPress() {
@@ -342,7 +332,7 @@ private:
         // Monitor
         gfxBitmap(56, 15, 8, AUDITION_ICON);
         gfxPrint(68, 15, assign_audition ? "Song" : "Library");
-        gfxLine(48, 23, 123, 23);
+        gfxLine(48, 23, 127, 23);
     }
 
     void DrawSongInterface() {
@@ -359,11 +349,12 @@ private:
         // The right side is for editing
         // Track parameters
         gfxBitmap(56, 14, CLOCK_ICON);
-        gfxPrint(68, 15, "/");
+        gfxPrint(68, 14, "/");
         gfxPrint(track[track_cursor].divide());
+        gfxLine(48, 23, 127, 23);
 
-        gfxBitmap(98, 15, LOOP_ICON);
-        gfxPrint(110, 15, track[track_cursor].loop() ? "On" : "Off");
+        gfxBitmap(98, 14, LOOP_ICON);
+        gfxPrint(110, 14, track[track_cursor].loop() ? "On" : "Off");
 
         // Step parameters
         uint16_t ssi = track_step[edit_index]; // The song step index
@@ -374,8 +365,20 @@ private:
             HS::TuringMachine::SetName(name, song_step[ssi].tm());
             gfxPrint(name); // Turing machine name
             gfxPrint(" ");
-            gfxPrint(pad(100, song_step[ssi].p()), song_step[ssi].p());
-            gfxPrint("%");
+
+            if (step_param == ENIGMA_STEP_TM) {
+                // If the Turing Machine is being selected, display the length and favorite
+                // status instead of the probability
+                byte length = HS::user_turing_machines[song_step[ssi].tm()].len;
+                bool favorite = HS::user_turing_machines[song_step[ssi].tm()].favorite;
+
+                if (length > 0) gfxPrint(pad(10, length), length);
+                else gfxPrint("--");
+                if (favorite) gfxBitmap(119, 25, FAVORITE_ICON);
+            } else {
+                gfxPrint(pad(100, song_step[ssi].p()), song_step[ssi].p());
+                gfxPrint("%");
+            }
             gfxPrint(80, 35, "x");
             gfxPrint(pad(10, song_step[ssi].repeats()), song_step[ssi].repeats()); // Number of times played
             gfxPrint("  ");
@@ -384,8 +387,8 @@ private:
         }
 
         // Cursor
-        if (step_param == ENIGMA_TRACK_DIVIDE) gfxCursor(74, 23, 12);
-        if (step_param == ENIGMA_TRACK_LOOP) gfxCursor(110, 23, 18);
+        if (step_param == ENIGMA_TRACK_DIVIDE) gfxCursor(74, 22, 12);
+        if (step_param == ENIGMA_TRACK_LOOP) gfxCursor(110, 22, 18);
         if (step_param == ENIGMA_STEP_NUMBER) gfxCursor(56, 33, 12);
         if (step_param == ENIGMA_STEP_TM) gfxCursor(81, 33, 18);
         if (step_param == ENIGMA_STEP_P) gfxCursor(105, 33, 18);
@@ -484,7 +487,7 @@ private:
         if (step_param == ENIGMA_STEP_NUMBER) {
             if (edit_index > 0 || direction > 0) {
                 // If there's a step to move into, move into it
-                if (edit_index + direction < last_track_step_index)
+                if (edit_index + direction < 100 && edit_index + direction >= 0)
                     if (track_step[edit_index + direction] != 0xffff) edit_index += direction;
             }
         }
@@ -546,8 +549,40 @@ private:
         }
         last_track_step_index = ts_ix;
 
+        // Avoid beaming into a point after the end of the buffer
+        if (edit_index >= last_track_step_index) edit_index = last_track_step_index - 1;
+
         // 0xffff indictates end of track
         while (ts_ix < 100) track_step[ts_ix++] = 0xffff;
+    }
+
+    // Add a step to the end of the current track
+    void InsertStep() {
+        if (last_track_step_index < 99) {
+            edit_index = last_track_step_index;
+            track_step[last_track_step_index++] = total_steps;
+            song_step[total_steps++].Init(track_cursor);
+        }
+    }
+
+    // Delete a step at the current edit index point
+    void DeleteStep() {
+        if (edit_index > 0) { // Can't delete the first step
+            // If the last step is being deleted, move the index back. Otherwise, it will
+            // just stay the same and the next step up will become active.
+            if (edit_index == last_track_step_index) edit_index--;
+
+            // Move the steps down to fill in the memory
+            uint16_t mark_to_delete = track_step[edit_index];
+            for (int i = mark_to_delete; i < total_steps; i++)
+            {
+                memcpy(&song_step[i], &song_step[i + 1], sizeof(song_step[i + 1]));
+            }
+
+            // Housekeeping tasks: decrement the total steps and rebuild the step list for the track
+            total_steps--;
+            BuildTrackStepList(track_cursor);
+        }
     }
 };
 
