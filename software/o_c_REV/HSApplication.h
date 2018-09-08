@@ -213,6 +213,11 @@ public:
         graphics.drawBitmap8(x, y, w, data);
     }
 
+    void gfxBitmap(int x, int y, const uint8_t *data) {
+        gfxBitmap(x, y, 8, data);
+    }
+
+
     uint8_t pad(int range, int number) {
         uint8_t padding = 0;
         while (range > 1)

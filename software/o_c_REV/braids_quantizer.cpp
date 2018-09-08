@@ -113,12 +113,6 @@ int32_t Quantizer::Lookup(int32_t index) const {
     return codebook_[index];
 }
 
-// Returns a MIDI note number
-uint16_t Quantizer::MIDINoteNumber() {
-    if (note_number_ > 107) note_number_ = 107;
-    return note_number_ + 20;
-}
-
 void Quantizer::Requantize() {
     requantize_ = 1;
 }

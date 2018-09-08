@@ -1,3 +1,23 @@
+// Copyright (c) 2018, Jason Justian
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+//
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
 #ifndef ENIGMASTEP_H
 #define ENIGMASTEP_H
 
@@ -9,6 +29,14 @@ private:
     byte tr; // Transpose -48 ~ 48 (0-96)
 
 public:
+    void Init(byte track) {
+        set_track(track);
+        set_tm(0);
+        set_p(0);
+        set_repeats(1);
+        set_transpose(0);
+    }
+
     // Getters
     byte track() {return (tk >> 6) & 0x03;} // High two bits
     byte tm() {return (tk & 0x3f);} // Low six bits
@@ -19,20 +47,23 @@ public:
     // Setters
     void set_track(byte track_) {
         if (track_ > 3) track_ = 3;
-        tk |= (track_ << 6);
+        tk = (track_ << 6) | (tk & 0x3f);
     }
     void set_tm(byte tm_) {
         if (tm_ > 63) tm_ = 63;
-        tk |= tm_;
+        tk = (tk & 0xc0) | tm_;
     }
     void set_p(byte p_) {
         if (p_ > 100) p_ = 100;
+        if (p_ == 0xff) p_ = 0;
         pr = p_;
     }
     void set_repeats(byte repeats_) {
+        repeats_ = constrain(repeats_, 1, 99);
         re = repeats_;
     }
     void set_transpose(int8_t transpose_) {
+        transpose_ = constrain(transpose_, -48, 48);
         tr = static_cast<byte>(transpose_ + 48);
     }
 };

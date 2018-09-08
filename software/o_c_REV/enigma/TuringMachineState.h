@@ -28,104 +28,90 @@
 
 class TuringMachineState {
 public:
-    void Init(HS::TuringMachine TM) {
-        original_reg = TM.reg;
-        reg = TM.reg;
-        len = TM.len;
+    void Init(byte ix_) {
+        ix = constrain(ix_, 0, HS::TURING_MACHINE_COUNT - 1);
+        if (HS::user_turing_machines[ix].len == 0 || HS::user_turing_machines[ix].len > 17) {
+            HS::user_turing_machines[ix].reg = (random(0, 0xff) << 8) + random(0, 0xff);
+            HS::user_turing_machines[ix].len = 16;
+            HS::user_turing_machines[ix].favorite = 0;
+        }
+        reg = HS::user_turing_machines[ix].reg;
+        len = HS::user_turing_machines[ix].len;
+        fav = HS::user_turing_machines[ix].favorite;
+        write = 0;
     }
 
-    void Init() {
-        original_reg = random(0, 0xffff);
-        reg = original_reg;
-        len = 16;
-    }
-
-    /*
-     * Get a TuringMachine based on the current state
-     */
-    HS::TuringMachine GetTuringMachine() {
-        HS::TuringMachine TM = HS::TuringMachine {reg, len};
-        return TM;
-    }
-
-    /*
-     * Probability here is from 0 - 100
-     */
-    void ChangeProbability(int direction) {
-        p = constrain(p + direction, 0, 100);
-    }
+    void SetWriteMode(bool write_) {write = write_;}
 
     /*
      * Length here is from 1 - 16
      */
     void ChangeLength(int direction) {
         len = constrain(len + direction, 1, 16);
+        if (write && !fav) HS::user_turing_machines[ix].len = len;
     }
 
-    void Advance() {
+    void Advance(byte p) {
         // Grab the bit that's about to be shifted away
         uint16_t last = (reg >> (len - 1)) & 0x01;
 
         // Does it change?
-        if (random(0, 99) < p) last = 1 - last;
+        if (!fav && random(0, 99) < p) last = 1 - last;
 
         // Shift left, then potentially add the bit from the other side
         reg = (reg << 1) + last;
+
+        if (write && !fav) HS::user_turing_machines[ix].reg = reg;
+    }
+
+    void SetFavorite(bool favorite) {
+        fav = favorite;
+        if (write) HS::user_turing_machines[ix].favorite = favorite;
+    }
+
+    void Rotate(int direction) {
+        if (write) { // Rotate requires write access, but doesn't care about favorite status
+            if (direction == 1) { // rotate right
+                uint16_t bit0 = reg & 0x0001;
+                reg = (reg >> 1) | (bit0 << 15);
+            }
+            if (direction == -1) { // rotate left
+                uint16_t bit15 = (reg & 0x8000);
+                reg = (reg << 1) | (bit15 >> 15);
+            }
+            HS::user_turing_machines[ix].reg = reg;
+        }
     }
 
     /*
      * This might be a CV option in a single-TM applet
      */
     void Reset() {
-        reg = original_reg;
+        reg = HS::user_turing_machines[ix].reg;
     }
 
-    // The following methods are for getting specific information from the TuringMachineState,
-    // which is used in various ways by the application(s)
-
-    /*
-     * Get raw register (usually for generating a view of some kind, or saving a state)
-     */
     uint16_t GetRegister() {return reg;}
 
-    /*
-     * Get length
-     */
     byte GetLength() {return len;}
 
-    /*
-     * Note number is based on the low five bits of the register, for a range of about
-     * 2.5 octaves
-     */
-    byte NoteNumber() {
-        return static_cast<uint8_t>(reg & 0x1f) + 48;
-    }
+    bool IsFavorite() {return fav;}
 
-    /*
-     * Modulation is based on the low byte of the register, and is the traditional
-     * value used by the Whitwell Turing Machine
-     */
-    byte Modulation() {
-        return static_cast<uint8_t>(reg & 0xff);
+    void DrawAt(byte x, byte y) {
+        graphics.drawLine(x, y, x + 63, y);
+        graphics.drawLine(x, y + 22, x + 63, y + 22);
+        for (byte b = 0; b < 16; b++)
+        {
+            int v = (reg >> b) & 0x01;
+            if (v) graphics.drawRect(60 + x - (4 * b), y + 2, 3, 19);
+        }
     }
-
-    /*
-     * Clock is based on the low bit of the register, for generating rhythms. There are two
-     * ways to do this:
-     *
-     * -- Trigger: Send a trigger when Clock() is 1
-     * -- Gate: Start a gate when Clock() is 1, and keep it on until there's a Clock() of 0
-     */
-    bool Clock() {
-       return static_cast<bool>(reg & 0x01);
-    }
-
 
 private:
-    uint16_t reg;
+    byte ix; // Turing machine index
+    uint16_t reg; // Shift register
     byte len; // Length in steps
-    uint16_t original_reg;
-    byte p; // Probability
+    bool fav;
+    bool write; // Write mode; the source TuringMachine may be changed
 };
 
 #endif // TURINGMACHINESTATE_H

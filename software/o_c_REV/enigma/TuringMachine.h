@@ -39,40 +39,22 @@
 
 namespace HS {
 
-const uint8_t TURING_MACHINE_COUNT = 40; // Five banks of eight
+const byte TURING_MACHINE_COUNT = 40; // Five banks of eight
 
 struct TuringMachine {
     uint16_t reg; // 16-bit shift register containing data
-    uint8_t len; // Length of this machine, in steps. 0 indicates an uninitialized TM
+    byte len; // Length of this machine, in steps. 0 indicates an uninitialized TM
     bool favorite; // Basically locks this Turing Machine
+
+    static void SetName(char *n, byte ix) {
+        n[0] = 'A' + (ix / 8);
+        n[1] = '-';
+        n[2] = '1'  + (ix % 8);
+        n[3] = '\0';
+    }
 };
 
 TuringMachine user_turing_machines[TURING_MACHINE_COUNT];
-
-// TMAccess is a group of static methods for getting and setting members of
-// the user_turing_machines array, defined above.
-class TMAccess {
-public:
-    // Getters
-    static uint16_t reg(uint8_t ix) {return user_turing_machines[ix].reg;}
-    static uint8_t len(uint8_t ix) {
-        if (user_turing_machines[ix].len > 16) TMAccess::set_len(ix, 16);
-        return user_turing_machines[ix].len;
-    }
-    static bool favorite(uint8_t ix) {return user_turing_machines[ix].favorite;}
-
-    // Setters
-    static void set_reg(uint8_t ix, uint16_t reg) {
-        if (!user_turing_machines[ix].favorite) user_turing_machines[ix].reg = reg;
-    }
-    static void set_len(uint8_t ix, uint8_t len) {
-        if (len > 16) len = 16;
-        if (!user_turing_machines[ix].favorite) user_turing_machines[ix].len = len;
-    }
-    static void set_favorite(uint8_t ix, bool favorite) {
-        user_turing_machines[ix].favorite = favorite;
-    }
-};
 
 }; // namespace HS
 

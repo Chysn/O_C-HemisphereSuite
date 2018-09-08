@@ -66,9 +66,6 @@ class Quantizer {
   // HACK for TM
   int32_t Lookup(int32_t index) const;
 
-  // Convert a quantized note into a MIDI note number for a semitone scale
-  uint16_t MIDINoteNumber();
-
   // Force Process to process again
   void Requantize();
 
