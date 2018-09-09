@@ -213,7 +213,8 @@ public:
         graphics.drawBitmap8(x, y, w, data);
     }
 
-    void gfxBitmap(int x, int y, const uint8_t *data) {
+    // Like gfxBitmap, but always 8x8
+    void gfxIcon(int x, int y, const uint8_t *data) {
         gfxBitmap(x, y, 8, data);
     }
 

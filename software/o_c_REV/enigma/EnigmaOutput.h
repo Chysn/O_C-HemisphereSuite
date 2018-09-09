@@ -41,23 +41,21 @@ const char* enigma_type_names[] = {"Note 3-Bit", "Note 4-Bit", "Note 5-Bit", "No
 
 class EnigmaOutput {
 private:
-    // Saved data
-    byte tk; // Track 0-4
-    byte ty; // Type (see enum above)
-    byte sc; // Scale
-    byte sr; // Scale root
-    byte mc; // MIDI channel (1-16, 0=off)
-
     // Internal data
     byte out; // Output 0-4
     braids::Quantizer quantizer;
 
 public:
+    // Saved data
+    byte tk; // Track 0-4
+    byte ty; // Type (see enum above)
+    byte sc; // Scale
+    byte mc; // MIDI channel (1-16, 0=off)
+
     void InitAs(byte o) {
         out = o;
         tk = o;
         sc = 5;
-        sr = 0;
         mc = 0;
 
         // Initialize quantizer
@@ -76,7 +74,6 @@ public:
     byte track() {return tk;}
     byte type() {return ty;}
     byte scale() {return sc;}
-    byte root() {return sr;}
     byte midi_channel() {return mc;}
 
     // Setters
@@ -88,7 +85,6 @@ public:
         quantizer.Init();
         quantizer.Configure(OC::Scales::GetScale(sc), 0xffff);
     }
-    void set_root(byte root_) {sr = constrain(root_, 0, 11);}
     void set_midi_channel(byte midi_channel_) {mc = constrain(midi_channel_, 0, 16);}
 
     /* Sends data to an output based on the current output type. The I/O methods
@@ -96,19 +92,16 @@ public:
      * Out, ClockOut, and GateOut (i.e. HSApplication, or HemisphereApplet)
      */
     template <class C>
-    void SendToDAC(C *app, uint16_t reg) {
+    void SendToDAC(C *app, uint16_t reg, int transpose = 0) {
 
         // Quantize a note based on how many bits
         if (ty <= EnigmaOutputType::NOTE7) {
             byte bits = ty + 3; // Number of bits
             uint8_t mask = 0;
             for (byte s = 0; s < bits; s++) mask |= (0x01 << s);
-            int note_shift = 0;
-            if (ty == EnigmaOutputType::NOTE6) note_shift = 36;
-            if (ty == EnigmaOutputType::NOTE5) note_shift = 48;
-            if (ty <= EnigmaOutputType::NOTE4) note_shift = 60;
+            int note_shift = ty == EnigmaOutputType::NOTE7 ? 0 : 60; // Note types under 7-bit start at Middle C
             byte note_number = (reg & mask) + note_shift;
-            app->Out(out, quantizer.Lookup(note_number));
+            app->Out(out, quantizer.Lookup(note_number) + (transpose * 128));
         }
 
         // Modulation based on low 8 bits

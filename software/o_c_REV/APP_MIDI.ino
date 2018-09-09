@@ -142,6 +142,7 @@ struct CaptainMIDILog {
                 if (app_code == 'H') graphics.print("Hemisphere");
                 if (app_code == 'D') graphics.print("D. Timeline");
                 if (app_code == 'E') graphics.print("Scale Editor");
+                if (app_code == 'T') graphics.print("Enigma");
             }
         } else {
             graphics.setPrintPos(1, y);

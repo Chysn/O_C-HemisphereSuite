@@ -22,16 +22,15 @@
 #define ENIGMASTEP_H
 
 class EnigmaStep {
-private:
+public:
     byte tk; // High 2 bits=Track, low 6 bits=TM
     byte pr; // Probability 0-100
     byte re; // Repeats 1-255
     byte tr; // Transpose -48 ~ 48 (0-96)
 
-public:
     void Init(byte track) {
         set_track(track);
-        set_tm(0);
+        set_tm(PickTM());
         set_p(0);
         set_repeats(1);
         set_transpose(0);
@@ -66,6 +65,30 @@ public:
     void set_transpose(int8_t transpose_) {
         transpose_ = constrain(transpose_, -48, 48);
         tr = static_cast<byte>(transpose_ + 48);
+    }
+
+private:
+    // Randomly choose one of the favorite Turing Machines for initialization
+    byte PickTM() {
+        byte tm = 0; // Default of A-1
+
+        // Number of favorites
+        byte favorites = 0;
+        for (byte i = 0; i < HS::TURING_MACHINE_COUNT; i++) favorites += HS::user_turing_machines[i].favorite;
+
+        if (favorites > 0) {
+            byte pick = random(0, favorites);
+            favorites = 0;
+            for (byte i = 0; i < HS::TURING_MACHINE_COUNT; i++)
+            {
+                favorites += HS::user_turing_machines[i].favorite;
+                if (favorites == pick) {
+                    tm = i;
+                    break;
+                }
+            }
+        }
+        return tm;
     }
 };
 

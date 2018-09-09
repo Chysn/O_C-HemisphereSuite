@@ -24,10 +24,9 @@
 #define ENIGMATRACK_H
 
 class EnigmaTrack {
-private:
+public:
     byte data; // bits 0-4=Divide (1-32), bit 5=loop, bit 6,7=Track (1-4)
 
-public:
     void InitAs(byte track_) {
         set_track(track_);
         set_divide(1);
