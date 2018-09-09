@@ -45,14 +45,16 @@ const byte ENIGMA_OUTPUT_SCALE = 2;
 const byte ENIGMA_OUTPUT_ROOT = 3;
 const byte ENIGMA_OUTPUT_MIDI_CH = 4;
 
-// Parameters for Song mode (per step or track)
+// Parameters for Song mode (per step)
+const byte ENIGMA_STEP_NUMBER = 0;
+const byte ENIGMA_STEP_TM = 1;
+const byte ENIGMA_STEP_P = 2;
+const byte ENIGMA_STEP_REPEATS = 3;
+const byte ENIGMA_STEP_TRANSPOSE = 4;
+
+// Parameters for Play Mode (per track)
 const byte ENIGMA_TRACK_DIVIDE = 0;
 const byte ENIGMA_TRACK_LOOP = 1;
-const byte ENIGMA_STEP_NUMBER = 2;
-const byte ENIGMA_STEP_TM = 3;
-const byte ENIGMA_STEP_P = 4;
-const byte ENIGMA_STEP_REPEATS = 5;
-const byte ENIGMA_STEP_TRANSPOSE = 6;
 
 class EnigmaTMWS : public HSApplication, public SystemExclusiveHandler {
 public:
@@ -70,6 +72,9 @@ public:
 	        output[o].InitAs(o);
 	        track[o].InitAs(o);
 	        song_step[total_steps++].Init(o);
+	        playback_step_number[o] = 0;
+	        playback_step_repeat[o] = 0;
+	        playback_step_index[o] = 0;
 	    }
 
 	    // Clear track list
@@ -136,7 +141,10 @@ public:
 
         }
         if (mode == ENIGMA_MODE_SONG) {
-            if (++step_param > ENIGMA_STEP_TRANSPOSE) step_param = ENIGMA_TRACK_DIVIDE;
+            if (++step_param > ENIGMA_STEP_TRANSPOSE) step_param = ENIGMA_STEP_NUMBER;
+        }
+        if (mode == ENIGMA_MODE_PLAY) {
+            if (++track_param > ENIGMA_TRACK_LOOP) track_param = ENIGMA_TRACK_DIVIDE;
         }
         ResetCursor();
     }
@@ -175,7 +183,7 @@ public:
             if (output_cursor < 0) output_cursor = 3;
             if (output_cursor > 3) output_cursor = 0;
         }
-        if (mode == ENIGMA_MODE_SONG) {
+        if (mode == ENIGMA_MODE_SONG || mode == ENIGMA_MODE_PLAY) {
             track_cursor += direction;
             if (track_cursor < 0) track_cursor = 3;
             if (track_cursor > 3) track_cursor = 0;
@@ -192,10 +200,15 @@ public:
             case ENIGMA_MODE_ASSIGN  : DelegateOutputParam(direction);
                                        break;
 
-            default:
             case ENIGMA_MODE_SONG    : DelegateStepParam(direction);
                                        break;
+
+            default:
+            case ENIGMA_MODE_PLAY    : DelegatePlayParam(direction);
+                                       break;
+
         }
+        ResetCursor();
     }
 
 private:
@@ -206,6 +219,11 @@ private:
     uint16_t track_step[100]; // List of steps in the current track
     uint16_t total_steps = 0; // Total number of song_step[] entries used; index of the next step
     byte last_track_step_index = 0; // For adding the next step
+
+    //////// PLAYBACK
+    byte playback_step_number[4]; // Step for each track, ordinal
+    byte playback_step_repeat[4]; // Which repeat
+    byte playback_step_index[4]; // Index within song_step[]
 
     //////// DATA
     EnigmaStep song_step[396]; // Max 99 steps per track
@@ -224,7 +242,8 @@ private:
     // Secondary object parameter cursors, one for each mode
     int8_t tm_param = 0; // 0=Length, 1=Probability
     int8_t output_param = 0; // 0=Track, 1=Type, 2=Scale, 3=MIDI Out Channel
-    int8_t step_param = 0; // 0=Divide (track), 1=Loop (track), 2=Step#, 3=TM, 4=p, 5=Repeats, 6=Transpose
+    int8_t step_param = 0; // 0=Step#, 1=TM, 2=p, 3=Repeats, 4=Transpose
+    int8_t track_param = 0; // 0=Clock Divide, 1=Loop
 
     void DrawHeader() {
         gfxHeader("Enigma - ");
@@ -336,6 +355,11 @@ private:
     }
 
     void DrawSongInterface() {
+        // Draw the memory indicator at the top
+        int pct = (39600 - (total_steps * 100)) / 396;
+        gfxPrint(104 + pad(100, pct), 1, pct);
+        gfxPrint("%");
+
         // Draw the left side, the selector
         for (byte line = 0; line < 4; line++)
         {
@@ -347,19 +371,10 @@ private:
         DrawSelectorBox("Track");
 
         // The right side is for editing
-        // Track parameters
-        gfxBitmap(56, 14, CLOCK_ICON);
-        gfxPrint(68, 14, "/");
-        gfxPrint(track[track_cursor].divide());
-        gfxLine(48, 23, 127, 23);
-
-        gfxBitmap(98, 14, LOOP_ICON);
-        gfxPrint(110, 14, track[track_cursor].loop() ? "On" : "Off");
-
         // Step parameters
         uint16_t ssi = track_step[edit_index]; // The song step index
         if (ssi < 0xffff) {
-            gfxPrint(56 + pad(10, edit_index + 1), 25, edit_index + 1); // Step number (1-99)
+            gfxPrint(56 + pad(10, edit_index + 1), 15, edit_index + 1); // Step number (1-99)
             gfxPrint(": ");
             char name[4];
             HS::TuringMachine::SetName(name, song_step[ssi].tm());
@@ -374,12 +389,12 @@ private:
 
                 if (length > 0) gfxPrint(pad(10, length), length);
                 else gfxPrint("--");
-                if (favorite) gfxBitmap(119, 25, FAVORITE_ICON);
+                if (favorite) gfxBitmap(119, 15, FAVORITE_ICON);
             } else {
                 gfxPrint(pad(100, song_step[ssi].p()), song_step[ssi].p());
                 gfxPrint("%");
             }
-            gfxPrint(80, 35, "x");
+            gfxPrint(80, 25, "x");
             gfxPrint(pad(10, song_step[ssi].repeats()), song_step[ssi].repeats()); // Number of times played
             gfxPrint("  ");
             gfxPrint(song_step[ssi].transpose() > -1 ? "+" : "");
@@ -387,30 +402,30 @@ private:
         }
 
         // Cursor
-        if (step_param == ENIGMA_TRACK_DIVIDE) gfxCursor(74, 22, 12);
-        if (step_param == ENIGMA_TRACK_LOOP) gfxCursor(110, 22, 18);
-        if (step_param == ENIGMA_STEP_NUMBER) gfxCursor(56, 33, 12);
-        if (step_param == ENIGMA_STEP_TM) gfxCursor(81, 33, 18);
-        if (step_param == ENIGMA_STEP_P) gfxCursor(105, 33, 18);
-        if (step_param == ENIGMA_STEP_REPEATS) gfxCursor(87, 43, 12);
-        if (step_param == ENIGMA_STEP_TRANSPOSE) gfxCursor(117, 43, 12);
+        if (step_param == ENIGMA_STEP_NUMBER && CursorBlink()) gfxInvert(56, 14, 12, 9);
+        if (step_param == ENIGMA_STEP_TM) gfxCursor(81, 23, 18);
+        if (step_param == ENIGMA_STEP_P) gfxCursor(105, 23, 18);
+        if (step_param == ENIGMA_STEP_REPEATS) gfxCursor(87, 33, 12);
+        if (step_param == ENIGMA_STEP_TRANSPOSE) gfxCursor(117, 33, 12);
 
-        // Draw the next two steps
-        for (byte n = 0; n < 2; n++)
+        // Draw the next three steps
+        bool stop = 0; // Show the Stop/Loop step only once
+        for (byte n = 0; n < 3; n++)
         {
             if (edit_index + n + 1 < 99) {
                 uint16_t ssi = track_step[edit_index + n + 1];
-                byte y = 45 + (10 * n);
+                byte y = 35 + (10 * n);
                 if (ssi < 0xffff) {
-                    gfxPrint(56 + pad(10, edit_index + 2), y, edit_index + n + 2); // Step number (1-99)
+                    gfxPrint(56 + pad(10, edit_index + n + 2), y, edit_index + n + 2); // Step number (1-99)
                     gfxPrint(": ");
                     char name[4];
                     HS::TuringMachine::SetName(name, song_step[ssi].tm());
                     gfxPrint(name); // Turing machine name
                     gfxPrint(" x");
                     gfxPrint(song_step[ssi].repeats()); // Number of times played
-                } else if (n == 0) {
-                    gfxPrint(56 + pad(10, edit_index + 2), y, edit_index + n + 2); // Step number (1-99)
+                } else if (!stop) {
+                    stop = 1;
+                    gfxPrint(56 + pad(10, edit_index + n + 2), y, edit_index + n + 2); // Step number (1-99)
                     gfxPrint(": ");
                     gfxPrint(track[track_cursor].loop() ? "< Loop >" : "< Stop >");
                 }
@@ -419,6 +434,44 @@ private:
     }
 
     void DrawPlayInterface() {
+        // The Play interface is different from the others; it's four rows, with one row
+        // for each track
+
+        // Headers
+        // Track, Step/Repeat, Register, Divide, Loop
+        gfxPrint(0, 15, "Tr Step  Reg");
+        gfxLine(0, 23, 127, 23);
+        gfxBitmap(80, 14, CLOCK_ICON);
+        gfxBitmap(108, 14, LOOP_ICON);
+
+        for (int t = 0; t < 4; t++)
+        {
+            uint16_t ssi = playback_step_index[t]; // playback_index is the index of the song_step
+
+            byte y = 25 + (t * 10);
+            gfxPrint(0, y, t + 1);
+            gfxPrint(18 + pad(10, playback_step_number[t] + 1), y, playback_step_number[t] + 1);
+            gfxPrint(":");
+            gfxPrint(playback_step_repeat[t] + 1);
+            char name[4];
+            HS::TuringMachine::SetName(name, song_step[ssi].tm());
+            gfxPrint(54, y, name);
+
+            // Clock Divide
+            gfxPrint(78, y, "/");
+            gfxPrint(track[t].divide());
+
+            // Loop
+            if (track[t].loop()) gfxBitmap(108, y, LOOP_ICON);
+            else gfxBitmap(108, y, PLAYONCE_ICON);
+
+            if (t == track_cursor) {
+                if (track_param == ENIGMA_TRACK_DIVIDE) gfxCursor(84, y + 8, 12);
+                if (track_param == ENIGMA_TRACK_LOOP) gfxCursor(108, y + 8, 8);
+            }
+
+        }
+
 
     }
 
@@ -475,14 +528,6 @@ private:
     }
 
     void DelegateStepParam(int direction) {
-        // Track paramters
-        if (step_param == ENIGMA_TRACK_DIVIDE) {
-            if (track[track_cursor].divide() > 0 || direction > 0)
-                track[track_cursor].set_divide(track[track_cursor].divide() + direction);
-        }
-        if (step_param == ENIGMA_TRACK_LOOP)
-            track[track_cursor].set_loop(1 - track[track_cursor].loop());
-
         // Select a step
         if (step_param == ENIGMA_STEP_NUMBER) {
             if (edit_index > 0 || direction > 0) {
@@ -512,6 +557,16 @@ private:
                     song_step[ssi].set_transpose(song_step[ssi].transpose() + direction);
             }
         }
+    }
+
+    void DelegatePlayParam(int direction) {
+        // Track paramters
+        if (track_param == ENIGMA_TRACK_DIVIDE) {
+            if (track[track_cursor].divide() > 0 || direction > 0)
+                track[track_cursor].set_divide(track[track_cursor].divide() + direction);
+        }
+        if (track_param == ENIGMA_TRACK_LOOP)
+            track[track_cursor].set_loop(1 - track[track_cursor].loop());
     }
 
     //////// Controllers
@@ -556,18 +611,27 @@ private:
         while (ts_ix < 100) track_step[ts_ix++] = 0xffff;
     }
 
-    // Add a step to the end of the current track
+    // Insert a step to the end of the current track
     void InsertStep() {
         if (last_track_step_index < 99) {
-            edit_index = last_track_step_index;
-            track_step[last_track_step_index++] = total_steps;
-            song_step[total_steps++].Init(track_cursor);
+            // Insert a step after the current step
+            uint16_t insert_point = track_step[edit_index] + 1;
+            for (int i = total_steps + 1; i > insert_point; i--)
+            {
+                memcpy(&song_step[i], &song_step[i - 1], sizeof(song_step[i - 1]));
+            }
+            song_step[insert_point].Init(track_cursor);
+
+            // Housekeeping tasks: increment the total steps and index and rebuild the step list for the track
+            total_steps++;
+            edit_index++;
+            BuildTrackStepList(track_cursor);
         }
     }
 
     // Delete a step at the current edit index point
     void DeleteStep() {
-        if (edit_index > 0) { // Can't delete the first step
+        if (last_track_step_index > 1) { // Can't delete the only step
             // If the last step is being deleted, move the index back. Otherwise, it will
             // just stay the same and the next step up will become active.
             if (edit_index == last_track_step_index) edit_index--;
