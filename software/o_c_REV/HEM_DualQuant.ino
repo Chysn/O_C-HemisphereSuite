@@ -151,6 +151,7 @@ private:
             // scale, or even if it has 12 notes in it:
             int semitone = (last_note[ch] / 128) % 12;
             int note_x = semitone * 4; // 4 pixels per semitone
+            if (note_x < 0) note_x = 0;
             gfxBitmap(10 + note_x, 41 + (10 * ch), 8, notes[ch]);
         }
     }

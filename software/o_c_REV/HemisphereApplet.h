@@ -30,7 +30,7 @@
 #define HEMISPHERE_3V_CV 4608
 #define HEMISPHERE_CLOCK_TICKS 100
 #define HEMISPHERE_CURSOR_TICKS 12000
-#define HEMISPHERE_ADC_LAG 96;
+#define HEMISPHERE_ADC_LAG 33;
 
 // Codes for help system sections
 #define HEMISPHERE_HELP_DIGITALS 0
@@ -251,7 +251,7 @@ public:
         graphics.drawBitmap8(x + gfx_offset, y, w, data);
     }
 
-    void gfxBitmap(int x, int y, const uint8_t *data) {
+    void gfxIcon(int x, int y, const uint8_t *data) {
         gfxBitmap(x, y, 8, data);
     }
 
