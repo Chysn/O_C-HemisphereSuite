@@ -107,6 +107,7 @@ public:
 
     void OnSendSysEx() {
         SendTuringMachineLibrary();
+        SendOutputAssignments();
         SendSong();
     }
 
@@ -117,7 +118,7 @@ public:
             if (type == 'r') ReceiveTuringMachine(V);
             if (type == 's') ReceiveSongSteps(V);
             if (type == 't') ReceiveTrackSettings(V);
-            //if (type == 'o') ReceiveOutputAssignments(V);
+            if (type == 'o') ReceiveOutputAssignments(V);
         }
     }
 
@@ -131,6 +132,9 @@ public:
     }
 
     void OnLeftButtonLongPress() {
+        if (mode == ENIGMA_MODE_LIBRARY) SendTuringMachineLibrary();
+        if (mode == ENIGMA_MODE_ASSIGN) SendOutputAssignments();
+        if (mode >= ENIGMA_MODE_SONG) SendSong();
     }
 
     // Right button sets the parameter for the data type
@@ -175,6 +179,7 @@ public:
     }
 
     void OnDownButtonLongPress() {
+
     }
 
     // Left encoder selects the main object in the mode
@@ -367,12 +372,9 @@ private:
 
     void DrawSongInterface() {
         // Draw the memory indicator at the top
-        /*
         int pct = (39600 - (total_steps * 100)) / 396;
         gfxPrint(104 + pad(100, pct), 1, pct);
         gfxPrint("%");
-        */
-        gfxPrint(104, 1, total_steps);
 
         // Draw the left side, the selector
         for (byte line = 0; line < 4; line++)
@@ -593,10 +595,14 @@ private:
         // If a clock is present, advance the TuringMachineState
         if (Clock(0)) {
             uint16_t reg = tm_state.GetRegister();
+            int deferred_note = -1;
             for (byte o = 0; o < 4; o++)
             {
                 output[o].SendToDAC<EnigmaTMWS>(this, reg);
-                //output[o].SentToMIDI<EnigmaTMWS>(this, reg);
+
+                if (deferred_note > -1) output[o].SetDeferredNote(deferred_note);
+                output[o].SendToMIDI(reg);
+                if (output[o].GetDeferredNote() > -1) deferred_note = output[o].GetDeferredNote();
             }
             tm_state.Advance(state_prob[tm_cursor]);
         }
@@ -670,13 +676,17 @@ private:
                     }
 
                     // Send the track to the appopriate outputs
+                    int deferred_note = -1;
                     for (byte o = 0; o < 4; o++)
                     {
                         if (output[o].track() == t) {
                             uint16_t reg = track_tm[t].GetRegister();
                             output[o].SendToDAC<EnigmaTMWS>(this, reg, song_step[ssi].transpose());
-                        }
 
+                            if (deferred_note > -1) output[o].SetDeferredNote(deferred_note);
+                            output[o].SendToMIDI(reg, song_step[ssi].transpose());
+                            if (output[o].GetDeferredNote() > -1) deferred_note = output[o].GetDeferredNote();
+                        }
                     }
 
                     track_tm[t].Advance(song_step[ssi].p());
@@ -811,12 +821,9 @@ private:
         byte V[48];
         byte ix;
 
-        // Send output assignments
-        SendOutputAssignments();
-
         // Send song data
         ix = 0;
-        byte pages = (total_steps / 10) + 1;
+        byte pages = (total_steps / 8) + 1;
         for (byte p = 0; p < pages; p++)
         {
             V[ix++] = 's'; // Indicates a song step page is being sent
@@ -825,7 +832,7 @@ private:
             V[ix++] = static_cast<byte>((total_steps >> 8) & 0xff); // Total steps, high byte
             for (byte s = 0; s < 10; s++)
             {
-                byte ssi = (p * 10) + s;
+                byte ssi = (p * 8) + s;
                 V[ix++] = song_step[ssi].tk;
                 V[ix++] = song_step[ssi].pr;
                 V[ix++] = song_step[ssi].re;
@@ -886,9 +893,9 @@ private:
         byte low = V[ix++];
         byte high = V[ix++];
         total_steps = static_cast<uint16_t>((high << 8) | low);
-        for (byte s = 0; s < 10; s++)
+        for (byte s = 0; s < 8; s++)
         {
-            byte ssi = (page * 10) + s;
+            byte ssi = (page * 8) + s;
             song_step[ssi].tk = V[ix++];
             song_step[ssi].pr = V[ix++];
             song_step[ssi].re = V[ix++];

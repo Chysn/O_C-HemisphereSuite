@@ -34,16 +34,19 @@ enum EnigmaOutputType {
     NOTE6,
     NOTE7,
     MODULATION,
+    EXPRESSION,
     TRIGGER,
     GATE,
 };
-const char* enigma_type_names[] = {"Note 3-Bit", "Note 4-Bit", "Note 5-Bit", "Note 6-Bit", "Note 7-Bit", "Modulation", "Trigger", "Gate"};
+const char* enigma_type_names[] = {"Note 3-Bit", "Note 4-Bit", "Note 5-Bit", "Note 6-Bit", "Note 7-Bit", "Modulation", "Expression", "Trigger", "Gate"};
 
 class EnigmaOutput {
 private:
     // Internal data
     byte out; // Output 0-4
     braids::Quantizer quantizer;
+    int last_note = -1;
+    int deferred_note = -1;
 
 public:
     // Saved data
@@ -75,6 +78,7 @@ public:
     byte type() {return ty;}
     byte scale() {return sc;}
     byte midi_channel() {return mc;}
+    int GetDeferredNote() {return deferred_note;}
 
     // Setters
     void set_output(byte output_) {out = constrain(output_, 0, 3);}
@@ -86,6 +90,7 @@ public:
         quantizer.Configure(OC::Scales::GetScale(sc), 0xffff);
     }
     void set_midi_channel(byte midi_channel_) {mc = constrain(midi_channel_, 0, 16);}
+    void SetDeferredNote(int midi_note_) {deferred_note = midi_note_;}
 
     /* Sends data to an output based on the current output type. The I/O methods
      * are public methods of the app, so make sure to send a type that supports
@@ -105,7 +110,7 @@ public:
         }
 
         // Modulation based on low 8 bits
-        if (ty == EnigmaOutputType::MODULATION) {
+        if (ty == EnigmaOutputType::MODULATION || ty == EnigmaOutputType::EXPRESSION) {
             app->Out(out, (reg & 0x00ff) * 6);
         }
 
@@ -119,6 +124,49 @@ public:
         if (ty == EnigmaOutputType::GATE) {
             app->GateOut(out, clock);
         }
+    }
+
+    /* Sends data vi MIDI based on the current output type. */
+    void SendToMIDI(uint16_t reg, int transpose = 0) {
+        // Quantize a note based on how many bits
+        if (ty <= EnigmaOutputType::NOTE7) {
+            byte bits = ty + 3; // Number of bits
+            uint8_t mask = 0;
+            for (byte s = 0; s < bits; s++) mask |= (0x01 << s);
+            int note_shift = ty == EnigmaOutputType::NOTE7 ? 0 : 60; // Note types under 7-bit start at Middle C
+            byte note_number = (reg & mask) + note_shift + transpose;
+
+            if (midi_channel()) {
+                if (last_note > -1) usbMIDI.sendNoteOn(last_note, 0, midi_channel());
+                usbMIDI.sendNoteOn(note_number, 0x60, midi_channel());
+                last_note = note_number;
+            } else {
+                deferred_note = note_number;
+            }
+        }
+
+        // Modulation based on low 8 bits
+        if (ty == EnigmaOutputType::MODULATION && midi_channel()) {
+            usbMIDI.sendControlChange(1, reg & 0x00ff, midi_channel());
+        }
+
+        // Expression based on low 8 bits; for MIDI, expression is a percentage of channel volume
+        if (ty == EnigmaOutputType::EXPRESSION && midi_channel()) {
+            usbMIDI.sendControlChange(11, reg & 0x00ff, midi_channel());
+        }
+
+        // Trigger and Gate behave the same way with MIDI; They'll use the last note that wasn't sent
+        // out via MIDI on its own output. If no such note is available, then Trigger/Gate will do nothing.
+        if ((ty == EnigmaOutputType::TRIGGER || ty == EnigmaOutputType::TRIGGER) && midi_channel()) {
+            if (deferred_note >  -1) {
+                if (last_note > -1) usbMIDI.sendNoteOff(last_note, 0, midi_channel());
+                usbMIDI.sendNoteOn(deferred_note, 0x60, midi_channel());
+                last_note = deferred_note;
+                deferred_note = -1;
+            }
+        }
+
+        usbMIDI.send_now();
     }
 };
 
