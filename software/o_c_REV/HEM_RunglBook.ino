@@ -26,14 +26,22 @@ public:
     }
 
     void Start() {
+        threshold = (12 << 7) * 2;
     }
 
     void Controller() {
         if (Clock(0)) {
-            byte b0 = In(0) > HEMISPHERE_3V_CV ? 0x01 : 0x00;
-            reg = (reg << 1) | b0;
+            if (Gate(1)) {
+                // Digital 2 freezes the buffer, so just rotate left
+                reg = (reg << 1) | ((reg >> 7) & 0x01);
+            } else {
+                byte b0 = In(0) > threshold ? 0x01 : 0x00;
+                reg = (reg << 1) | b0;
+            }
+
             int rungle = Proportion(reg & 0x07, 0x07, HEMISPHERE_MAX_CV);
             int rungle_tap = Proportion((reg >> 5) & 0x07, 0x07, HEMISPHERE_MAX_CV);
+
             Out(0, rungle);
             Out(1, rungle_tap);
         }
@@ -41,40 +49,40 @@ public:
 
     void View() {
         gfxHeader(applet_name());
+        gfxPrint(1, 15, "Thr:");
+        gfxPrintVoltage(threshold);
         gfxSkyline();
     }
 
-    void OnButtonPress() {
-    }
+    void OnButtonPress() { }
 
     void OnEncoderMove(int direction) {
+        threshold += (direction * 128);
+        threshold = constrain(threshold, (12 << 7), (12 << 7) * 5); // 1V - 5V
     }
         
     uint32_t OnDataRequest() {
         uint32_t data = 0;
-        // example: pack property_name at bit 0, with size of 8 bits
-        // Pack(data, PackLocation {0,8}, property_name); 
+        Pack(data, PackLocation {0,16}, threshold);
         return data;
     }
-
     void OnDataReceive(uint32_t data) {
-        // example: unpack value at bit 0 with size of 8 bits to property_name
-        // property_name = Unpack(data, PackLocation {0,8}); 
+        threshold = Unpack(data, PackLocation {0,16});
     }
 
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Freeze";
         help[HEMISPHERE_HELP_CVS]      = "1=Signal";
-        help[HEMISPHERE_HELP_OUTS]     = "A=Rungle B=Tap";
+        help[HEMISPHERE_HELP_OUTS]     = "A=Rungle B=Alt";
         help[HEMISPHERE_HELP_ENCODER]  = "";
         //                               "------------------" <-- Size Guide
     }
     
 private:
     byte reg;
-    
+    uint16_t threshold;
 };
 
 
