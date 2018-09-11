@@ -105,7 +105,8 @@ public:
             uint8_t mask = 0;
             for (byte s = 0; s < bits; s++) mask |= (0x01 << s);
             int note_shift = ty == EnigmaOutputType::NOTE7 ? 0 : 60; // Note types under 7-bit start at Middle C
-            byte note_number = (reg & mask) + note_shift;
+            int note_number = (reg & mask) + note_shift;
+            note_number = constrain(note_number, 0, 127);
             app->Out(out, quantizer.Lookup(note_number) + (transpose * 128));
         }
 
@@ -134,7 +135,8 @@ public:
             uint8_t mask = 0;
             for (byte s = 0; s < bits; s++) mask |= (0x01 << s);
             int note_shift = ty == EnigmaOutputType::NOTE7 ? 0 : 60; // Note types under 7-bit start at Middle C
-            byte note_number = (reg & mask) + note_shift + transpose;
+            int note_number = (reg & mask) + note_shift + transpose;
+            note_number = constrain(note_number, 0, 127);
 
             if (midi_channel()) {
                 if (last_note > -1) usbMIDI.sendNoteOn(last_note, 0, midi_channel());
@@ -158,7 +160,7 @@ public:
         // Trigger and Gate behave the same way with MIDI; They'll use the last note that wasn't sent
         // out via MIDI on its own output. If no such note is available, then Trigger/Gate will do nothing.
         if ((ty == EnigmaOutputType::TRIGGER || ty == EnigmaOutputType::TRIGGER) && midi_channel()) {
-            if (deferred_note >  -1) {
+            if (deferred_note >  -1 && (reg & 0x01)) {
                 if (last_note > -1) usbMIDI.sendNoteOff(last_note, 0, midi_channel());
                 usbMIDI.sendNoteOn(deferred_note, 0x60, midi_channel());
                 last_note = deferred_note;
@@ -167,6 +169,14 @@ public:
         }
 
         usbMIDI.send_now();
+    }
+
+    void NoteOff() {
+        if (midi_channel()) {
+            if (last_note > -1) usbMIDI.sendNoteOn(last_note, 0, midi_channel());
+            last_note = -1;
+            deferred_note = -1;
+        }
     }
 };
 

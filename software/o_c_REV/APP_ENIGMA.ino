@@ -28,10 +28,11 @@
 #include "enigma/EnigmaTrack.h"
 
 // Modes
-const byte ENIGMA_MODE_LIBRARY = 0; // Create, edit, save, favorite, sysex dump Turing Machines
-const byte ENIGMA_MODE_ASSIGN = 1;  // Assign CV and MIDI output
-const byte ENIGMA_MODE_SONG = 2;    // Assemble compositions by chaining Turing Machines
-const byte ENIGMA_MODE_PLAY = 3;    // Play information and transport controls
+const byte ENIGMA_MODE_LIBRARY = 0;  // Create, edit, save, favorite, sysex dump Turing Machines
+const byte ENIGMA_MODE_ASSIGN = 1;   // Assign CV and MIDI output
+const byte ENIGMA_MODE_SONG = 2;     // Assemble compositions by chaining Turing Machines
+const byte ENIGMA_MODE_PLAY = 3;     // Play information and transport controls
+const byte ENIGMA_CONFIRM_RESET = 4; // Special page for confirming song reset
 
 // Parameters for Manaage mode (per Turing Machine)
 const byte ENIGMA_TM_LENGTH = 0;
@@ -128,6 +129,7 @@ public:
     // Left button press changes the Mode
     void OnLeftButtonPress() {
         if (++mode > ENIGMA_MODE_PLAY) mode = ENIGMA_MODE_LIBRARY;
+        if (mode == ENIGMA_CONFIRM_RESET) mode = last_mode; // Cancel erase
         ResetCursor();
     }
 
@@ -139,6 +141,11 @@ public:
 
     // Right button sets the parameter for the data type
     void OnRightButtonPress() {
+        if (mode == ENIGMA_CONFIRM_RESET) {
+            total_steps = 0;
+            Start();
+            mode = last_mode;
+        }
         if (mode == ENIGMA_MODE_LIBRARY && !tm_state.IsFavorite()) {
             if (++tm_param > ENIGMA_TM_ROTATE) tm_param = 0;
         }
@@ -179,7 +186,8 @@ public:
     }
 
     void OnDownButtonLongPress() {
-
+        last_mode = mode;
+        mode = ENIGMA_CONFIRM_RESET;
     }
 
     // Left encoder selects the main object in the mode
@@ -250,6 +258,7 @@ private:
 
     //////// NAVIGATION
     byte mode = 0; // 0=Library 1=Assign 2=Song
+    byte last_mode = 0; // Stores previous mode for special screen(s)
     uint16_t edit_index = 0; // Current Song Mode step within track_step[]
 
     // Primary object cursors, one for each mode
@@ -265,6 +274,7 @@ private:
 
     void DrawHeader() {
         gfxHeader("Enigma - ");
+        if (mode == ENIGMA_CONFIRM_RESET) gfxPrint("New Song");
         if (mode == ENIGMA_MODE_LIBRARY) gfxPrint("Library");
         if (mode == ENIGMA_MODE_ASSIGN) gfxPrint("Assign");
         if (mode == ENIGMA_MODE_SONG) gfxPrint("Song");
@@ -274,19 +284,29 @@ private:
     // DrawInterface()'s job is to delegate to the various mode screens.
     void DrawInterface() {
         switch(mode) {
-            case ENIGMA_MODE_LIBRARY : DrawLibraryInterface();
-                                       break;
+            case ENIGMA_CONFIRM_RESET : DrawResetScreen();
+                                        break;
 
-            case ENIGMA_MODE_ASSIGN  : DrawAssignInterface();
-                                       break;
+            case ENIGMA_MODE_LIBRARY  : DrawLibraryInterface();
+                                        break;
 
-            case ENIGMA_MODE_SONG    : DrawSongInterface();
-                                       break;
+            case ENIGMA_MODE_ASSIGN   : DrawAssignInterface();
+                                        break;
 
-            default                  :
-            case ENIGMA_MODE_PLAY    : DrawPlayInterface();
-                                       break;
+            case ENIGMA_MODE_SONG     : DrawSongInterface();
+                                        break;
+
+            default                   :
+            case ENIGMA_MODE_PLAY     : DrawPlayInterface();
+                                        break;
         }
+    }
+
+    void DrawResetScreen() {
+        gfxPrint(0, 15, "Erase song and reset");
+        gfxPrint(0, 25, "outputs: Sure?");
+        gfxPrint(96, 55, "[YES]");
+        gfxPrint(0, 55, "[NO]");
     }
 
     void DrawLibraryInterface() {
@@ -627,6 +647,7 @@ private:
 
         if (play && Clock(0)) {
             clock_counter++;
+            int deferred_note = -1;
             for (byte t = 0; t < 4; t++)
             {
                 if (!playback_end[t] && clock_counter % track[t].divide() == 0) {
@@ -676,7 +697,6 @@ private:
                     }
 
                     // Send the track to the appopriate outputs
-                    int deferred_note = -1;
                     for (byte o = 0; o < 4; o++)
                     {
                         if (output[o].track() == t) {
@@ -699,14 +719,18 @@ private:
             //
             // If CV 2 is gated:
             //     As above, except the song restarts from the top instead
+            //
+            // If CV 1 and CV 2 are ungated:
+            //     End the song only if ALL tracks are non-looping
+            bool keep_going = 0;
             if (In(0) > HSAPPLICATION_3V || In(1) > HSAPPLICATION_3V) {
-                bool keep_going = 0;
                 for (byte t = 0; t < 4; t++) if (!track[t].loop() && !playback_end[t]) keep_going = 1;
-                if (!keep_going) {
-                    if (In(1) > HSAPPLICATION_3V) ResetSong();
-                    else play = 0;
-                }
-
+            } else {
+                for (byte t = 0; t < 4; t++) if (track[t].loop() || !playback_end[t]) keep_going = 1;
+            }
+            if (!keep_going) {
+                if (In(1) > HSAPPLICATION_3V) ResetSong();
+                else play = 0;
             }
 
         } // End of Digital 1 handler
@@ -779,6 +803,8 @@ private:
             playback_step_repeat[t] = 0;
             playback_step_beat[t] = 0;
             playback_end[t] = 0;
+
+            output[t].NoteOff();
         }
     }
 
@@ -922,6 +948,23 @@ private:
         }
     }
 };
+
+/*
+// Setting declarations for EEPROM storage, which consists of the following:
+//     The first 32 song steps @ 4 bytes each = 128 bytes
+//     Four output assignments @ 4 bytes each =  16 bytes
+//     Four track settings @ 1 byte each      =   4 bytes
+//     Song length                            =   1 byte
+#define ENIGMA_EEPROM_DATA {0,0,255,"St",NULL,settings::STORAGE_TYPE_U8},
+#define ENIGMA_DO_THIRTY_TIMES(A) A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A
+SETTINGS_DECLARE(EnigmaTMWS, 148) {
+    ENIGMA_DO_THIRTY_TIMES(ENIGMA_EEPROM_DATA)
+    ENIGMA_DO_THIRTY_TIMES(ENIGMA_EEPROM_DATA)
+    ENIGMA_DO_THIRTY_TIMES(ENIGMA_EEPROM_DATA)
+    ENIGMA_DO_THIRTY_TIMES(ENIGMA_EEPROM_DATA)
+    ENIGMA_DO_THIRTY_TIMES(ENIGMA_EEPROM_DATA)
+}
+*/
 
 EnigmaTMWS EnigmaTMWS_instance;
 
