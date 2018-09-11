@@ -320,10 +320,6 @@ void hMIDIIn_View(bool hemisphere) {
     hMIDIIn_instance[hemisphere].BaseView();
 }
 
-void hMIDIIn_Screensaver(bool hemisphere) {
-    hMIDIIn_instance[hemisphere].BaseScreensaverView();
-}
-
 void hMIDIIn_OnButtonPress(bool hemisphere) {
     hMIDIIn_instance[hemisphere].OnButtonPress();
 }

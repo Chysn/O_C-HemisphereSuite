@@ -151,12 +151,12 @@ private:
     }
 
     void DrawIndicator() {
-        gfxLine(0, 40, 63, 40);
+        gfxLine(0, 45, 63, 45);
         gfxLine(0, 62, 63, 62);
         for (int b = 0; b < 16; b++)
         {
             int v = (reg >> b) & 0x01;
-            if (v) gfxRect(60 - (4 * b), 42, 3, 19);
+            if (v) gfxRect(60 - (4 * b), 47, 3, 14);
         }
     }
 

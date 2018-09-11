@@ -43,6 +43,8 @@ public:
 
     void SetWriteMode(bool write_) {write = write_;}
 
+    byte GetTMIndex() {return ix;}
+
     /*
      * Length here is from 1 - 16
      */
@@ -97,12 +99,16 @@ public:
     bool IsFavorite() {return fav;}
 
     void DrawAt(byte x, byte y) {
+        // Adjust height if the display needs to go lower
+        byte height = 19;
+        if (y > 40) height -= (y - 40);
+
         graphics.drawLine(x, y, x + 63, y);
-        graphics.drawLine(x, y + 22, x + 63, y + 22);
+        graphics.drawLine(x, y + height + 3, x + 63, y + height + 3);
         for (byte b = 0; b < 16; b++)
         {
             int v = (reg >> b) & 0x01;
-            if (v) graphics.drawRect(60 + x - (4 * b), y + 2, 3, 19);
+            if (v) graphics.drawRect(60 + x - (4 * b), y + 2, 3, height);
         }
     }
 

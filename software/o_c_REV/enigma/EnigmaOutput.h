@@ -39,6 +39,7 @@ enum EnigmaOutputType {
     GATE,
 };
 const char* enigma_type_names[] = {"Note 3-Bit", "Note 4-Bit", "Note 5-Bit", "Note 6-Bit", "Note 7-Bit", "Modulation", "Expression", "Trigger", "Gate"};
+const char* enigma_type_short_names[] = {"Note-3", "Note-4", "Note-5", "Note-6", "Note-7", "Mod", "Expr", "Trigger", "Gate"};
 
 class EnigmaOutput {
 private:
