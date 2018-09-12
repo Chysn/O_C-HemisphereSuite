@@ -55,7 +55,7 @@ public:
             uint16_t reg = tm_state.GetRegister();
             ForEachChannel(ch)
             {
-                uint16_t transpose = In(0) / 128;
+                int transpose = In(0);
                 output[ch].SendToDAC<EnigmaJr>(this, reg, transpose);
             }
             tm_state.Advance(p);
@@ -131,19 +131,16 @@ private:
         char name[4];
         HS::TuringMachine::SetName(name, tm_state.GetTMIndex());
         gfxPrint(1, 15, name);
+        if (tm_state.IsFavorite()) gfxIcon(20, 15, FAVORITE_ICON);
         if (cursor == 0) {
             // If the Turing Machine is being selected, display the length and favorite
             // status instead of the probability
             byte length = tm_state.GetLength();
-            bool favorite = tm_state.IsFavorite();
-            gfxPrint(" ");
-            if (length > 0) gfxPrint(pad(10, length), length);
+            if (length > 0) gfxPrint(46 + pad(10, length), 15, length);
             else gfxPrint("--");
-            if (favorite) gfxIcon(55, 15, FAVORITE_ICON);
         } else {
-            gfxPrint(28, 15, "p=");
+            gfxPrint(34, 15, "p=");
             gfxPrint(pad(100, p), p);
-            gfxPrint("%");
         }
 
         // Second and third lines: Outputs
@@ -158,7 +155,7 @@ private:
 
         // Cursor
         if (cursor == 0) gfxCursor(1, 23, 18);
-        if (cursor == 1) gfxCursor(40, 23, 18);
+        if (cursor == 1) gfxCursor(46, 23, 18);
         if (cursor == 2) gfxCursor(13, 33, 44);
         if (cursor == 3) gfxCursor(13, 43, 44);
 

@@ -701,10 +701,10 @@ private:
                     {
                         if (output[o].track() == t) {
                             uint16_t reg = track_tm[t].GetRegister();
-                            output[o].SendToDAC<EnigmaTMWS>(this, reg, song_step[ssi].transpose());
+                            output[o].SendToDAC<EnigmaTMWS>(this, reg, song_step[ssi].transpose() * 128);
 
                             if (deferred_note > -1) output[o].SetDeferredNote(deferred_note);
-                            output[o].SendToMIDI(reg, song_step[ssi].transpose());
+                            output[o].SendToMIDI(reg, song_step[ssi].transpose() * 128);
                             if (output[o].GetDeferredNote() > -1) deferred_note = output[o].GetDeferredNote();
                         }
                     }
