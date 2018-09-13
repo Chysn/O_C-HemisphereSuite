@@ -8,7 +8,7 @@
 // 0x40 = Logic
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 41
+#define HEMISPHERE_AVAILABLE_APPLETS 42
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
@@ -45,8 +45,9 @@
     DECLARE_APPLET( 18, 0x02, TM), \
     DECLARE_APPLET( 36, 0x04, Shuffle), \
     DECLARE_APPLET(  7, 0x01, SkewedLFO), \
-    DECLARE_APPLET(  3, 0x10, Switch), \
     DECLARE_APPLET( 19, 0x01, Slew), \
+    DECLARE_APPLET( 46, 0x08, Squanch), \
+    DECLARE_APPLET(  3, 0x10, Switch), \
     DECLARE_APPLET( 13, 0x40, TLNeuron), \
     DECLARE_APPLET( 37, 0x40, Trending), \
     DECLARE_APPLET( 11, 0x06, TrigSeq), \

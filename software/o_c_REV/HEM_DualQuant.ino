@@ -65,10 +65,6 @@ public:
         DrawSelector();
     }
 
-    void ScreensaverView() {
-        DrawSelector();
-    }
-
     void OnButtonPress() {
         if (++cursor > 3) cursor = 0;
         ResetCursor();
@@ -178,10 +174,6 @@ void DualQuant_Controller(bool hemisphere, bool forwarding) {
 
 void DualQuant_View(bool hemisphere) {
     DualQuant_instance[hemisphere].BaseView();
-}
-
-void DualQuant_Screensaver(bool hemisphere) {
-    DualQuant_instance[hemisphere].BaseScreensaverView();
 }
 
 void DualQuant_OnButtonPress(bool hemisphere) {

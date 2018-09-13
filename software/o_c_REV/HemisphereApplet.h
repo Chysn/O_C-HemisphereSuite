@@ -259,7 +259,7 @@ public:
         uint8_t padding = 0;
         while (range > 1)
         {
-            if (number < range) padding += 6;
+            if (abs(number) < range) padding += 6;
             range = range / 10;
         }
         return padding;
