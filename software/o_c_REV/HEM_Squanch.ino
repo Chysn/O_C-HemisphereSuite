@@ -70,8 +70,7 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        if (cursor == 2) { //
-            // Scale selection
+        if (cursor == 2) { // Scale selection
             scale += direction;
             if (scale == OC::Scales::NUM_SCALES) scale = 0;
             if (scale < 0) scale = OC::Scales::NUM_SCALES - 1;

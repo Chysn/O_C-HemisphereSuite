@@ -112,6 +112,7 @@ public:
         p = Unpack(data, PackLocation {16,7});
         length = Unpack(data, PackLocation {23,4}) + 1;
         scale = Unpack(data, PackLocation {27,6});
+        quantizer.Configure(OC::Scales::GetScale(scale), 0xffff);
     }
 
 protected:

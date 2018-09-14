@@ -111,9 +111,9 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
-        help[HEMISPHERE_HELP_CVS]      = "1=Trpos 2=Organize";
+        help[HEMISPHERE_HELP_CVS]      = "1=Shift 2=Organize";
         help[HEMISPHERE_HELP_OUTS]     = "Assignable";
-        help[HEMISPHERE_HELP_ENCODER]  = "Reg/Outputs";
+        help[HEMISPHERE_HELP_ENCODER]  = "Reg/Assign Outputs";
         //                               "------------------" <-- Size Guide
     }
     

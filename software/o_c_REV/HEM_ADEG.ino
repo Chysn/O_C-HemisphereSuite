@@ -92,10 +92,6 @@ public:
         DrawIndicator();
     }
 
-    void ScreensaverView() {
-        DrawIndicator();
-    }
-
     void OnButtonPress() {
         cursor = 1 - cursor;
     }
@@ -191,10 +187,6 @@ void ADEG_Controller(bool hemisphere, bool forwarding) {
 
 void ADEG_View(bool hemisphere) {
     ADEG_instance[hemisphere].BaseView();
-}
-
-void ADEG_Screensaver(bool hemisphere) {
-    ADEG_instance[hemisphere].BaseScreensaverView();
 }
 
 void ADEG_OnButtonPress(bool hemisphere) {

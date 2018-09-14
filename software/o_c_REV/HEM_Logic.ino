@@ -83,11 +83,6 @@ public:
         DrawIndicator();
     }
 
-    void ScreensaverView() {
-        DrawSelector();
-        DrawIndicator();
-    }
-
     void OnButtonPress() {
         selected = 1 - selected;
         ResetCursor();
@@ -168,10 +163,6 @@ void Logic_Controller(bool hemisphere, bool forwarding) {
 
 void Logic_View(bool hemisphere) {
     Logic_instance[hemisphere].BaseView();
-}
-
-void Logic_Screensaver(bool hemisphere) {
-    Logic_instance[hemisphere].BaseScreensaverView();
 }
 
 void Logic_OnButtonPress(bool hemisphere) {
