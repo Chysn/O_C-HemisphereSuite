@@ -75,7 +75,7 @@ public:
 
     int ReadNextValue(byte output, bool hemisphere, int index_mod = 0) {
         if (IsLinked(hemisphere)) output += 2;
-        byte ix = position - (index * output) + index_mod;
+        byte ix = position - (index * output) - index_mod;
         int cv = buffer[ix];
         return cv;
     }

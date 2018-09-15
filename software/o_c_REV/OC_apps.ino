@@ -43,7 +43,6 @@ OC::App available_apps[] = {
   DECLARE_APP('P','O', "Pong", PONGGAME, PONGGAME_isr),
   DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
   DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR, SCALEEDITOR_isr),
-  DECLARE_APP('R','F', "Voltages", REFS, REFS_isr),
 };
 #else 
 OC::App available_apps[] = {
@@ -54,7 +53,6 @@ OC::App available_apps[] = {
   DECLARE_APP('P','O', "Pong", PONGGAME, PONGGAME_isr),
   DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
   DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR, SCALEEDITOR_isr),
-  DECLARE_APP('R','F', "References", REFS, REFS_isr),
 };
 #endif
 
@@ -423,14 +421,14 @@ bool Ui::ConfirmReset() {
     GRAPHICS_BEGIN_FRAME(true);
     weegfx::coord_t y = menu::CalcLineY(0);
     graphics.setPrintPos(menu::kIndentDx, y);
-    graphics.print("[L] EXIT");
+    graphics.print("[L] Exit");
     y += menu::kMenuLineH;
 
     graphics.setPrintPos(menu::kIndentDx, y);
-    graphics.print("[R] RESET SETTINGS" );
+    graphics.print("[R] Reset settings" );
     y += menu::kMenuLineH;
     graphics.setPrintPos(menu::kIndentDx, y);
-    graphics.print("    AND ERASE EEPROM");
+    graphics.print("    and erase EEPROM");
     GRAPHICS_END_FRAME();
 
   } while (!done);
