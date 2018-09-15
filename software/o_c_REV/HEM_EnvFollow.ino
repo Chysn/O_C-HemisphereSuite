@@ -32,6 +32,7 @@ public:
         {
             max[ch] = 0;
             gain[ch] = 10;
+            duck[ch] = ch; // Default: one of each
         }
         countdown = HEM_ENV_FOLLOWER_SAMPLES;
     }
@@ -41,7 +42,7 @@ public:
             ForEachChannel(ch)
             {
                 target[ch] = max[ch] * gain[ch];
-                if (ch) target[ch] = HEMISPHERE_MAX_CV - target[ch]; // Ch 2 is ducking
+                if (duck[ch]) target[ch] = HEMISPHERE_MAX_CV - target[ch]; // Handle ducking channel(s)
                 target[ch] = constrain(target[ch], 0, HEMISPHERE_MAX_CV);
                 max[ch] = 0;
             }
@@ -59,33 +60,37 @@ public:
 
     void View() {
         gfxHeader(applet_name());
-        gfxSkyline();
         DrawInterface();
-    }
-
-    void ScreensaverView() {
         gfxSkyline();
     }
 
     void OnButtonPress() {
-        cursor = 1 - cursor;
+        if (++cursor > 3) cursor = 0;
         ResetCursor();
     }
 
     void OnEncoderMove(int direction) {
-        gain[cursor] = constrain(gain[cursor] + direction, 1, 31);
+        if (cursor < 2) { // Gain per channel
+            gain[cursor] = constrain(gain[cursor] + direction, 1, 31);
+        } else {
+            duck[cursor - 2] = 1 - duck[cursor - 2];
+        }
     }
         
     uint32_t OnDataRequest() {
         uint32_t data = 0;
         Pack(data, PackLocation {0,5}, gain[0]);
         Pack(data, PackLocation {5,5}, gain[1]);
+        Pack(data, PackLocation {10,1}, duck[0]);
+        Pack(data, PackLocation {11,1}, duck[1]);
         return data;
     }
 
     void OnDataReceive(uint32_t data) {
         gain[0] = Unpack(data, PackLocation {0,5});
         gain[1] = Unpack(data, PackLocation {5,5});
+        duck[0] = Unpack(data, PackLocation {10,1});
+        duck[1] = Unpack(data, PackLocation {11,1});
     }
 
 protected:
@@ -93,8 +98,8 @@ protected:
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "";
         help[HEMISPHERE_HELP_CVS]      = "Inputs 1,2";
-        help[HEMISPHERE_HELP_OUTS]     = "1=Follower 2=Duck";
-        help[HEMISPHERE_HELP_ENCODER]  = "Gain";
+        help[HEMISPHERE_HELP_OUTS]     = "Follow/Duck";
+        help[HEMISPHERE_HELP_ENCODER]  = "Gain/Assign";
         //                               "------------------" <-- Size Guide
     }
     
@@ -107,14 +112,21 @@ private:
 
     // Setting
     uint8_t gain[2];
+    bool duck[2]; // Choose between follow and duck per channel
 
     void DrawInterface() {
         ForEachChannel(ch)
         {
-            gfxPrint(1 + (41 * ch) + pad(10, gain[ch]), 15, gain[ch]);
+            // Gain
+            gfxPrint(1 + (45 * ch) + pad(10, gain[ch]), 15, gain[ch]);
             gfxPrint("x");
+
+            // Duck
+            gfxPrint(1 + (38 * ch), 25, duck[ch] ? "Duck" : "Foll");
+
         }
-        gfxCursor(1 + (41 * cursor), 23, 12);
+        if (cursor < 2) gfxCursor(1 + (45 * cursor), 23, 12);
+        else gfxCursor(1 + (38 * (cursor - 2)), 33, 24);
     }
 
 };
@@ -133,7 +145,6 @@ EnvFollow EnvFollow_instance[2];
 void EnvFollow_Start(bool hemisphere) {EnvFollow_instance[hemisphere].BaseStart(hemisphere);}
 void EnvFollow_Controller(bool hemisphere, bool forwarding) {EnvFollow_instance[hemisphere].BaseController(forwarding);}
 void EnvFollow_View(bool hemisphere) {EnvFollow_instance[hemisphere].BaseView();}
-void EnvFollow_Screensaver(bool hemisphere) {EnvFollow_instance[hemisphere].BaseScreensaverView();}
 void EnvFollow_OnButtonPress(bool hemisphere) {EnvFollow_instance[hemisphere].OnButtonPress();}
 void EnvFollow_OnEncoderMove(bool hemisphere, int direction) {EnvFollow_instance[hemisphere].OnEncoderMove(direction);}
 void EnvFollow_ToggleHelpScreen(bool hemisphere) {EnvFollow_instance[hemisphere].HelpScreen();}

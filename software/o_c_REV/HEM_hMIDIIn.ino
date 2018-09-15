@@ -157,16 +157,12 @@ public:
     void View() {
         gfxHeader(applet_name());
         DrawMonitor();
-        DrawSelector();
-    }
-
-    void ScreensaverView() {
-        DrawMonitor();
-        DrawLog();
+        if (cursor == 3) DrawLog();
+        else DrawSelector();
     }
 
     void OnButtonPress() {
-        if (++cursor > 2) cursor = 0;
+        if (++cursor > 3) cursor = 0;
         ResetCursor();
     }
 
@@ -198,7 +194,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "";
         help[HEMISPHERE_HELP_CVS]      = "";
         help[HEMISPHERE_HELP_OUTS]     = "Assignable";
-        help[HEMISPHERE_HELP_ENCODER]  = "MIDI Ch/Assign Out";
+        help[HEMISPHERE_HELP_ENCODER]  = "MIDI Ch/Assign/Log";
         //                               "------------------" <-- Size Guide
     }
     
@@ -254,9 +250,9 @@ private:
 
         // Last log entry
         if (log_index > 0) {
-            gfxDottedLine(1, 55, 62, 55, 2);
             log_entry(56, log_index - 1);
         }
+        gfxInvert(0, 55, 64, 9);
     }
 
     void DrawLog() {
