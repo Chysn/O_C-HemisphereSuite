@@ -31,18 +31,19 @@ public:
 
     void Start() {
         scale = OC::Scales::SCALE_SEMI;
+        buffer_m->SetIndex(1);
         quantizer.Configure(OC::Scales::GetScale(scale), 0xffff); // Semi-tone
     }
 
     void Controller() {
-        buffer_m->Register(hemisphere); // Tell the manager that you're here
+        buffer_m->Register(hemisphere);
 
         if (Clock(0)) StartADCLag();
 
         if (EndOfADCLag() || buffer_m->Ready(hemisphere)) {
-            if (!Gate(1)) {
+            if (!Gate(1) && !buffer_m->IsLinked(hemisphere)) {
                 int cv = In(0);
-                buffer_m->WriteValueToBuffer(cv);
+                buffer_m->WriteValueToBuffer(cv, hemisphere);
             }
             int index_mod = Proportion(DetentedIn(1), HEMISPHERE_MAX_CV, 32);
             ForEachChannel(ch)
@@ -108,6 +109,9 @@ private:
     byte scale;
     
     void DrawInterface() {
+        // Show Link icon if linked with another ASR
+        if (buffer_m->IsLinked(hemisphere)) gfxIcon(56, 1, LINK_ICON);
+
         // Index (shared between all instances of ASR)
         byte ix = buffer_m->GetIndex();
         gfxPrint(1, 15, "Index: ");
@@ -125,7 +129,7 @@ private:
     void DrawData() {
         for (byte x = 0; x < 64; x++)
         {
-            int y = buffer_m->GetY(hemisphere, x) + 40;
+            int y = buffer_m->GetYAt(x, hemisphere) + 40;
             gfxPixel(x, y);
         }
     }

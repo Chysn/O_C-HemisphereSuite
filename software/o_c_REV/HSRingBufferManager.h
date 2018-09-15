@@ -24,14 +24,14 @@ class RingBufferManager {
     byte position = 0;
     byte index = 0;
     bool ready = 0; // Allows a second instance to know that a first instance has been clocked
-    uint32_t registration[2]; // Keep track of which hemispheres are using ASR
+    uint32_t registered[2];
 
     uint32_t last_advance_tick = 0; // To prevent double-advancing
-    uint32_t last_write_tick = 0; // To prevent double-writing
 
     RingBufferManager() {
         for (byte i = 0; i < 255; i++) buffer[i] = 0;
-        position = 0;
+        registered[LEFT_HEMISPHERE] = 0;
+        registered[RIGHT_HEMISPHERE] = 0;
     }
 
 public:
@@ -41,19 +41,20 @@ public:
     }
 
     void Register(bool hemisphere) {
-        registration[hemisphere] = OC::CORE::ticks;
+        registered[hemisphere] = OC::CORE::ticks;
     }
 
-    byte CountInstances() {
-        byte count = 0;
-        for (byte i = 0; i < 2; i++) if (OC::CORE::ticks - registration[i] < 8) count++;
-        return count;
+    bool IsLinked(bool hemisphere) {
+        uint32_t t = OC::CORE::ticks;
+        return (hemisphere == RIGHT_HEMISPHERE
+                && (t - registered[LEFT_HEMISPHERE] < 160)
+                && (t - registered[RIGHT_HEMISPHERE] < 160));
     }
 
     // Allows a second instance to know that a first instance has been clocked
     bool Ready(bool hemisphere) {
         bool r = 0;
-        if (hemisphere == RIGHT_HEMISPHERE && CountInstances() == 2) {
+        if (IsLinked(hemisphere)) {
             r = ready;
             ready = 0;
         }
@@ -66,14 +67,15 @@ public:
 
     byte GetPosition() {return position;}
 
-    void WriteValueToBuffer(int cv) {
-        if (OC::CORE::ticks > last_write_tick) buffer[position] = cv;
-        last_write_tick = OC::CORE::ticks;
+    void WriteValueToBuffer(int cv, bool hemisphere) {
+        if (!IsLinked(hemisphere)) {
+            buffer[position] = cv;
+        }
     }
 
     int ReadNextValue(byte output, bool hemisphere, int index_mod = 0) {
-        if (hemisphere == RIGHT_HEMISPHERE && CountInstances() == 2) output += 2;
-        byte ix = position - ((index + 1) * output) + index_mod;
+        if (IsLinked(hemisphere)) output += 2;
+        byte ix = position - (index * output) + index_mod;
         int cv = buffer[ix];
         return cv;
     }
@@ -86,14 +88,15 @@ public:
         }
     }
 
-    int GetY(bool hemisphere, byte x) {
+    int GetYAt(byte x, bool hemisphere) {
         // If there are two instances, and this is the right hemisphere, show the
         // second 128 bytes. Otherwise, just show the first 128.
-        byte offset = (hemisphere == RIGHT_HEMISPHERE && CountInstances() == 2) ? 64 : 0;
-        byte ix = (x + offset + position + 196);
+        byte offset = (IsLinked(hemisphere)) ? 64 : 0;
+        byte ix = (x + offset + position + 64);
         int cv = buffer[ix] + HEMISPHERE_MAX_CV; // Force this positive
-        int y = ((cv << 7) / (HEMISPHERE_MAX_CV * 2)) * 23;
-        return 23 - (y >> 7);
+        int y = (((cv << 7) / (HEMISPHERE_MAX_CV * 2)) * 23) >> 7;
+        y = constrain(y, 0, 23);
+        return 23 - y;
     }
 };
 
