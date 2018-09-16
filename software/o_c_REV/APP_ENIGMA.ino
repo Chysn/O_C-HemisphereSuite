@@ -56,9 +56,10 @@ const byte ENIGMA_STEP_TRANSPOSE = 4;
 const byte ENIGMA_TRACK_DIVIDE = 0;
 const byte ENIGMA_TRACK_LOOP = 1;
 
-// Settings for data handling
+// Settings for various things
 #define ENIGMA_SETTING_LAST 150
 #define ENIGMA_NO_STEP_AVAILABLE 0xffff
+#define ENIGMA_INITIAL_HELP_TIME 48000
 
 class EnigmaTMWS : public HSApplication, public SystemExclusiveHandler,
     public settings::SettingsBase<EnigmaTMWS, ENIGMA_SETTING_LAST> {
@@ -73,7 +74,6 @@ public:
 	    {
 	        output[o].InitAs(o);
 	        track[o].InitAs(o);
-	        //song_step[total_steps++].Init(o);
 	    }
 
 	    ResetSong();
@@ -89,6 +89,7 @@ public:
 
     void Controller() {
         ListenForSysEx();
+        if (help_countdown) --help_countdown;
 
         switch(mode) {
             case ENIGMA_MODE_LIBRARY : LibraryController();
@@ -137,6 +138,7 @@ public:
         if (++mode > ENIGMA_MODE_PLAY) mode = ENIGMA_MODE_LIBRARY;
         if (mode == ENIGMA_CONFIRM_RESET) mode = last_mode; // Cancel erase
         ResetCursor();
+        help_countdown = help_time;
     }
 
     void OnLeftButtonLongPress() {
@@ -147,48 +149,57 @@ public:
 
     // Right button sets the parameter for the data type
     void OnRightButtonPress() {
-        if (mode == ENIGMA_CONFIRM_RESET) {
-            total_steps = 0;
-            Start();
-            mode = last_mode;
-        }
-        if (mode == ENIGMA_MODE_LIBRARY && !tm_state.IsFavorite()) {
-            if (++tm_param > ENIGMA_TM_ROTATE) tm_param = 0;
-        }
-        if (mode == ENIGMA_MODE_ASSIGN) {
-            if (++output_param > ENIGMA_OUTPUT_MIDI_CH) output_param = 0;
-            if (output[output_cursor].type() > EnigmaOutputType::NOTE7) {
-                // Skip scale parameters for trigger and gate outputs
-                if (output_param == ENIGMA_OUTPUT_SCALE) output_param = ENIGMA_OUTPUT_MIDI_CH;
+        if (help_countdown) DismissHelp();
+        else {
+            if (mode == ENIGMA_CONFIRM_RESET) {
+                total_steps = 0;
+                Start();
+                mode = last_mode;
             }
+            if (mode == ENIGMA_MODE_LIBRARY && !tm_state.IsFavorite()) {
+                if (++tm_param > ENIGMA_TM_ROTATE) tm_param = 0;
+            }
+            if (mode == ENIGMA_MODE_ASSIGN) {
+                if (++output_param > ENIGMA_OUTPUT_MIDI_CH) output_param = 0;
+                if (output[output_cursor].type() > EnigmaOutputType::NOTE7) {
+                    // Skip scale parameters for trigger and gate outputs
+                    if (output_param == ENIGMA_OUTPUT_SCALE) output_param = ENIGMA_OUTPUT_MIDI_CH;
+                }
 
+            }
+            if (mode == ENIGMA_MODE_SONG) {
+                if (++step_param > ENIGMA_STEP_TRANSPOSE) step_param = ENIGMA_STEP_NUMBER;
+            }
+            if (mode == ENIGMA_MODE_PLAY) {
+                if (++track_param > ENIGMA_TRACK_LOOP) track_param = ENIGMA_TRACK_DIVIDE;
+            }
+            ResetCursor();
         }
-        if (mode == ENIGMA_MODE_SONG) {
-            if (++step_param > ENIGMA_STEP_TRANSPOSE) step_param = ENIGMA_STEP_NUMBER;
-        }
-        if (mode == ENIGMA_MODE_PLAY) {
-            if (++track_param > ENIGMA_TRACK_LOOP) track_param = ENIGMA_TRACK_DIVIDE;
-        }
-        ResetCursor();
     }
 
     void OnUpButtonPress() {
-        if (mode == ENIGMA_MODE_LIBRARY) {
-            tm_state.SetFavorite(1 - tm_state.IsFavorite());
-            state_prob[tm_cursor] = 0;
-            if (tm_state.IsFavorite()) tm_param = ENIGMA_TM_ROTATE;
-            // TODO: Sysex out
+        if (help_countdown) DismissHelp();
+        else {
+            if (mode == ENIGMA_MODE_LIBRARY) {
+                tm_state.SetFavorite(1 - tm_state.IsFavorite());
+                state_prob[tm_cursor] = 0;
+                if (tm_state.IsFavorite()) tm_param = ENIGMA_TM_ROTATE;
+                // TODO: Sysex out
+            }
+            if (mode == ENIGMA_MODE_ASSIGN) assign_audition = 0;
+            if (mode == ENIGMA_MODE_SONG) InsertStep();
+            if (mode == ENIGMA_MODE_PLAY) play = 1 - play;
         }
-        if (mode == ENIGMA_MODE_ASSIGN) assign_audition = 0;
-        if (mode == ENIGMA_MODE_SONG) InsertStep();
-        if (mode == ENIGMA_MODE_PLAY) play = 1 - play;
     }
 
     void OnDownButtonPress() {
-        if (mode == ENIGMA_MODE_LIBRARY) tm_state.Reset();
-        if (mode == ENIGMA_MODE_ASSIGN) assign_audition = 1;
-        if (mode == ENIGMA_MODE_SONG) DeleteStep();
-        if (mode == ENIGMA_MODE_PLAY) ResetSong();
+        if (help_countdown) DismissHelp();
+        else {
+            if (mode == ENIGMA_MODE_LIBRARY) tm_state.Reset();
+            if (mode == ENIGMA_MODE_ASSIGN) assign_audition = 1;
+            if (mode == ENIGMA_MODE_SONG) DeleteStep();
+            if (mode == ENIGMA_MODE_PLAY) ResetSong();
+        }
     }
 
     void OnDownButtonLongPress() {
@@ -198,44 +209,50 @@ public:
 
     // Left encoder selects the main object in the mode
     void OnLeftEncoderMove(int direction) {
-        if (mode == ENIGMA_MODE_LIBRARY) {
-            // For Library mode, that's the Turing Machine
-            tm_cursor += direction;
-            if (tm_cursor < 0) tm_cursor = HS::TURING_MACHINE_COUNT - 1;
-            if (tm_cursor >= HS::TURING_MACHINE_COUNT) tm_cursor = 0;
-            SwitchTuringMachine(tm_cursor);
+        if (help_countdown) DismissHelp();
+        else {
+            if (mode == ENIGMA_MODE_LIBRARY) {
+                // For Library mode, that's the Turing Machine
+                tm_cursor += direction;
+                if (tm_cursor < 0) tm_cursor = HS::TURING_MACHINE_COUNT - 1;
+                if (tm_cursor >= HS::TURING_MACHINE_COUNT) tm_cursor = 0;
+                SwitchTuringMachine(tm_cursor);
+            }
+            if (mode == ENIGMA_MODE_ASSIGN) {
+                output_cursor += direction;
+                if (output_cursor < 0) output_cursor = 3;
+                if (output_cursor > 3) output_cursor = 0;
+            }
+            if (mode == ENIGMA_MODE_SONG || mode == ENIGMA_MODE_PLAY) {
+                track_cursor += direction;
+                if (track_cursor < 0) track_cursor = 3;
+                if (track_cursor > 3) track_cursor = 0;
+                BuildTrackStepList(track_cursor);
+            }
+            ResetCursor();
         }
-        if (mode == ENIGMA_MODE_ASSIGN) {
-            output_cursor += direction;
-            if (output_cursor < 0) output_cursor = 3;
-            if (output_cursor > 3) output_cursor = 0;
-        }
-        if (mode == ENIGMA_MODE_SONG || mode == ENIGMA_MODE_PLAY) {
-            track_cursor += direction;
-            if (track_cursor < 0) track_cursor = 3;
-            if (track_cursor > 3) track_cursor = 0;
-            BuildTrackStepList(track_cursor);
-        }
-        ResetCursor();
     }
 
     void OnRightEncoderMove(int direction) {
-        switch(mode) {
-            case ENIGMA_MODE_LIBRARY : DelegateTMParam(direction);
-                                       break;
+        if (help_countdown) DismissHelp();
+        else {
+            switch(mode) {
+                case ENIGMA_MODE_LIBRARY : DelegateTMParam(direction);
+                                           break;
 
-            case ENIGMA_MODE_ASSIGN  : DelegateOutputParam(direction);
-                                       break;
+                case ENIGMA_MODE_ASSIGN  : DelegateOutputParam(direction);
+                                           break;
 
-            case ENIGMA_MODE_SONG    : DelegateStepParam(direction);
-                                       break;
+                case ENIGMA_MODE_SONG    : DelegateStepParam(direction);
+                                           break;
 
-            default:
-            case ENIGMA_MODE_PLAY    : DelegatePlayParam(direction);
-                                       break;
+                default:
+                case ENIGMA_MODE_PLAY    : DelegatePlayParam(direction);
+                                           break;
 
+            }
+            ResetCursor();
         }
-        ResetCursor();
     }
 
 private:
@@ -246,6 +263,8 @@ private:
     uint16_t track_step[100]; // List of steps in the current track
     uint16_t total_steps = 0; // Total number of song_step[] entries used; index of the next step
     byte last_track_step_index = 0; // For adding the next step
+    uint16_t help_countdown = 0; // Display help screen for this many more ticks
+    uint16_t help_time = ENIGMA_INITIAL_HELP_TIME; // Starting time for help, per mode
 
     //////// PLAYBACK
     bool play = 0; // Playback mode
@@ -328,30 +347,33 @@ private:
         }
         DrawSelectorBox("Register");
 
-        // The right side is for editing
-        // Length
-        byte length = tm_state.GetLength();
-        gfxIcon(64, 14, NOTE_ICON);
-        gfxPrint(76 + pad(10, length), 15, length);
+        if (help_countdown) DrawLibraryHelp();
+        else {
+            // The right side is for editing
+            // Length
+            byte length = tm_state.GetLength();
+            gfxIcon(64, 14, NOTE_ICON);
+            gfxPrint(76 + pad(10, length), 15, length);
 
-        // Probability
-        byte p = state_prob[tm_cursor];
-        gfxPrint(96, 15, "p=");
-        if (tm_state.IsFavorite()) gfxIcon(116, 15, FAVORITE_ICON);
-        else gfxPrint(pad(100, p), p);
+            // Probability
+            byte p = state_prob[tm_cursor];
+            gfxPrint(96, 15, "p=");
+            if (tm_state.IsFavorite()) gfxIcon(116, 15, FAVORITE_ICON);
+            else gfxPrint(pad(100, p), p);
 
-        // Cursors
-        if (!tm_state.IsFavorite()) {
-            if (tm_param == ENIGMA_TM_PROBABILITY) gfxCursor(109, 23, 18);
-            if (tm_param == ENIGMA_TM_LENGTH) gfxCursor(77, 23, 12);
+            // Cursors
+            if (!tm_state.IsFavorite()) {
+                if (tm_param == ENIGMA_TM_PROBABILITY) gfxCursor(109, 23, 18);
+                if (tm_param == ENIGMA_TM_LENGTH) gfxCursor(77, 23, 12);
+            }
+            if (tm_param == ENIGMA_TM_ROTATE) {
+                gfxIcon(87, 27, ROTATE_L_ICON);
+                gfxIcon(95, 27, ROTATE_R_ICON);
+            }
+
+            // TM Graphic
+            tm_state.DrawAt(64, 40);
         }
-        if (tm_param == ENIGMA_TM_ROTATE) {
-            gfxIcon(87, 27, ROTATE_L_ICON);
-            gfxIcon(95, 27, ROTATE_R_ICON);
-        }
-
-        // TM Graphic
-        tm_state.DrawAt(64, 40);
     }
 
     void DrawAssignInterface() {
@@ -367,33 +389,36 @@ private:
         }
         DrawSelectorBox("Output");
 
-        // The right side is for editing
-        // Track
-        gfxPrint(56, 25, "Track ");
-        gfxPrint(output[output_cursor].track() + 1);
+        if (help_countdown) DrawAssignHelp();
+        else {
+            // The right side is for editing
+            // Track
+            gfxPrint(56, 25, "Track ");
+            gfxPrint(output[output_cursor].track() + 1);
 
-        // Type
-        gfxPrint(56, 35, enigma_type_names[output[output_cursor].type()]);
+            // Type
+            gfxPrint(56, 35, enigma_type_names[output[output_cursor].type()]);
 
-        // Scale
-        if (output[output_cursor].type() <= EnigmaOutputType::NOTE7) {
-            gfxPrint(56, 45, OC::scale_names_short[output[output_cursor].scale()]);
+            // Scale
+            if (output[output_cursor].type() <= EnigmaOutputType::NOTE7) {
+                gfxPrint(56, 45, OC::scale_names_short[output[output_cursor].scale()]);
+            }
+
+            // MIDI Channel
+            gfxPrint(56, 55, "MIDI Ch ");
+            gfxPrint(midi_channels[output[output_cursor].midi_channel()]);
+
+            // Cursor
+            if (output_param == ENIGMA_OUTPUT_TRACK) gfxCursor(57, 33, 42);
+            if (output_param == ENIGMA_OUTPUT_TYPE) gfxCursor(57, 43, 70);
+            if (output_param == ENIGMA_OUTPUT_SCALE) gfxCursor(57, 53, 30);
+            if (output_param == ENIGMA_OUTPUT_MIDI_CH) gfxCursor(105, 63, 18);
+
+            // Audition
+            gfxIcon(56, 15, AUDITION_ICON);
+            gfxPrint(68, 15, assign_audition ? "Song" : "Library");
+            gfxLine(48, 23, 127, 23);
         }
-
-        // MIDI Channel
-        gfxPrint(56, 55, "MIDI Ch ");
-        gfxPrint(midi_channels[output[output_cursor].midi_channel()]);
-
-        // Cursor
-        if (output_param == ENIGMA_OUTPUT_TRACK) gfxCursor(57, 33, 42);
-        if (output_param == ENIGMA_OUTPUT_TYPE) gfxCursor(57, 43, 70);
-        if (output_param == ENIGMA_OUTPUT_SCALE) gfxCursor(57, 53, 30);
-        if (output_param == ENIGMA_OUTPUT_MIDI_CH) gfxCursor(105, 63, 18);
-
-        // Monitor
-        gfxIcon(56, 15, AUDITION_ICON);
-        gfxPrint(68, 15, assign_audition ? "Song" : "Library");
-        gfxLine(48, 23, 127, 23);
     }
 
     void DrawSongInterface() {
@@ -413,70 +438,71 @@ private:
         }
         DrawSelectorBox("Track");
 
-        // The right side is for editing
-        // Step parameters
-        uint16_t ssi = track_step[edit_index]; // The song step index
-        if (ssi < ENIGMA_NO_STEP_AVAILABLE) {
-            gfxPrint(56 + pad(10, edit_index + 1), 15, edit_index + 1); // Step number (1-99)
-            gfxPrint(": ");
-            char name[4];
-            HS::TuringMachine::SetName(name, song_step[ssi].tm());
-            gfxPrint(name); // Turing machine name
-            gfxPrint(" ");
 
-            if (step_param == ENIGMA_STEP_TM) {
-                // If the Turing Machine is being selected, display the length and favorite
-                // status instead of the probability
-                byte length = HS::user_turing_machines[song_step[ssi].tm()].len;
-                bool favorite = HS::user_turing_machines[song_step[ssi].tm()].favorite;
+        if (help_countdown) DrawSongHelp();
+        else {
+            // The right side is for editing
+            // Step parameters
+            uint16_t ssi = track_step[edit_index]; // The song step index
+            if (ssi < ENIGMA_NO_STEP_AVAILABLE) {
+                gfxPrint(56 + pad(10, edit_index + 1), 15, edit_index + 1); // Step number (1-99)
+                gfxPrint(": ");
+                char name[4];
+                HS::TuringMachine::SetName(name, song_step[ssi].tm());
+                gfxPrint(name); // Turing machine name
+                gfxPrint(" ");
 
-                if (length > 0) gfxPrint(pad(10, length), length);
-                else gfxPrint("--");
-                if (favorite) gfxIcon(119, 15, FAVORITE_ICON);
+                if (step_param == ENIGMA_STEP_TM) {
+                    // If the Turing Machine is being selected, display the length and favorite
+                    // status instead of the probability
+                    byte length = HS::user_turing_machines[song_step[ssi].tm()].len;
+                    bool favorite = HS::user_turing_machines[song_step[ssi].tm()].favorite;
+
+                    if (length > 0) gfxPrint(pad(10, length), length);
+                    else gfxPrint("--");
+                    if (favorite) gfxIcon(119, 15, FAVORITE_ICON);
+                } else {
+                    gfxPrint(pad(100, song_step[ssi].p()), song_step[ssi].p());
+                    gfxPrint("%");
+                }
+                gfxPrint(80, 25, "x");
+                gfxPrint(pad(10, song_step[ssi].repeats()), song_step[ssi].repeats()); // Number of times played
+                gfxPrint("  ");
+                gfxPrint(song_step[ssi].transpose() > -1 ? "+" : "");
+                gfxPrint(song_step[ssi].transpose()); // Transpose
+
+                // Cursor
+                if (step_param == ENIGMA_STEP_NUMBER && CursorBlink()) gfxInvert(56, 14, 12, 9);
+                if (step_param == ENIGMA_STEP_TM) gfxCursor(81, 23, 18);
+                if (step_param == ENIGMA_STEP_P) gfxCursor(105, 23, 18);
+                if (step_param == ENIGMA_STEP_REPEATS) gfxCursor(87, 33, 12);
+                if (step_param == ENIGMA_STEP_TRANSPOSE) gfxCursor(117, 33, 12);
             } else {
-                gfxPrint(pad(100, song_step[ssi].p()), song_step[ssi].p());
-                gfxPrint("%");
+                DrawSongHelp();
             }
-            gfxPrint(80, 25, "x");
-            gfxPrint(pad(10, song_step[ssi].repeats()), song_step[ssi].repeats()); // Number of times played
-            gfxPrint("  ");
-            gfxPrint(song_step[ssi].transpose() > -1 ? "+" : "");
-            gfxPrint(song_step[ssi].transpose()); // Transpose
 
-            // Cursor
-            if (step_param == ENIGMA_STEP_NUMBER && CursorBlink()) gfxInvert(56, 14, 12, 9);
-            if (step_param == ENIGMA_STEP_TM) gfxCursor(81, 23, 18);
-            if (step_param == ENIGMA_STEP_P) gfxCursor(105, 23, 18);
-            if (step_param == ENIGMA_STEP_REPEATS) gfxCursor(87, 33, 12);
-            if (step_param == ENIGMA_STEP_TRANSPOSE) gfxCursor(117, 33, 12);
-        } else {
-            gfxIcon(56, 15, UP_BTN_ICON);
-            gfxPrint(66, 15, "Add Step");
-            gfxIcon(56, 25, DOWN_BTN_ICON);
-            gfxPrint(66, 25, "Del Step");
-        }
-
-        // Draw the next three steps
-        if (last_track_step_index > 0) {
-            bool stop = 0; // Show the Stop/Loop step only once
-            for (byte n = 0; n < 3; n++)
-            {
-                if (edit_index + n + 1 < 99) {
-                    uint16_t ssi = track_step[edit_index + n + 1];
-                    byte y = 35 + (10 * n);
-                    if (ssi < ENIGMA_NO_STEP_AVAILABLE) {
-                        gfxPrint(56 + pad(10, edit_index + n + 2), y, edit_index + n + 2); // Step number (1-99)
-                        gfxPrint(": ");
-                        char name[4];
-                        HS::TuringMachine::SetName(name, song_step[ssi].tm());
-                        gfxPrint(name); // Turing machine name
-                        gfxPrint(" x");
-                        gfxPrint(song_step[ssi].repeats()); // Number of times played
-                    } else if (!stop) {
-                        stop = 1;
-                        gfxPrint(56 + pad(10, edit_index + n + 2), y, edit_index + n + 2); // Step number (1-99)
-                        gfxPrint(": ");
-                        gfxPrint(track[track_cursor].loop() ? "< Loop >" : "< Stop >");
+            // Draw the next three steps
+            if (last_track_step_index > 0) {
+                bool stop = 0; // Show the Stop/Loop step only once
+                for (byte n = 0; n < 3; n++)
+                {
+                    if (edit_index + n + 1 < 99) {
+                        uint16_t ssi = track_step[edit_index + n + 1];
+                        byte y = 35 + (10 * n);
+                        if (ssi < ENIGMA_NO_STEP_AVAILABLE) {
+                            gfxPrint(56 + pad(10, edit_index + n + 2), y, edit_index + n + 2); // Step number (1-99)
+                            gfxPrint(": ");
+                            char name[4];
+                            HS::TuringMachine::SetName(name, song_step[ssi].tm());
+                            gfxPrint(name); // Turing machine name
+                            gfxPrint(" x");
+                            gfxPrint(song_step[ssi].repeats()); // Number of times played
+                        } else if (!stop) {
+                            stop = 1;
+                            gfxPrint(56 + pad(10, edit_index + n + 2), y, edit_index + n + 2); // Step number (1-99)
+                            gfxPrint(": ");
+                            gfxPrint(track[track_cursor].loop() ? "< Loop >" : "< Stop >");
+                        }
                     }
                 }
             }
@@ -491,49 +517,85 @@ private:
         if (play) gfxIcon(118, 0, PLAY_ICON);
         else gfxIcon(118, 0, PAUSE_ICON);
 
-        // Headers
-        // Track, Step/Repeat, Register, Divide, Loop
-        gfxPrint(0, 15, "Tr Step  Reg");
-        gfxLine(0, 23, 127, 23);
-        gfxIcon(80, 14, CLOCK_ICON);
-        gfxIcon(106, 14, LOOP_ICON);
+        if (help_countdown) DrawPlayHelp();
+        else {
+            // Headers
+            // Track, Step/Repeat, Register, Divide, Loop
+            gfxPrint(0, 15, "Tr Step  Reg");
+            gfxLine(0, 23, 127, 23);
+            gfxIcon(80, 14, CLOCK_ICON);
+            gfxIcon(106, 14, LOOP_ICON);
 
-        for (int t = 0; t < 4; t++)
-        {
-            uint16_t ssi = playback_step_index[t]; // playback_step_index is the index of the song_step
-            byte y = 25 + (t * 10);
-            gfxPrint(0, y, t + 1);
-            if (playback_step_number[t] == 0) {
-                gfxIcon(30, y, RESET_ICON);
-            } else if (ssi != ENIGMA_NO_STEP_AVAILABLE) {
-                gfxPrint(18 + pad(10, playback_step_number[t]), y, playback_step_number[t]);
-                gfxPrint(":");
-                gfxPrint(playback_step_repeat[t] + 1);
-                char name[4];
-                HS::TuringMachine::SetName(name, song_step[ssi].tm());
-                gfxPrint(54, y, name);
-            }
+            for (int t = 0; t < 4; t++)
+            {
+                uint16_t ssi = playback_step_index[t]; // playback_step_index is the index of the song_step
+                byte y = 25 + (t * 10);
+                gfxPrint(0, y, t + 1);
+                if (playback_step_number[t] == 0) {
+                    gfxIcon(30, y, RESET_ICON);
+                } else if (ssi != ENIGMA_NO_STEP_AVAILABLE) {
+                    gfxPrint(18 + pad(10, playback_step_number[t]), y, playback_step_number[t]);
+                    gfxPrint(":");
+                    gfxPrint(playback_step_repeat[t] + 1);
+                    char name[4];
+                    HS::TuringMachine::SetName(name, song_step[ssi].tm());
+                    gfxPrint(54, y, name);
+                }
 
-            // Clock Divide
-            gfxPrint(78, y, "/");
-            gfxPrint(track[t].divide());
+                // Clock Divide
+                gfxPrint(78, y, "/");
+                gfxPrint(track[t].divide());
 
-            // Loop
-            if (track[t].loop()) gfxIcon(106, y, LOOP_ICON);
-            else gfxIcon(106, y, PLAYONCE_ICON);
+                // Loop
+                if (track[t].loop()) gfxIcon(106, y, LOOP_ICON);
+                else gfxIcon(106, y, PLAYONCE_ICON);
 
-            // Play status
-            if (ssi != ENIGMA_NO_STEP_AVAILABLE) {
-                if (playback_end[t]) gfxIcon(118, y, STOP_ICON);
-                else if (play || !CursorBlink()) gfxIcon(118, y, PLAY_ICON);
-            }
+                // Play status
+                if (ssi != ENIGMA_NO_STEP_AVAILABLE) {
+                    if (playback_end[t]) gfxIcon(118, y, STOP_ICON);
+                    else if (play || !CursorBlink()) gfxIcon(118, y, PLAY_ICON);
+                }
 
-            if (t == track_cursor) {
-                if (track_param == ENIGMA_TRACK_DIVIDE) gfxCursor(84, y + 8, 12);
-                if (track_param == ENIGMA_TRACK_LOOP) gfxCursor(106, y + 8, 8);
+                if (t == track_cursor) {
+                    if (track_param == ENIGMA_TRACK_DIVIDE) gfxCursor(84, y + 8, 12);
+                    if (track_param == ENIGMA_TRACK_LOOP) gfxCursor(106, y + 8, 8);
+                }
             }
         }
     }
+
+    //////// Help Splash Screens
+    void DrawLibraryHelp() {
+        gfxIcon(56, 15, UP_BTN_ICON);
+        gfxIcon(66, 15, FAVORITE_ICON);
+        gfxIcon(56, 25, DOWN_BTN_ICON);
+        gfxPrint(66, 25, "Reset");
+    }
+
+    void DrawAssignHelp() {
+        gfxIcon(56, 15, UP_BTN_ICON);
+        gfxIcon(66, 15, AUDITION_ICON);
+        gfxPrint(76, 15, "Library");
+        gfxIcon(56, 25, DOWN_BTN_ICON);
+        gfxIcon(66, 25, AUDITION_ICON);
+        gfxPrint(76, 25, "Song");
+    }
+
+    void DrawSongHelp() {
+        gfxIcon(56, 15, UP_BTN_ICON);
+        gfxPrint(66, 15, "Add Step");
+        gfxIcon(56, 25, DOWN_BTN_ICON);
+        gfxPrint(66, 25, "Del Step");
+    }
+
+    void DrawPlayHelp() {
+        gfxIcon(56, 15, UP_BTN_ICON);
+        gfxPrint(66, 15, "Pause/Play");
+        gfxIcon(56, 25, DOWN_BTN_ICON);
+        gfxPrint(66, 25, "Reset");
+    }
+
+
 
     /*
      *  Used by all Modes to allow selection of Primary Objects. This should go after the
@@ -841,6 +903,13 @@ private:
             }
         }
         return step;
+    }
+
+    void DismissHelp() {
+        uint16_t help_seen_for = help_time - help_countdown;
+        help_time = help_seen_for;
+        if (help_time < 16667) help_time = 0; // If dismissed within 1 second, stop showing help
+        help_countdown = 0;
     }
 
     //////// SysEx
