@@ -243,7 +243,7 @@ private:
             gfxPrint(10, 56, midi_note_numbers[last_note]);
             gfxPrint(40, 56, last_velocity);
         }
-        gfxInvert(0, 55, 64, 9);
+        gfxInvert(0, 55, 63, 9);
     }
 
     void DrawLog() {

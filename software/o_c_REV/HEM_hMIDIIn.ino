@@ -252,7 +252,7 @@ private:
         if (log_index > 0) {
             log_entry(56, log_index - 1);
         }
-        gfxInvert(0, 55, 64, 9);
+        gfxInvert(0, 55, 63, 9);
     }
 
     void DrawLog() {

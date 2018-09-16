@@ -75,6 +75,7 @@ public:
         } else {
             duck[cursor - 2] = 1 - duck[cursor - 2];
         }
+        ResetCursor();
     }
         
     uint32_t OnDataRequest() {
@@ -117,16 +118,16 @@ private:
     void DrawInterface() {
         ForEachChannel(ch)
         {
-            // Gain
-            gfxPrint(1 + (45 * ch) + pad(10, gain[ch]), 15, gain[ch]);
-            gfxPrint("x");
-
             // Duck
-            gfxPrint(1 + (38 * ch), 25, duck[ch] ? "Duck" : "Foll");
+            gfxPrint(1 + (38 * ch), 15, duck[ch] ? "Duck" : "Foll");
+
+            // Gain
+            gfxFrame(32 * ch, 25, gain[ch], 3);
+
+            if (cursor == ch && CursorBlink()) gfxRect(32 * ch, 25, gain[ch], 3);
 
         }
-        if (cursor < 2) gfxCursor(1 + (45 * cursor), 23, 12);
-        else gfxCursor(1 + (38 * (cursor - 2)), 33, 24);
+        if (cursor > 1) gfxCursor(1 + (38 * (cursor - 2)), 23, 24);
     }
 
 };

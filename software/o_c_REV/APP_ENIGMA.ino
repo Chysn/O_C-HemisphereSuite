@@ -56,13 +56,15 @@ const byte ENIGMA_STEP_TRANSPOSE = 4;
 const byte ENIGMA_TRACK_DIVIDE = 0;
 const byte ENIGMA_TRACK_LOOP = 1;
 
-class EnigmaTMWS : public HSApplication, public SystemExclusiveHandler {
+// Settings for data handling
+#define ENIGMA_SETTING_LAST 150
+#define ENIGMA_NO_STEP_AVAILABLE 0xffff
+
+class EnigmaTMWS : public HSApplication, public SystemExclusiveHandler,
+    public settings::SettingsBase<EnigmaTMWS, ENIGMA_SETTING_LAST> {
 public:
 	void Start() {
-	    for (byte ix = 0; ix < HS::TURING_MACHINE_COUNT; ix++)
-	    {
-	        state_prob[ix] = 0;
-	    }
+	    for (byte ix = 0; ix < HS::TURING_MACHINE_COUNT; ix++) state_prob[ix] = 0;
 	    tm_cursor = 0;
 	    SwitchTuringMachine(0);
 
@@ -71,7 +73,7 @@ public:
 	    {
 	        output[o].InitAs(o);
 	        track[o].InitAs(o);
-	        song_step[total_steps++].Init(o);
+	        //song_step[total_steps++].Init(o);
 	    }
 
 	    ResetSong();
@@ -82,6 +84,7 @@ public:
 
 	void Resume() {
 	    SwitchTuringMachine(tm_cursor);
+	    LoadFromEEPROM();
 	}
 
     void Controller() {
@@ -105,6 +108,9 @@ public:
         DrawHeader();
         DrawInterface();
     }
+
+    // Public access to save method
+    void OnSaveSettings() {SaveToEEPROM();}
 
     void OnSendSysEx() {
         SendTuringMachineLibrary();
@@ -259,7 +265,7 @@ private:
     //////// NAVIGATION
     byte mode = 0; // 0=Library 1=Assign 2=Song
     byte last_mode = 0; // Stores previous mode for special screen(s)
-    uint16_t edit_index = 0; // Current Song Mode step within track_step[]
+    int16_t edit_index = 0; // Current Song Mode step within track_step[]
 
     // Primary object cursors, one for each mode
     int8_t tm_cursor = 0; // For Library mode, choose the Turing Machine (0-39: A1-F8)
@@ -395,6 +401,7 @@ private:
         int pct = (39600 - (total_steps * 100)) / 396;
         gfxPrint(104 + pad(100, pct), 1, pct);
         gfxPrint("%");
+        if (total_steps > 32) gfxInvert(110, 0, 18, 9);
 
         // Draw the left side, the selector
         for (byte line = 0; line < 4; line++)
@@ -409,7 +416,7 @@ private:
         // The right side is for editing
         // Step parameters
         uint16_t ssi = track_step[edit_index]; // The song step index
-        if (ssi < 0xffff) {
+        if (ssi < ENIGMA_NO_STEP_AVAILABLE) {
             gfxPrint(56 + pad(10, edit_index + 1), 15, edit_index + 1); // Step number (1-99)
             gfxPrint(": ");
             char name[4];
@@ -435,35 +442,42 @@ private:
             gfxPrint("  ");
             gfxPrint(song_step[ssi].transpose() > -1 ? "+" : "");
             gfxPrint(song_step[ssi].transpose()); // Transpose
+
+            // Cursor
+            if (step_param == ENIGMA_STEP_NUMBER && CursorBlink()) gfxInvert(56, 14, 12, 9);
+            if (step_param == ENIGMA_STEP_TM) gfxCursor(81, 23, 18);
+            if (step_param == ENIGMA_STEP_P) gfxCursor(105, 23, 18);
+            if (step_param == ENIGMA_STEP_REPEATS) gfxCursor(87, 33, 12);
+            if (step_param == ENIGMA_STEP_TRANSPOSE) gfxCursor(117, 33, 12);
+        } else {
+            gfxIcon(56, 15, UP_BTN_ICON);
+            gfxPrint(66, 15, "Add Step");
+            gfxIcon(56, 25, DOWN_BTN_ICON);
+            gfxPrint(66, 25, "Del Step");
         }
 
-        // Cursor
-        if (step_param == ENIGMA_STEP_NUMBER && CursorBlink()) gfxInvert(56, 14, 12, 9);
-        if (step_param == ENIGMA_STEP_TM) gfxCursor(81, 23, 18);
-        if (step_param == ENIGMA_STEP_P) gfxCursor(105, 23, 18);
-        if (step_param == ENIGMA_STEP_REPEATS) gfxCursor(87, 33, 12);
-        if (step_param == ENIGMA_STEP_TRANSPOSE) gfxCursor(117, 33, 12);
-
         // Draw the next three steps
-        bool stop = 0; // Show the Stop/Loop step only once
-        for (byte n = 0; n < 3; n++)
-        {
-            if (edit_index + n + 1 < 99) {
-                uint16_t ssi = track_step[edit_index + n + 1];
-                byte y = 35 + (10 * n);
-                if (ssi < 0xffff) {
-                    gfxPrint(56 + pad(10, edit_index + n + 2), y, edit_index + n + 2); // Step number (1-99)
-                    gfxPrint(": ");
-                    char name[4];
-                    HS::TuringMachine::SetName(name, song_step[ssi].tm());
-                    gfxPrint(name); // Turing machine name
-                    gfxPrint(" x");
-                    gfxPrint(song_step[ssi].repeats()); // Number of times played
-                } else if (!stop) {
-                    stop = 1;
-                    gfxPrint(56 + pad(10, edit_index + n + 2), y, edit_index + n + 2); // Step number (1-99)
-                    gfxPrint(": ");
-                    gfxPrint(track[track_cursor].loop() ? "< Loop >" : "< Stop >");
+        if (last_track_step_index > 0) {
+            bool stop = 0; // Show the Stop/Loop step only once
+            for (byte n = 0; n < 3; n++)
+            {
+                if (edit_index + n + 1 < 99) {
+                    uint16_t ssi = track_step[edit_index + n + 1];
+                    byte y = 35 + (10 * n);
+                    if (ssi < ENIGMA_NO_STEP_AVAILABLE) {
+                        gfxPrint(56 + pad(10, edit_index + n + 2), y, edit_index + n + 2); // Step number (1-99)
+                        gfxPrint(": ");
+                        char name[4];
+                        HS::TuringMachine::SetName(name, song_step[ssi].tm());
+                        gfxPrint(name); // Turing machine name
+                        gfxPrint(" x");
+                        gfxPrint(song_step[ssi].repeats()); // Number of times played
+                    } else if (!stop) {
+                        stop = 1;
+                        gfxPrint(56 + pad(10, edit_index + n + 2), y, edit_index + n + 2); // Step number (1-99)
+                        gfxPrint(": ");
+                        gfxPrint(track[track_cursor].loop() ? "< Loop >" : "< Stop >");
+                    }
                 }
             }
         }
@@ -486,20 +500,19 @@ private:
 
         for (int t = 0; t < 4; t++)
         {
-            uint16_t ssi = playback_step_index[t]; // playback_index is the index of the song_step
-
+            uint16_t ssi = playback_step_index[t]; // playback_step_index is the index of the song_step
             byte y = 25 + (t * 10);
             gfxPrint(0, y, t + 1);
             if (playback_step_number[t] == 0) {
-                gfxIcon(18, y, RESET_ICON);
-            } else {
+                gfxIcon(30, y, RESET_ICON);
+            } else if (ssi != ENIGMA_NO_STEP_AVAILABLE) {
                 gfxPrint(18 + pad(10, playback_step_number[t]), y, playback_step_number[t]);
                 gfxPrint(":");
                 gfxPrint(playback_step_repeat[t] + 1);
+                char name[4];
+                HS::TuringMachine::SetName(name, song_step[ssi].tm());
+                gfxPrint(54, y, name);
             }
-            char name[4];
-            HS::TuringMachine::SetName(name, song_step[ssi].tm());
-            gfxPrint(54, y, name);
 
             // Clock Divide
             gfxPrint(78, y, "/");
@@ -510,8 +523,10 @@ private:
             else gfxIcon(106, y, PLAYONCE_ICON);
 
             // Play status
-            if (playback_end[t]) gfxIcon(118, y, STOP_ICON);
-            else if (play || !CursorBlink()) gfxIcon(118, y, PLAY_ICON);
+            if (ssi != ENIGMA_NO_STEP_AVAILABLE) {
+                if (playback_end[t]) gfxIcon(118, y, STOP_ICON);
+                else if (play || !CursorBlink()) gfxIcon(118, y, PLAY_ICON);
+            }
 
             if (t == track_cursor) {
                 if (track_param == ENIGMA_TRACK_DIVIDE) gfxCursor(84, y + 8, 12);
@@ -569,33 +584,35 @@ private:
     }
 
     void DelegateStepParam(int direction) {
-        // Select a step
-        if (step_param == ENIGMA_STEP_NUMBER) {
-            if (edit_index > 0 || direction > 0) {
-                // If there's a step to move into, move into it
-                if (edit_index + direction < 100 && edit_index + direction >= 0)
-                    if (track_step[edit_index + direction] != 0xffff) edit_index += direction;
+        if (last_track_step_index > 0) {
+            // Select a step
+            if (step_param == ENIGMA_STEP_NUMBER) {
+                if (edit_index > 0 || direction > 0) {
+                    // If there's a step to move into, move into it
+                    if (edit_index + direction < 100 && edit_index + direction >= 0)
+                        if (track_step[edit_index + direction] != ENIGMA_NO_STEP_AVAILABLE) edit_index += direction;
+                }
             }
-        }
 
-        // Edit a step
-        if (step_param > ENIGMA_STEP_NUMBER) {
-            uint16_t ssi = track_step[edit_index]; // song step index
-            if (step_param == ENIGMA_STEP_TM) {
-                if (song_step[ssi].tm() > 0 || direction > 0)
-                    song_step[ssi].set_tm(song_step[ssi].tm() + direction);
-            }
-            if (step_param == ENIGMA_STEP_P) {
-                if (song_step[ssi].p() > 0 || direction > 0)
-                    song_step[ssi].set_p(song_step[ssi].p() + direction);
-            }
-            if (step_param == ENIGMA_STEP_REPEATS) {
-                if (song_step[ssi].repeats() > 0 || direction > 0)
-                    song_step[ssi].set_repeats(song_step[ssi].repeats() + direction);
-            }
-            if (step_param == ENIGMA_STEP_TRANSPOSE) {
-                if (song_step[ssi].transpose() > -48 || direction > 0)
-                    song_step[ssi].set_transpose(song_step[ssi].transpose() + direction);
+            // Edit a step
+            if (step_param > ENIGMA_STEP_NUMBER) {
+                uint16_t ssi = track_step[edit_index]; // song step index
+                if (step_param == ENIGMA_STEP_TM) {
+                    if (song_step[ssi].tm() > 0 || direction > 0)
+                        song_step[ssi].set_tm(song_step[ssi].tm() + direction);
+                }
+                if (step_param == ENIGMA_STEP_P) {
+                    if (song_step[ssi].p() > 0 || direction > 0)
+                        song_step[ssi].set_p(song_step[ssi].p() + direction);
+                }
+                if (step_param == ENIGMA_STEP_REPEATS) {
+                    if (song_step[ssi].repeats() > 0 || direction > 0)
+                        song_step[ssi].set_repeats(song_step[ssi].repeats() + direction);
+                }
+                if (step_param == ENIGMA_STEP_TRANSPOSE) {
+                    if (song_step[ssi].transpose() > -48 || direction > 0)
+                        song_step[ssi].set_transpose(song_step[ssi].transpose() + direction);
+                }
             }
         }
     }
@@ -652,64 +669,67 @@ private:
             {
                 if (!playback_end[t] && clock_counter % track[t].divide() == 0) {
                     uint16_t ssi = playback_step_index[t]; // song_step index
+                    if (ssi != ENIGMA_NO_STEP_AVAILABLE) {
+                        // If the repeat and beat are both at 0, set the Turing Machine state
+                        if (playback_step_repeat[t] == 0 && playback_step_beat[t] == 0) {
+                            track_tm[t].Init(song_step[ssi].tm());
+                            playback_step_number[t]++;
+                        }
 
-                    // If the repeat and beat are both at 0, set the Turing Machine state
-                    if (playback_step_repeat[t] == 0 && playback_step_beat[t] == 0) {
-                        track_tm[t].Init(song_step[ssi].tm());
-                        playback_step_number[t]++;
-                    }
+                        // Advance to the next beat
+                        playback_step_beat[t]++;
 
-                    // Advance to the next beat
-                    playback_step_beat[t]++;
+                        // If that was the last beat, reset the beat to 0 and start a new repeat
+                        if (playback_step_beat[t] >= track_tm[t].GetLength()) {
+                            playback_step_beat[t] = 0;
+                            playback_step_repeat[t]++;
 
-                    // If that was the last beat, reset the beat to 0 and start a new repeat
-                    if (playback_step_beat[t] >= track_tm[t].GetLength()) {
-                        playback_step_beat[t] = 0;
-                        playback_step_repeat[t]++;
-
-                        // If that was the last repeat, advance to the next step
-                        if (playback_step_repeat[t] >= song_step[ssi].repeats()) {
-                            playback_step_repeat[t] = 0;
-                            // Find the next step for this track
-                            bool found = 0;
-                            for (uint16_t s = ssi + 1; s < total_steps; s++)
-                            {
-                                if (song_step[s].track() == t) {
-                                    playback_step_index[t] = s;
-                                    found = 1;
-                                    break;
+                            // If that was the last repeat, advance to the next step
+                            if (playback_step_repeat[t] >= song_step[ssi].repeats()) {
+                                playback_step_repeat[t] = 0;
+                                // Find the next step for this track
+                                bool found = 0;
+                                for (uint16_t s = ssi + 1; s < total_steps; s++)
+                                {
+                                    if (song_step[s].track() == t) {
+                                        playback_step_index[t] = s;
+                                        found = 1;
+                                        break;
+                                    }
                                 }
-                            }
-                            // At this point, beat and repeat are both 0, so the Turing Machine State
-                            // will be initialized on the next clock
+                                // At this point, beat and repeat are both 0, so the Turing Machine State
+                                // will be initialized on the next clock
 
-                            if (!found) {
-                                // If no next step for the track was found, either end playback by setting
-                                // the step index to 0xffff, or loop to the beginning
-                                if (track[t].loop()) {
-                                    playback_step_index[t] = GetFirstStep(t);
-                                    playback_step_number[t] = 0;
-                                } else {
-                                    playback_end[t] = 1;
+                                if (!found) {
+                                    // If no next step for the track was found, either end playback by setting
+                                    // the step index to ENIGMA_NO_STEP_AVAILABLE, or loop to the beginning
+                                    if (track[t].loop()) {
+                                        playback_step_index[t] = GetFirstStep(t);
+                                        playback_step_number[t] = 0;
+                                    } else {
+                                        playback_end[t] = 1;
+                                    }
                                 }
                             }
                         }
-                    }
 
-                    // Send the track to the appopriate outputs
-                    for (byte o = 0; o < 4; o++)
-                    {
-                        if (output[o].track() == t) {
-                            uint16_t reg = track_tm[t].GetRegister();
-                            output[o].SendToDAC<EnigmaTMWS>(this, reg, song_step[ssi].transpose() * 128);
+                        // Send the track to the appopriate outputs
+                        for (byte o = 0; o < 4; o++)
+                        {
+                            if (output[o].track() == t) {
+                                uint16_t reg = track_tm[t].GetRegister();
+                                output[o].SendToDAC<EnigmaTMWS>(this, reg, song_step[ssi].transpose() * 128);
 
-                            if (deferred_note > -1) output[o].SetDeferredNote(deferred_note);
-                            output[o].SendToMIDI(reg, song_step[ssi].transpose() * 128);
-                            if (output[o].GetDeferredNote() > -1) deferred_note = output[o].GetDeferredNote();
+                                if (deferred_note > -1) output[o].SetDeferredNote(deferred_note);
+                                output[o].SendToMIDI(reg, song_step[ssi].transpose() * 128);
+                                if (output[o].GetDeferredNote() > -1) deferred_note = output[o].GetDeferredNote();
+                            }
                         }
-                    }
 
-                    track_tm[t].Advance(song_step[ssi].p());
+                        track_tm[t].Advance(song_step[ssi].p());
+                    } else { // End of step availability check
+                        playback_end[t] = 1;
+                    }
                 } // End of track playback and clock divider
             } // End of track loop
 
@@ -751,19 +771,22 @@ private:
 
         // Avoid beaming into a point after the end of the buffer
         if (edit_index >= last_track_step_index) edit_index = last_track_step_index - 1;
+        if (edit_index < 0) edit_index = 0;
 
-        // 0xffff indictates end of track
-        while (ts_ix < 100) track_step[ts_ix++] = 0xffff;
+        // ENIGMA_NO_STEP_AVAILABLE indictates end of track
+        while (ts_ix < 100) track_step[ts_ix++] = ENIGMA_NO_STEP_AVAILABLE;
     }
 
     // Insert a step to the end of the current track
     void InsertStep() {
         if (last_track_step_index < 99) {
-            // Insert a step after the current step
             uint16_t insert_point = track_step[edit_index] + 1;
-            for (int i = total_steps + 1; i > insert_point; i--)
-            {
-                memcpy(&song_step[i], &song_step[i - 1], sizeof(song_step[i - 1]));
+            if (insert_point < total_steps) {
+                // Insert a step after the current step; otherwise, it'll just go at the end
+                for (int i = total_steps + 1; i > insert_point; i--)
+                {
+                    memcpy(&song_step[i], &song_step[i - 1], sizeof(song_step[i - 1]));
+                }
             }
             song_step[insert_point].Init(track_cursor);
 
@@ -776,7 +799,7 @@ private:
 
     // Delete a step at the current edit index point
     void DeleteStep() {
-        if (last_track_step_index > 1) { // Can't delete the only step
+        if (last_track_step_index > 0) { // Can't delete if there are no steps
             // If the last step is being deleted, move the index back. Otherwise, it will
             // just stay the same and the next step up will become active.
             if (edit_index == last_track_step_index) edit_index--;
@@ -809,7 +832,7 @@ private:
     }
 
     uint16_t GetFirstStep(byte track) {
-        uint16_t step = 0;
+        uint16_t step = ENIGMA_NO_STEP_AVAILABLE;
         for (uint16_t s = 0; s < total_steps; s++)
         {
             if (song_step[s].track() == track) {
@@ -947,24 +970,88 @@ private:
             output[o].mc = V[ix++];
         }
     }
+
+    //////// Data Storage
+    void SaveToEEPROM() {
+        byte ix = 0;
+
+        // Outputs
+        for (byte o = 0; o < 4; o++)
+        {
+            values_[ix++] = output[o].tk;
+            values_[ix++] = output[o].ty;
+            values_[ix++] = output[o].sc;
+            values_[ix++] = output[o].mc;
+        }
+
+        int song_steps = constrain(total_steps, 0, 32);
+        values_[ix++] = static_cast<byte>(song_steps);
+
+        // First 32 song steps
+        for (byte s = 0; s < 32; s++)
+        {
+            values_[ix++] = song_step[s].tk;
+            values_[ix++] = song_step[s].pr;
+            values_[ix++] = song_step[s].re;
+            values_[ix++] = song_step[s].tr;
+        }
+
+        // Track settings
+        for (byte t = 0; t < 4; t++) values_[ix++] = track[t].data;
+    }
+
+    void LoadFromEEPROM() {
+        byte ix = 0;
+
+        // Outputs
+        for (byte o = 0; o < 4; o++)
+        {
+            output[o].tk = values_[ix++];
+            output[o].ty = values_[ix++];
+            output[o].sc = values_[ix++];
+            output[o].mc = values_[ix++];
+        }
+
+        // Song length
+        byte song_steps = values_[ix++];
+        if (song_steps > total_steps) total_steps = song_steps;
+
+        // Song Steps
+        for (byte s = 0; s < 32; s++)
+        {
+            song_step[s].tk = values_[ix++];
+            song_step[s].pr = values_[ix++];
+            song_step[s].re = values_[ix++];
+            song_step[s].tr = values_[ix++];
+        }
+
+        // Track settings
+        for (byte t = 0; t < 4; t++) track[t].data = values_[ix++];
+
+        // Reset everything if there's no data (meaning, song steps is 0)
+        if (song_steps == 0) Start();
+
+        // Clear track list
+        else BuildTrackStepList(0);
+        track_cursor = 0;
+        edit_index = 0;
+    }
 };
 
-/*
 // Setting declarations for EEPROM storage, which consists of the following:
-//     The first 32 song steps @ 4 bytes each = 128 bytes
 //     Four output assignments @ 4 bytes each =  16 bytes
+//     The first 32 song steps @ 4 bytes each = 128 bytes
 //     Four track settings @ 1 byte each      =   4 bytes
 //     Song length                            =   1 byte
 #define ENIGMA_EEPROM_DATA {0,0,255,"St",NULL,settings::STORAGE_TYPE_U8},
 #define ENIGMA_DO_THIRTY_TIMES(A) A A A A A A A A A A A A A A A A A A A A A A A A A A A A A A
-SETTINGS_DECLARE(EnigmaTMWS, 148) {
+SETTINGS_DECLARE(EnigmaTMWS, ENIGMA_SETTING_LAST) {
     ENIGMA_DO_THIRTY_TIMES(ENIGMA_EEPROM_DATA)
     ENIGMA_DO_THIRTY_TIMES(ENIGMA_EEPROM_DATA)
     ENIGMA_DO_THIRTY_TIMES(ENIGMA_EEPROM_DATA)
     ENIGMA_DO_THIRTY_TIMES(ENIGMA_EEPROM_DATA)
     ENIGMA_DO_THIRTY_TIMES(ENIGMA_EEPROM_DATA)
-}
-*/
+};
 
 EnigmaTMWS EnigmaTMWS_instance;
 
@@ -973,10 +1060,15 @@ void EnigmaTMWS_init() {
     EnigmaTMWS_instance.BaseStart();
 }
 
-// Not using O_C Storage
-size_t EnigmaTMWS_storageSize() {return 0;}
-size_t EnigmaTMWS_save(void *storage) {return 0;}
-size_t EnigmaTMWS_restore(const void *storage) {return 0;}
+size_t EnigmaTMWS_storageSize() {
+    return EnigmaTMWS::storageSize();
+}
+size_t EnigmaTMWS_save(void *storage) {
+    return EnigmaTMWS_instance.Save(storage);
+}
+size_t EnigmaTMWS_restore(const void *storage) {
+    return EnigmaTMWS_instance.Restore(storage);
+}
 
 void EnigmaTMWS_isr() {
 	return EnigmaTMWS_instance.BaseController();
@@ -987,6 +1079,7 @@ void EnigmaTMWS_handleAppEvent(OC::AppEvent event) {
         EnigmaTMWS_instance.Resume();
     }
     if (event == OC::APP_EVENT_SUSPEND) {
+        EnigmaTMWS_instance.OnSaveSettings();
         EnigmaTMWS_instance.OnSendSysEx();
     }
 }

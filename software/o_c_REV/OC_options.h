@@ -13,8 +13,6 @@
 //#define BUCHLA_cOC
 /* ------------ uncomment for use with Northernlight 4U / cOC : -------------------------------------  */
 //#define BUCHLA_4U
-/* ------------ uncomment for boring app names ------------------------------------------------------  */
-//#define BORING_APP_NAMES
 /* ------------ print debug messages to USB serial --------------------------------------------------  */
 //#define PRINT_DEBUG
 /* ------------ flip screen / IO mapping ------------------------------------------------------------  */

@@ -510,7 +510,6 @@ void TheDarkestTimeline_init() {
     TheDarkestTimeline_instance.BaseStart();
 }
 
-// Not using O_C Storage
 size_t TheDarkestTimeline_storageSize() {
     return TheDarkestTimeline::storageSize();
 }

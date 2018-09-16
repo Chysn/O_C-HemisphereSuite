@@ -34,17 +34,6 @@
   isr \
 }
 
-#ifdef BORING_APP_NAMES
-OC::App available_apps[] = {
-  DECLARE_APP('H','S', "Hemisphere", HEMISPHERE, HEMISPHERE_isr),
-  DECLARE_APP('M','I', "MIDI Interface", MIDI, MIDI_isr),
-  DECLARE_APP('D','2', "Darkest Timeline", TheDarkestTimeline, TheDarkestTimeline_isr),
-  DECLARE_APP('E','N', "Enigma", EnigmaTMWS, EnigmaTMWS_isr),
-  DECLARE_APP('P','O', "Pong", PONGGAME, PONGGAME_isr),
-  DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
-  DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR, SCALEEDITOR_isr),
-};
-#else 
 OC::App available_apps[] = {
   DECLARE_APP('H','S', "Hemisphere", HEMISPHERE, HEMISPHERE_isr),
   DECLARE_APP('M','I', "Captain MIDI", MIDI, MIDI_isr),
@@ -54,7 +43,6 @@ OC::App available_apps[] = {
   DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
   DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR, SCALEEDITOR_isr),
 };
-#endif
 
 static constexpr int NUM_AVAILABLE_APPS = ARRAY_SIZE(available_apps);
 
