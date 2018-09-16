@@ -65,7 +65,7 @@ public:
 
         // Send 5-bit quantized CV
         int note = reg & 0x1f;
-        Out(0, quantizer.Lookup(note + 48));
+        Out(0, quantizer.Lookup(note + 60));
 
         // Send 8-bit proportioned CV
         int cv = Proportion(reg & 0x00ff, 255, HEMISPHERE_MAX_CV);
