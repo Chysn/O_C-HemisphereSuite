@@ -59,7 +59,7 @@ const byte ENIGMA_TRACK_LOOP = 1;
 // Settings for various things
 #define ENIGMA_SETTING_LAST 150
 #define ENIGMA_NO_STEP_AVAILABLE 0xffff
-#define ENIGMA_INITIAL_HELP_TIME 48000
+#define ENIGMA_INITIAL_HELP_TIME 65535
 
 class EnigmaTMWS : public HSApplication, public SystemExclusiveHandler,
     public settings::SettingsBase<EnigmaTMWS, ENIGMA_SETTING_LAST> {
@@ -122,11 +122,19 @@ public:
     void OnReceiveSysEx() {
         byte V[48];
         if (ExtractSysExData(V, 'T')) {
-            char type = V[0]; // Type of Enigma data:r=Register, s=Song step, c=Song Config
+            char type = V[0]; // Type of Enigma data:r=Register, s=Song step, c=Song Config, 1=single TM
             if (type == 'r') ReceiveTuringMachine(V);
             if (type == 's') ReceiveSongSteps(V);
             if (type == 't') ReceiveTrackSettings(V);
             if (type == 'o') ReceiveOutputAssignments(V);
+            if (type == '1') {
+                // Receive if the current occupant is not a Favorite
+                if (mode == ENIGMA_MODE_LIBRARY) V[1] = tm_cursor;
+                if (!HS::user_turing_machines[V[1]].favorite) {
+                    ReceiveTuringMachine(V);
+                    SwitchTuringMachine(V[1]);
+                }
+            }
         }
     }
 
@@ -183,8 +191,10 @@ public:
             if (mode == ENIGMA_MODE_LIBRARY) {
                 tm_state.SetFavorite(1 - tm_state.IsFavorite());
                 state_prob[tm_cursor] = 0;
-                if (tm_state.IsFavorite()) tm_param = ENIGMA_TM_ROTATE;
-                // TODO: Sysex out
+                if (tm_state.IsFavorite()) {
+                    tm_param = ENIGMA_TM_ROTATE;
+                    SendSingleTuringMachine(tm_cursor);
+                }
             }
             if (mode == ENIGMA_MODE_ASSIGN) assign_audition = 0;
             if (mode == ENIGMA_MODE_SONG) InsertStep();
@@ -933,6 +943,25 @@ private:
             PackedData packed = unpacked.pack();
             SendSysEx(packed, 'T');
         }
+    }
+
+    void SendSingleTuringMachine(byte tm) {
+        uint16_t reg = HS::user_turing_machines[tm].reg;
+        byte len = HS::user_turing_machines[tm].len;
+        byte favorite = HS::user_turing_machines[tm].favorite;
+
+        byte V[6];
+        byte ix = 0;
+        V[ix++] = '1'; // Indicates a single register is being sent
+        V[ix++] = tm; // Register index in Library (origin, but unused on receive)
+        V[ix++] = static_cast<byte>(reg & 0xff);  // Low Byte
+        V[ix++] = static_cast<byte>((reg >> 8) & 0xfff);  // High Byte
+        V[ix++] = len;
+        V[ix++] = favorite;
+        UnpackedData unpacked;
+        unpacked.set_data(ix, V);
+        PackedData packed = unpacked.pack();
+        SendSysEx(packed, 'T');
     }
 
     void SendSong() {

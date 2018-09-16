@@ -148,14 +148,14 @@ public:
             }
         }
 
-        // Modulation based on low 8 bits
+        // Modulation based on low 8 bits, shifted right for MIDI range
         if (ty == EnigmaOutputType::MODULATION && midi_channel()) {
-            usbMIDI.sendControlChange(1, reg & 0x00ff, midi_channel());
+            usbMIDI.sendControlChange(1, (reg & 0x00ff) >> 1, midi_channel());
         }
 
         // Expression based on low 8 bits; for MIDI, expression is a percentage of channel volume
         if (ty == EnigmaOutputType::EXPRESSION && midi_channel()) {
-            usbMIDI.sendControlChange(11, reg & 0x00ff, midi_channel());
+            usbMIDI.sendControlChange(11, (reg & 0x00ff) >> 1, midi_channel());
         }
 
         // Trigger and Gate behave the same way with MIDI; They'll use the last note that wasn't sent
