@@ -1,7 +1,5 @@
 // Copyright (c) 2018, Jason Justian
 //
-// Based on Braids Quantizer, Copyright 2015 Olivier Gillet.
-//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
@@ -20,9 +18,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "braids_quantizer.h"
-#include "braids_quantizer_scales.h"
-#include "OC_scales.h"
+#include "HSMIDI.h"
 
 class Sequence5 : public HemisphereApplet {
 public:
@@ -33,8 +29,7 @@ public:
 
     void Start() {
         for (int s = 0; s < 5; s++) note[s] = random(0, 30);
-        quantizer.Init();
-        quantizer.Configure(OC::Scales::GetScale(5), 0xffff); // Semi-tone
+        play = 1;
     }
 
     void Controller() {
@@ -48,28 +43,25 @@ public:
         if (DetentedIn(0)) {
             transpose = In(0) / 128; // 128 ADC steps per semitone
         }
-        int play_note = note[step] + 48 + transpose;
+        int play_note = note[step] + 60 + transpose;
         play_note = constrain(play_note, 0, 127);
 
         if (Clock(0)) StartADCLag();
 
         if (EndOfADCLag()) {
-            Out(0, quantizer.Lookup(play_note));
             Advance(step);
             if (step == 0) ClockOut(1);
+            play = 1;
         }
 
         if (play) {
-            Out(0, quantizer.Lookup(play_note));
+            int cv = MIDIQuantizer::CV(play_note);
+            Out(0, cv);
         }
     }
 
     void View() {
         gfxHeader(applet_name());
-        DrawPanel();
-    }
-
-    void ScreensaverView() {
         DrawPanel();
     }
 
@@ -117,7 +109,6 @@ protected:
     }
     
 private:
-    braids::Quantizer quantizer;
     int cursor = 0;
     char muted = 0; // Bitfield for muted steps; ((muted >> step) & 1) means muted
     int note[5]; // Sequence value (0 - 30)
@@ -179,10 +170,6 @@ void Sequence5_Controller(bool hemisphere, bool forwarding) {
 
 void Sequence5_View(bool hemisphere) {
     Sequence5_instance[hemisphere].BaseView();
-}
-
-void Sequence5_Screensaver(bool hemisphere) {
-    Sequence5_instance[hemisphere].BaseScreensaverView();
 }
 
 void Sequence5_OnButtonPress(bool hemisphere) {

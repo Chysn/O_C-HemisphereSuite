@@ -113,7 +113,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
         help[HEMISPHERE_HELP_CVS]      = "1=Shift 2=Organize";
         help[HEMISPHERE_HELP_OUTS]     = "Assignable";
-        help[HEMISPHERE_HELP_ENCODER]  = "Reg/Assign Outputs";
+        help[HEMISPHERE_HELP_ENCODER]  = "Reg/Prob/Assign";
         //                               "------------------" <-- Size Guide
     }
     

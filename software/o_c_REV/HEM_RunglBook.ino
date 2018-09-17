@@ -76,7 +76,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Freeze";
         help[HEMISPHERE_HELP_CVS]      = "1=Signal";
         help[HEMISPHERE_HELP_OUTS]     = "A=Rungle B=Alt";
-        help[HEMISPHERE_HELP_ENCODER]  = "";
+        help[HEMISPHERE_HELP_ENCODER]  = "Threshold";
         //                               "------------------" <-- Size Guide
     }
     

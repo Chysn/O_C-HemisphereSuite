@@ -26,7 +26,7 @@ class ASR : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "ASR";
+        return "\"A\"SR";
     }
 
     void Start() {
