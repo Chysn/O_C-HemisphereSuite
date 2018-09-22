@@ -531,7 +531,7 @@ private:
         else {
             // Headers
             // Track, Step/Repeat, Register, Divide, Loop
-            gfxPrint(0, 15, "Tr Step  Reg");
+            gfxPrint(0, 15, "Tk Step  Reg");
             gfxLine(0, 23, 127, 23);
             gfxIcon(80, 14, CLOCK_ICON);
             gfxIcon(106, 14, LOOP_ICON);

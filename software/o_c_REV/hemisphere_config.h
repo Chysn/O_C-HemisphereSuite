@@ -8,7 +8,7 @@
 // 0x40 = Logic
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 43
+#define HEMISPHERE_AVAILABLE_APPLETS 44
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
@@ -43,6 +43,7 @@
     DECLARE_APPLET( 40, 0x40, Schmitt), \
     DECLARE_APPLET( 23, 0x80, Scope), \
     DECLARE_APPLET( 14, 0x02, Sequence5), \
+    DECLARE_APPLET( 48, 0x45, ShiftGate), \
     DECLARE_APPLET( 18, 0x02, TM), \
     DECLARE_APPLET( 36, 0x04, Shuffle), \
     DECLARE_APPLET(  7, 0x01, SkewedLFO), \
