@@ -63,6 +63,7 @@ public:
         Pack(data, PackLocation {4,4}, length[1] - 1);
         Pack(data, PackLocation {8,1}, trigger[0]);
         Pack(data, PackLocation {9,1}, trigger[1]);
+        Pack(data, PackLocation {16,16}, reg[0]);
         return data;
     }
 
@@ -71,6 +72,7 @@ public:
         length[1] = Unpack(data, PackLocation {4,4}) + 1;
         trigger[0] = Unpack(data, PackLocation {8,1});
         trigger[1] = Unpack(data, PackLocation {9,1});
+        reg[0] = Unpack(data, PackLocation {16,16});
     }
 
 protected:
@@ -85,10 +87,10 @@ protected:
     
 private:
     int cursor; // 0=Length, 1=Trigger/Gate
+    uint16_t reg[2]; // Registers
     
     // Settings
     int8_t length[2]; // 1-16
-    uint16_t reg[2]; // Registers
     bool trigger[2]; // 0=Gate, 1=Trigger
 
     void DrawInterface() {
@@ -107,10 +109,11 @@ private:
         // Register display
         ForEachChannel(ch)
         {
-            byte x = 1 + (32 * ch);
             for (int b = 0; b < 16; b++)
             {
-                if ((reg[ch] >> b) & 0x01) gfxPixel(x + (b * 2), 35);
+                byte x = (31 - (b * 2)) + (32 * ch);
+                if ((reg[ch] >> b) & 0x01) gfxPixel(x, 35);
+                if (b == 0 && (reg[ch] & 0x01)) gfxLine(x, 30, x, 40);
             }
         }
     }
