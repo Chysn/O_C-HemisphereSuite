@@ -57,3 +57,4 @@
     DECLARE_APPLET( 39, 0x80, Tuner), \
     DECLARE_APPLET( 43, 0x10, Voltage), \
 }
+/*    DECLARE_APPLET(127, 0x80, DIAGNOSTIC), \ */

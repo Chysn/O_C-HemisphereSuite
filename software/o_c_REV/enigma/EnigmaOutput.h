@@ -105,7 +105,7 @@ public:
             byte bits = ty + 3; // Number of bits
             uint8_t mask = 0;
             for (byte s = 0; s < bits; s++) mask |= (0x01 << s);
-            int note_shift = ty == EnigmaOutputType::NOTE7 ? 0 : 60; // Note types under 7-bit start at Middle C
+            int note_shift = ty == EnigmaOutputType::NOTE7 ? 0 : 64; // Note types under 7-bit start at Middle C
             int note_number = (reg & mask) + note_shift;
             note_number = constrain(note_number, 0, 127);
             app->Out(out, quantizer.Lookup(note_number) + transpose);
