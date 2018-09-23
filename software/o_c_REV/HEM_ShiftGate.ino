@@ -94,17 +94,17 @@ private:
     bool trigger[2]; // 0=Gate, 1=Trigger
 
     void DrawInterface() {
-        gfxPrint(1, 15, "Length:");
-        gfxPrint(1 + pad(10, length[0]), 25, length[0]);
-        gfxPrint(33 + pad(10, length[1]), 25, length[1]);
+        gfxIcon(1, 15, METER_ICON);
+        gfxPrint(12 + pad(100, length[0]), 15, length[0]);
+        gfxPrint(45 + pad(100, length[1]), 15, length[1]);
 
-        gfxPrint(1, 37, "Type:");
-        gfxPrint(1, 47, trigger[0] ? "Trig" : "Gate");
-        gfxPrint(33, 47, trigger[1] ? "Trig" : "Gate");
+        gfxIcon(1, 25, X_NOTE_ICON);
+        gfxPrint(12, 25, trigger[0] ? "Trg" : "Gte");
+        gfxPrint(45, 25, trigger[1] ? "Trg" : "Gte");
 
-        byte x = cursor > 1 ? cursor - 2 : cursor;
-        byte y = cursor > 1 ? 1 : 0;
-        gfxCursor(1 + (33 * y), 33 + (22 * x), 24);
+        byte x = cursor > 1 ? 1 : 0;
+        byte y = cursor > 1 ? cursor - 2 : cursor;
+        gfxCursor(12 + (33 * x), 23 + (10 * y), 18);
 
         // Register display
         ForEachChannel(ch)
@@ -112,8 +112,8 @@ private:
             for (int b = 0; b < 16; b++)
             {
                 byte x = (31 - (b * 2)) + (32 * ch);
-                if ((reg[ch] >> b) & 0x01) gfxPixel(x, 35);
-                if (b == 0 && (reg[ch] & 0x01)) gfxLine(x, 30, x, 40);
+                if ((reg[ch] >> b) & 0x01) gfxLine(x, 45 + (ch * 5), x, 50 + (ch * 5));
+                if (b == 0 && (reg[ch] & 0x01)) gfxLine(x, 40, x, 60);
             }
         }
     }
