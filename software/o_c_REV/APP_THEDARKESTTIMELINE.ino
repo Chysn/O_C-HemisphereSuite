@@ -42,6 +42,7 @@ enum {
     DT_MIDI_CHANNEL,
     DT_MIDI_CHANNEL_ALT,
     DT_MIDI_CHANNEL_IN,
+    DT_GATE_TIME,
     DT_SETTING_LAST
 };
 
@@ -88,9 +89,14 @@ public:
         }
 
         // Step forward with Digital 1
+        int gate_ticks = HEMISPHERE_CLOCK_TICKS;
         if (Clock(0)) {
             last_tempo = OC::CORE::ticks - last_clock_event;
             last_clock_event = OC::CORE::ticks;
+            if (gate_time() > 0) {
+                gate_ticks = Proportion(gate_time(), 100, last_tempo);
+            }
+
             // Reverse direction with gate at Digital 2
             move_cursor(Gate(1) ? -1 : 1);
             clocked = 1;
@@ -169,7 +175,7 @@ public:
                 // Calculate normal probability for Output 3
                 int prob = random(0, HSAPPLICATION_5V);
                 if (prob < cv || Gate(3)) { // Gate at digital 4 makes all probabilities certainties
-                    ClockOut(2);
+                    ClockOut(2, gate_ticks);
 
                     // Send the MIDI Note On
                     if (last_midi_note[0] > -1) usbMIDI.sendNoteOff(last_midi_note[0], 0, last_midi_channel[0]);
@@ -186,7 +192,7 @@ public:
                 // Calculate complementary probability for Output 4
                 prob = random(0, HSAPPLICATION_5V);
                 if (prob < (HSAPPLICATION_5V - cv) || Gate(3)) {
-                    ClockOut(3);
+                    ClockOut(3, gate_ticks);
 
                     // Send the MIDI Note On for Alternate Universe
                     if (last_midi_note[1] > -1) usbMIDI.sendNoteOff(last_midi_note[1], 0, last_midi_channel[1]);
@@ -293,6 +299,7 @@ public:
     uint8_t midi_channel() {return values_[DT_MIDI_CHANNEL];}
     uint8_t midi_channel_alt() {return values_[DT_MIDI_CHANNEL_ALT];}
     uint8_t midi_channel_in() {return values_[DT_MIDI_CHANNEL_IN];}
+    uint8_t gate_time() {return values_[DT_GATE_TIME];}
 
     /////////////////////////////////////////////////////////////////
     // Control handlers
@@ -430,22 +437,33 @@ private:
     }
 
     void DrawSetupScreen() {
-        gfxPrint(1, 15, "Scale      : ");
+        gfxPrint(1, 15, "Scale   : ");
         gfxPrint(OC::scale_names_short[scale()]);
+        gfxPrint(102, 15, OC::Strings::note_names_unpadded[root()]);
 
-        gfxPrint(1, 25, "Root       : ");
-        gfxPrint(OC::Strings::note_names_unpadded[root()]);
-
-        gfxPrint(1, 35, "MIDI Ch Out: ");
+        gfxPrint(1, 25, "MIDI Out: ");
         gfxPrint(midi_channels[midi_channel()]);
 
-        gfxPrint(1, 45, "        Alt: ");
+        gfxPrint(1, 35, "     Alt: ");
         gfxPrint(midi_channels[midi_channel_alt()]);
 
-        gfxPrint(1, 55, "        In : ");
+        gfxPrint(1, 45, "     In : ");
         gfxPrint(midi_channels[midi_channel_in()]);
 
-        gfxCursor(79, 13 + (10 * setup_screen), 30);
+        gfxPrint(1, 55, "Trg/Gate: ");
+        if (gate_time() > 0) {
+            gfxPrint(gate_time());
+            gfxPrint("%");
+        } else {
+            gfxPrint("Trg");
+        }
+
+        if (setup_screen == 1) gfxCursor(60, 23, 30);
+        if (setup_screen == 2) gfxCursor(102, 23, 18);
+        if (setup_screen == 3) gfxCursor(60, 33, 30);
+        if (setup_screen == 4) gfxCursor(60, 43, 30);
+        if (setup_screen == 5) gfxCursor(60, 53, 30);
+        if (setup_screen == 6) gfxCursor(60, 63, 30);
     }
 
     /* Geez, don't even ask me to explain this. It's 11PM. (position + cursor) % length constrains the
@@ -501,6 +519,7 @@ SETTINGS_DECLARE(TheDarkestTimeline, DT_SETTING_LAST) {
     {0, 0, 16, "MIDI Channel", NULL, settings::STORAGE_TYPE_U8},
     {0, 0, 16, "MIDI Channel Alt", NULL, settings::STORAGE_TYPE_U8},
     {0, 0, 16, "MIDI Channel In", NULL, settings::STORAGE_TYPE_U8},
+    {0, 0, 100, "Trigger Pct", NULL, settings::STORAGE_TYPE_U8},
 };
 
 TheDarkestTimeline TheDarkestTimeline_instance;
