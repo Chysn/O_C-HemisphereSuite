@@ -132,6 +132,7 @@ public:
                 if (mode == ENIGMA_MODE_LIBRARY) V[1] = tm_cursor;
                 if (!HS::user_turing_machines[V[1]].favorite) {
                     ReceiveTuringMachine(V);
+                    HS::user_turing_machines[V[1]].favorite = 0; // Favorite off, so that update may be automated in performance
                     SwitchTuringMachine(V[1]);
                 }
             }
