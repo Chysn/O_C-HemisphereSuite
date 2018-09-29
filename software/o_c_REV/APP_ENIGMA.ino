@@ -144,8 +144,9 @@ public:
     /////////////////////////////////////////////////////////////////
     // Left button press changes the Mode
     void OnLeftButtonPress() {
-        if (++mode > ENIGMA_MODE_PLAY) mode = ENIGMA_MODE_LIBRARY;
         if (mode == ENIGMA_CONFIRM_RESET) mode = last_mode; // Cancel erase
+        else if (++mode > ENIGMA_MODE_PLAY) mode = ENIGMA_MODE_LIBRARY;
+        if (mode == ENIGMA_MODE_LIBRARY && play) ++mode;
         ResetCursor();
         help_countdown = help_time;
     }
@@ -197,9 +198,17 @@ public:
                     SendSingleTuringMachine(tm_cursor);
                 }
             }
-            if (mode == ENIGMA_MODE_ASSIGN) assign_audition = 0;
+            if (mode == ENIGMA_MODE_ASSIGN && !play) assign_audition = 0;
             if (mode == ENIGMA_MODE_SONG) InsertStep();
-            if (mode == ENIGMA_MODE_PLAY) play = 1 - play;
+            if (mode == ENIGMA_MODE_PLAY) {
+                play = 1 - play;
+                if (play) {
+                    // Save the audition assign state for when play is stopped
+                    last_assign_audition = assign_audition;
+                    assign_audition = 1;
+                }
+                else assign_audition = last_assign_audition;
+            }
         }
     }
 
@@ -271,6 +280,7 @@ private:
     TuringMachineState tm_state; // The currently-selected state in Library mode
     byte state_prob[HS::TURING_MACHINE_COUNT]; // Remember the last probability
     bool assign_audition = 0; // Which area does Assign monitor? 0=Library, 1=Song
+    bool last_assign_audition; // Temporarily save the old audition state during playback
     uint16_t track_step[100]; // List of steps in the current track
     uint16_t total_steps = 0; // Total number of song_step[] entries used; index of the next step
     byte last_track_step_index = 0; // For adding the next step
@@ -388,6 +398,10 @@ private:
     }
 
     void DrawAssignInterface() {
+        // Play status at top of screen
+        if (play) gfxIcon(118, 0, PLAY_ICON);
+        else gfxIcon(118, 0, PAUSE_ICON);
+
         // Draw the left side, the selector
         for (byte line = 0; line < 4; line++)
         {
@@ -551,6 +565,7 @@ private:
                     char name[4];
                     HS::TuringMachine::SetName(name, song_step[ssi].tm());
                     gfxPrint(54, y, name);
+                    track_tm[t].DrawSmallAt(54, y + 8);
                 }
 
                 // Clock Divide

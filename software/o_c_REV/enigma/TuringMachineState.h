@@ -112,6 +112,11 @@ public:
         }
     }
 
+    void DrawSmallAt(byte x, byte y) {
+        for (byte b = 0; b < 16; b++)
+            if ((reg >> b) & 0x01) graphics.setPixel(16 - b + x, y);
+    }
+
 private:
     byte ix; // Turing machine index
     uint16_t reg; // Shift register
