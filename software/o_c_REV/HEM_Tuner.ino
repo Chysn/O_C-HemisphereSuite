@@ -21,6 +21,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+// Tuner can only work in the right hemisphere because the frequecy input is on
+// CV4. However, when the screen is flipped, Tuner can only work in the right
+// hemisphere. So there are various checks for the FLIP_180 compile-time option
+// in this code.
+
 static constexpr double HEM_TUNER_AaboveMidCtoC0 = 0.03716272234383494188492;
 
 class Tuner : public HemisphereApplet {
@@ -37,7 +42,12 @@ public:
     }
 
     void Controller() {
-        if (hemisphere == 1 && FreqMeasure.available()) {
+#ifdef FLIP_180
+        if (hemisphere == 0 && FreqMeasure.available())
+#else
+        if (hemisphere == 1 && FreqMeasure.available())
+#endif
+        {
             // average several readings together
             freq_sum_ = freq_sum_ + FreqMeasure.read();
             freq_count_ = freq_count_ + 1;
@@ -85,7 +95,11 @@ public:
 protected:
     void SetHelp() {
         if (hemisphere == 1) {
+#ifdef FLIP_180
+            help[HEMISPHERE_HELP_DIGITALS] = "1=Input";
+#else
             help[HEMISPHERE_HELP_DIGITALS] = "2=Input";
+#endif
             help[HEMISPHERE_HELP_CVS]      = "";
             help[HEMISPHERE_HELP_OUTS]     = "";
             help[HEMISPHERE_HELP_ENCODER]  = "A4 Hz P=Reset";
@@ -93,7 +107,11 @@ protected:
             help[HEMISPHERE_HELP_DIGITALS] = "Due to hardware";
             help[HEMISPHERE_HELP_CVS]      = "constraints, the";
             help[HEMISPHERE_HELP_OUTS]     = "Tuner must run in";
+#ifdef FLIP_180
+            help[HEMISPHERE_HELP_ENCODER]  = "left hemisphere";
+#else
             help[HEMISPHERE_HELP_ENCODER]  = "right hemisphere";
+#endif
         }
     }
     
@@ -154,12 +172,21 @@ private:
         gfxCursor(25, 23, 36);
     }
     
+#ifdef FLIP_180
+    void DrawWarning() {
+        gfxPrint(1, 15, "Tuner goes");
+        gfxPrint(1, 25, "in left");
+        gfxPrint(1, 35, "hemisphere");
+        gfxPrint(1, 45, "<--");
+    }
+#else
     void DrawWarning() {
         gfxPrint(1, 15, "Tuner goes");
         gfxPrint(1, 25, "in right");
         gfxPrint(1, 35, "hemisphere");
         gfxPrint(1, 45, "       -->");
     }
+#endif
 
     float get_frequency() {return frequency_;}
     
