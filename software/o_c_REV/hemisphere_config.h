@@ -8,7 +8,7 @@
 // 0x40 = Logic
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 44
+#define HEMISPHERE_AVAILABLE_APPLETS 46
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
@@ -34,6 +34,7 @@
     DECLARE_APPLET( 16, 0x80, LoFiPCM), \
     DECLARE_APPLET( 10, 0x44, Logic), \
     DECLARE_APPLET( 21, 0x01, LowerRenz), \
+    DECLARE_APPLET( 50, 0x04, Metronome), \
     DECLARE_APPLET(150, 0x20, hMIDIIn), \
     DECLARE_APPLET( 27, 0x20, hMIDIOut), \
     DECLARE_APPLET( 33, 0x10, MixerBal), \
@@ -55,6 +56,7 @@
     DECLARE_APPLET( 11, 0x06, TrigSeq), \
     DECLARE_APPLET( 25, 0x06, TrigSeq16), \
     DECLARE_APPLET( 39, 0x80, Tuner), \
+    DECLARE_APPLET( 49, 0x80, VectorOsc), \
     DECLARE_APPLET( 43, 0x10, Voltage), \
 }
 /*    DECLARE_APPLET(127, 0x80, DIAGNOSTIC), \ */

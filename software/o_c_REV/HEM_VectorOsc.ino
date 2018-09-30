@@ -1,15 +1,4 @@
-// Hemisphere Applet Boilerplate. Follow these steps to add a Hemisphere app:
-//
-// (1) Save this file as HEM_ClassName.ino
-// (2) Find and replace "ClassName" with the name of your Applet class
-// (3) Implement all of the public methods below
-// (4) Add text to the help section below in SetHelp()
-// (5) Add a declare line in hemisphere_config.h, which looks like this:
-//     DECLARE_APPLET(id, categories, ClassName), \
-// (6) Increment HEMISPHERE_AVAILABLE_APPLETS in hemisphere_config.h
-// (7) Add your name and any additional copyright info to the block below
-
-// Copyright (c) 2018, __________
+// Copyright (c) 2018, Jason Justian
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
@@ -29,17 +18,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-class ClassName : public HemisphereApplet {
+#include "HSVectorOscillator.h"
+
+class VectorOsc : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "ClassName";
+        return "VectorOsc";
     }
 
     void Start() {
+//        osc.SetSegment(VOSegment {255,0});
+        osc.SetSegment(VOSegment {255,1});
+//        osc.SetSegment(VOSegment {0,0});
+        osc.SetSegment(VOSegment {0,1});
+        //osc.SetSegment(VOSegment {0,0});
+        //osc.SetSegment(VOSegment {0,1});
+        osc.SetFrequency(Hz);
+        osc.SetScale((12 << 7) * 3);
     }
 
     void Controller() {
+        Out(0, osc.Next());
     }
 
     void View() {
@@ -51,6 +51,9 @@ public:
     }
 
     void OnEncoderMove(int direction) {
+        if (Hz < 500) Hz += direction;
+        if (Hz > 500) Hz += (100 * direction);
+        osc.SetFrequency(Hz);
     }
         
     uint32_t OnDataRequest() {
@@ -77,9 +80,12 @@ protected:
     
 private:
     int cursor;
+    VectorOscillator osc;
+    uint32_t Hz = 440;
     
     void DrawInterface() {
-        gfxSkyline();
+        gfxPrint(1, 15, Hz);
+        gfxPrint(1, 35, osc.Diagnostic());
     }
 };
 
@@ -87,19 +93,19 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 //// Hemisphere Applet Functions
 ///
-///  Once you run the find-and-replace to make these refer to ClassName,
+///  Once you run the find-and-replace to make these refer to VectorOsc,
 ///  it's usually not necessary to do anything with these functions. You
 ///  should prefer to handle things in the HemisphereApplet child class
 ///  above.
 ////////////////////////////////////////////////////////////////////////////////
-ClassName ClassName_instance[2];
+VectorOsc VectorOsc_instance[2];
 
-void ClassName_Start(bool hemisphere) {ClassName_instance[hemisphere].BaseStart(hemisphere);}
-void ClassName_Controller(bool hemisphere, bool forwarding) {ClassName_instance[hemisphere].BaseController(forwarding);}
-void ClassName_View(bool hemisphere) {ClassName_instance[hemisphere].BaseView();}
-void ClassName_Screensaver(bool hemisphere) {ClassName_instance[hemisphere].BaseScreensaverView();}
-void ClassName_OnButtonPress(bool hemisphere) {ClassName_instance[hemisphere].OnButtonPress();}
-void ClassName_OnEncoderMove(bool hemisphere, int direction) {ClassName_instance[hemisphere].OnEncoderMove(direction);}
-void ClassName_ToggleHelpScreen(bool hemisphere) {ClassName_instance[hemisphere].HelpScreen();}
-uint32_t ClassName_OnDataRequest(bool hemisphere) {return ClassName_instance[hemisphere].OnDataRequest();}
-void ClassName_OnDataReceive(bool hemisphere, uint32_t data) {ClassName_instance[hemisphere].OnDataReceive(data);}
+void VectorOsc_Start(bool hemisphere) {VectorOsc_instance[hemisphere].BaseStart(hemisphere);}
+void VectorOsc_Controller(bool hemisphere, bool forwarding) {VectorOsc_instance[hemisphere].BaseController(forwarding);}
+void VectorOsc_View(bool hemisphere) {VectorOsc_instance[hemisphere].BaseView();}
+void VectorOsc_Screensaver(bool hemisphere) {VectorOsc_instance[hemisphere].BaseScreensaverView();}
+void VectorOsc_OnButtonPress(bool hemisphere) {VectorOsc_instance[hemisphere].OnButtonPress();}
+void VectorOsc_OnEncoderMove(bool hemisphere, int direction) {VectorOsc_instance[hemisphere].OnEncoderMove(direction);}
+void VectorOsc_ToggleHelpScreen(bool hemisphere) {VectorOsc_instance[hemisphere].HelpScreen();}
+uint32_t VectorOsc_OnDataRequest(bool hemisphere) {return VectorOsc_instance[hemisphere].OnDataRequest();}
+void VectorOsc_OnDataReceive(bool hemisphere, uint32_t data) {VectorOsc_instance[hemisphere].OnDataReceive(data);}

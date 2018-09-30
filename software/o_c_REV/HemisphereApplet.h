@@ -23,6 +23,7 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "HSicons.h"
+#include "HSClockManager.h"
 
 #define LEFT_HEMISPHERE 0
 #define RIGHT_HEMISPHERE 1
@@ -143,10 +144,12 @@ public:
     //////////////// Notifications from the base class regarding manager state(s)
     ////////////////////////////////////////////////////////////////////////////////
     void DrawNotifications() {
-        // CV Forwarding Icon
-        if (master_clock_bus) {
-            graphics.drawBitmap8(56, 1, 8, CLOCK_ICON);
-        }
+            // Metronome Icon
+            ClockManager *clock_m = clock_m->get();
+            if (hemisphere == 0 && clock_m->IsRunning()) gfxIcon(56, 1, clock_m->Cycle() ? METRO_L_ICON : METRO_R_ICON);
+
+            // CV Forwarding Icon
+            if (master_clock_bus) gfxIcon(-8, 1, CLOCK_ICON);
     }
 
     void DrawHelpScreen() {
@@ -305,14 +308,18 @@ public:
 
     bool Clock(int ch) {
         bool clocked = 0;
-        if (master_clock_bus && ch == 0) {
-            clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
-        } else if (hemisphere == 0) {
+        if (hemisphere == 0) {
             if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
             if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_2>();
         } else if (hemisphere == 1) {
             if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_3>();
             if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_4>();
+        }
+
+        if (ch == 0) {
+            ClockManager *clock_m = clock_m->get();
+            if (clock_m->IsRunning()) clocked = clock_m->Tock();
+            else if (master_clock_bus) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
         }
 
         if (clocked) last_clock[ch] = OC::CORE::ticks;

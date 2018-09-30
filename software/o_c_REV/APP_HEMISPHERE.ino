@@ -29,6 +29,7 @@ namespace menu = OC::menu;
 #include "HemisphereApplet.h"
 #include "HSicons.h"
 #include "HSMIDI.h"
+#include "HSClockManager.h"
 
 #define DECLARE_APPLET(id, categories, class_name) \
 { id, categories, class_name ## _Start, class_name ## _Controller, class_name ## _View, \
@@ -131,6 +132,9 @@ public:
             }
         }
 
+        // Turn off clock forwarding if Metronome is running
+        if (clock_m->IsRunning()) forwarding = 0;
+
         for (int h = 0; h < 2; h++)
         {
             int index = my_applet[h];
@@ -220,7 +224,8 @@ public:
     }
 
     void ToggleForwarding() {
-        forwarding = forwarding ? 0 : 1;
+        if (clock_m->IsRunning()) clock_m->Stop();
+        else forwarding = forwarding ? 0 : 1;
     }
 
     void SetHelpScreen(int hemisphere) {
@@ -303,6 +308,7 @@ private:
     int midi_in_hemisphere; // Which of the hemispheres (if any) is using MIDI In
     uint32_t click_tick; // Measure time between clicks for double-click
     int first_click; // The first button pushed of a double-click set, to see if the same one is pressed
+    ClockManager *clock_m = clock_m->get();
 
     void DrawFilterSelector(int h) {
         int offset = h * 64;
