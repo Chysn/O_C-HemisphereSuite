@@ -45,6 +45,7 @@ public:
     virtual void Start();
     virtual void Controller();
     virtual void View();
+    virtual void Resume();
 
     void BaseController() {
         for (uint8_t ch = 0; ch < 4; ch++)
@@ -205,6 +206,14 @@ public:
         graphics.drawLine(x, y, x2, y2);
     }
 
+    void gfxDottedLine(int x, int y, int x2, int y2, uint8_t p) {
+#ifdef HS_GFX_MOD
+        graphics.drawLine(x, y, x2, y2, p);
+#else
+        graphics.drawLine(x, y, x2, y2);
+#endif
+    }
+
     void gfxCircle(int x, int y, int r) {
         graphics.drawCircle(x, y, r);
     }
@@ -226,6 +235,7 @@ public:
             if (abs(number) < range) padding += 6;
             range = range / 10;
         }
+        if (number < 0 && padding > 0) padding -= 6; // Compensate for minus sign
         return padding;
     }
 

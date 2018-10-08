@@ -159,6 +159,7 @@ private:
         gfxDottedLine(30,50,32,28,3); // Tempo scale
         gfxCircle(40,51,1); // Winder
 
+        // Pendulum arm
         if (clock_m->Cycle()) gfxLine(29,50,21,31);
         else gfxLine(29,50,37,32);
     }

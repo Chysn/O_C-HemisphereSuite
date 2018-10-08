@@ -21,6 +21,9 @@
 #ifndef WEEGFX_H_
 #define WEEGFX_H_
 
+// Contains modifications for Hemisphere Suite
+#define HS_GFX_MOD
+
 #include <stdint.h>
 #include <string.h>
 

@@ -25,6 +25,9 @@ class ClassName : public HSApplication, public SystemExclusiveHandler {
 public:
 	void Start() {
 	}
+	
+	void Resume() {
+	}
 
     void Controller() {
     }
@@ -93,6 +96,9 @@ void ClassName_isr() {
 }
 
 void ClassName_handleAppEvent(OC::AppEvent event) {
+    if (event ==  OC::APP_EVENT_RESUME) {
+        ClassName_instance.Resume();
+    }
     if (event == OC::APP_EVENT_SUSPEND) {
         ClassName_instance.OnSendSysEx();
     }
@@ -104,9 +110,7 @@ void ClassName_menu() {
     ClassName_instance.BaseView();
 }
 
-void ClassName_screensaver() {
-    ClassName_instance.BaseScreensaverView();
-}
+void ClassName_screensaver() {} // Deprecated
 
 void ClassName_handleButtonEvent(const UI::Event &event) {
     // For left encoder, handle press and long press

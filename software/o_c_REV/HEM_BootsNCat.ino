@@ -20,25 +20,41 @@
 
 #include "vector_osc/HSVectorOscillator.h"
 
-class VectorOsc : public HemisphereApplet {
+class BootsNCat : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "VectorOsc";
+        return "BootsNCat";
     }
 
     void Start() {
-        osc.SetSegment(VOSegment {255,0});
-        osc.SetSegment(VOSegment {255,1});
-        osc.SetSegment(VOSegment {0,0});
-        osc.SetSegment(VOSegment {0,1});
-        osc.SetFrequency(Hz);
-        osc.SetScale((12 << 7) * 3);
-        osc.Cycle(0);
+        ForEachChannel(ch)
+        {
+            sound[ch].SetWaveform(VO_TRIANGLE);
+            sound[ch].SetFrequency(5000 + (4000 * ch));
+            sound[ch].SetScale((12 << 7) * 3);
+
+            eg[ch].SetFrequency(220);
+            eg[ch].SetScale(1000);
+            eg[ch].SetSegment(VOSegment {255,0});
+            eg[ch].SetSegment(VOSegment {128,1});
+            eg[ch].Cycle(0);
+        }
+
     }
 
     void Controller() {
-        Out(0, osc.Next());
+        ForEachChannel(ch)
+        {
+            if (Clock(ch)) {
+                eg[ch].Start();
+            }
+
+            if (!eg[ch].GetEOC()) {
+                int32_t signal = Proportion(eg[ch].Next(), 1000, sound[ch].Next());
+                Out(ch, signal);
+            }
+        }
     }
 
     void View() {
@@ -47,13 +63,9 @@ public:
     }
 
     void OnButtonPress() {
-        osc.Start();
     }
 
     void OnEncoderMove(int direction) {
-        if (Hz <= 500) Hz += direction;
-        if (Hz > 500) Hz += (100 * direction);
-        osc.SetFrequency(Hz);
     }
         
     uint32_t OnDataRequest() {
@@ -71,21 +83,20 @@ public:
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "Digital in help";
-        help[HEMISPHERE_HELP_CVS]      = "CV in help";
-        help[HEMISPHERE_HELP_OUTS]     = "Out help";
-        help[HEMISPHERE_HELP_ENCODER]  = "123456789012345678";
+        help[HEMISPHERE_HELP_DIGITALS] = "1,2 Play";
+        help[HEMISPHERE_HELP_CVS]      = "";
+        help[HEMISPHERE_HELP_OUTS]     = "A=Left B=Right";
+        help[HEMISPHERE_HELP_ENCODER]  = "Preset/Pan";
         //                               "------------------" <-- Size Guide
     }
     
 private:
     int cursor;
-    VectorOscillator osc;
-    uint32_t Hz = 440;
+    VectorOscillator sound[2];
+    VectorOscillator eg[2];
     
     void DrawInterface() {
-        gfxPrint(1, 15, Hz);
-        gfxPrint(1, 35, osc.Diagnostic());
+        gfxSkyline();
     }
 };
 
@@ -93,19 +104,19 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 //// Hemisphere Applet Functions
 ///
-///  Once you run the find-and-replace to make these refer to VectorOsc,
+///  Once you run the find-and-replace to make these refer to BootsNCat,
 ///  it's usually not necessary to do anything with these functions. You
 ///  should prefer to handle things in the HemisphereApplet child class
 ///  above.
 ////////////////////////////////////////////////////////////////////////////////
-VectorOsc VectorOsc_instance[2];
+BootsNCat BootsNCat_instance[2];
 
-void VectorOsc_Start(bool hemisphere) {VectorOsc_instance[hemisphere].BaseStart(hemisphere);}
-void VectorOsc_Controller(bool hemisphere, bool forwarding) {VectorOsc_instance[hemisphere].BaseController(forwarding);}
-void VectorOsc_View(bool hemisphere) {VectorOsc_instance[hemisphere].BaseView();}
-void VectorOsc_Screensaver(bool hemisphere) {VectorOsc_instance[hemisphere].BaseScreensaverView();}
-void VectorOsc_OnButtonPress(bool hemisphere) {VectorOsc_instance[hemisphere].OnButtonPress();}
-void VectorOsc_OnEncoderMove(bool hemisphere, int direction) {VectorOsc_instance[hemisphere].OnEncoderMove(direction);}
-void VectorOsc_ToggleHelpScreen(bool hemisphere) {VectorOsc_instance[hemisphere].HelpScreen();}
-uint32_t VectorOsc_OnDataRequest(bool hemisphere) {return VectorOsc_instance[hemisphere].OnDataRequest();}
-void VectorOsc_OnDataReceive(bool hemisphere, uint32_t data) {VectorOsc_instance[hemisphere].OnDataReceive(data);}
+void BootsNCat_Start(bool hemisphere) {BootsNCat_instance[hemisphere].BaseStart(hemisphere);}
+void BootsNCat_Controller(bool hemisphere, bool forwarding) {BootsNCat_instance[hemisphere].BaseController(forwarding);}
+void BootsNCat_View(bool hemisphere) {BootsNCat_instance[hemisphere].BaseView();}
+void BootsNCat_Screensaver(bool hemisphere) {BootsNCat_instance[hemisphere].BaseScreensaverView();}
+void BootsNCat_OnButtonPress(bool hemisphere) {BootsNCat_instance[hemisphere].OnButtonPress();}
+void BootsNCat_OnEncoderMove(bool hemisphere, int direction) {BootsNCat_instance[hemisphere].OnEncoderMove(direction);}
+void BootsNCat_ToggleHelpScreen(bool hemisphere) {BootsNCat_instance[hemisphere].HelpScreen();}
+uint32_t BootsNCat_OnDataRequest(bool hemisphere) {return BootsNCat_instance[hemisphere].OnDataRequest();}
+void BootsNCat_OnDataReceive(bool hemisphere, uint32_t data) {BootsNCat_instance[hemisphere].OnDataReceive(data);}

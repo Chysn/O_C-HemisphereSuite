@@ -39,6 +39,10 @@ public:
         tinynumbers.Init(SegmentSize::TINY_SEGMENTS);
 	}
 
+	void Resume() {
+
+	}
+
     void Controller() {
         ListenForSysEx();
 
