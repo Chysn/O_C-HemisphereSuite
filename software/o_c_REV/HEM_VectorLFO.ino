@@ -19,6 +19,7 @@
 // SOFTWARE.
 
 #include "vector_osc/HSVectorOscillator.h"
+#include "vector_osc/WaveformManager.h"
 
 class VectorLFO : public HemisphereApplet {
 public:

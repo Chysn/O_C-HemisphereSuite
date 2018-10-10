@@ -21,6 +21,7 @@
 #include "HSApplication.h"
 #include "HSMIDI.h"
 #include "vector_osc/HSVectorOscillator.h"
+#include "vector_osc/WaveformManager.h"
 
 class WaveformEditor : public HSApplication, public SystemExclusiveHandler {
 public:
@@ -28,44 +29,116 @@ public:
 	    if (!WaveformManager::Validate()) {
 	        WaveformManager::Setup();
 	    }
+        waveform_number = 0;
 	    Resume();
 	}
 
 	void Resume() {
-        waveform_number = 0;
         segment_number = 0;
         waveform_count = WaveformManager::WaveformCount();
-        osc = WaveformManager::VectorOscillatorFromWaveform(waveform_number);
         segments_remaining = WaveformManager::SegmentsRemaining();
+        SwitchWaveform(waveform_number);
 	}
 
     void Controller() {
+        // Receive MIDI dumps
+        ListenForSysEx();
+
+        // LFO Outputs
+        Out(0, test[0].Next());
+        Out(1, test[1].Next());
+
+        for (byte t = 2; t < 4; t++)
+        {
+            if (Gate(t)) {
+                if (!gated[t]) { // Gate wasn't on last time, so start the waveform
+                    test[t].Start();
+                }
+                gated[t] = 1;
+            } else {
+                if (gated[t]) { // Gate isn't on now, but was on last time, so release
+                    test[t].Release();
+                }
+                gated[t] = 0;
+            }
+            Out(t, test[t].Next());
+        }
     }
 
     void View() {
         gfxHeader("Waveform Editor");
-        DrawInterface();
+        if (add_delete_confirm) DrawAddDelete();
+        else DrawInterface();
     }
 
-    void OnSendSysEx() {
+    void OnSendSysEx() { // Left Enc Push
+        byte V[33];
+
+        // There are 64 waveform segments, each containing two bytes. These will be
+        // sent in four groups of 16 segments, for 32 bytes per segment. Each SysEx
+        // payload will be 33 bytes (before packing), which includes the group
+        // number.
+        for (byte gr = 0; gr < 4; gr++)
+        {
+            int ix = 0;
+            V[ix++] = gr; // Add the group number, for future decoding
+            for (byte s = 0; s < 16; s++)
+            {
+                byte seg_ix = (gr * 4) + s; // Segment index
+                V[ix++] = HS::user_waveforms[seg_ix].level;
+                V[ix++] = HS::user_waveforms[seg_ix].time;
+            }
+
+            UnpackedData unpacked;
+            unpacked.set_data(ix, V);
+            PackedData packed = unpacked.pack();
+            SendSysEx(packed, 'W');
+        }
     }
 
     void OnReceiveSysEx() {
+        uint8_t V[35];
+        if (ExtractSysExData(V, 'W')) {
+            int ix = 0;
+            byte gr = V[ix++];
+            for (byte s = 0; s < 16; s++)
+            {
+                byte seg_ix = (gr * 4) + s;
+                HS::user_waveforms[seg_ix].level = V[ix++];
+                HS::user_waveforms[seg_ix].time = V[ix++];
+            }
+
+            waveform_number = 0;
+            Resume();
+        }
     }
 
     /////////////////////////////////////////////////////////////////
     // Control handlers
     /////////////////////////////////////////////////////////////////
     void OnLeftButtonPress() {
-        AddSegment();
+        if (add_delete_confirm) {
+            add_delete_confirm = 0;
+        } else {
+            AddSegment();
+        }
     }
 
     void OnLeftButtonLongPress() {
-        DeleteSegment();
+        if (add_delete_confirm) {
+            add_delete_confirm = 0;
+        } else {
+            DeleteSegment();
+        }
     }
 
     void OnRightButtonPress() {
-        cursor = 1 - cursor;
+        if (add_delete_confirm) {
+            AddOrDeleteWaveform();
+            add_delete_confirm = 0;
+        } else {
+            cursor = 1 - cursor;
+        }
     }
 
     void OnUpButtonPress() {
@@ -81,24 +154,41 @@ public:
     }
 
     void OnDownButtonLongPress() {
+        add_delete_confirm = 1 - add_delete_confirm;
+        add_waveform = 1; // Default to Add
     }
 
     void OnLeftEncoderMove(int direction) {
-        if (direction < 0 && segment_number > 0) --segment_number;
-        if (direction > 0) segment_number = constrain(segment_number + 1, 0, osc.SegmentCount() - 1);
+        if (add_delete_confirm) {
+            add_waveform = 1 - add_waveform;
+        } else {
+            if (direction < 0 && segment_number > 0) --segment_number;
+            if (direction > 0) segment_number = constrain(segment_number + 1, 0, osc.SegmentCount() - 1);
+        }
     }
 
     void OnRightEncoderMove(int direction) {
-        VOSegment seg = osc.GetSegment(segment_number);
-        if (cursor == 0) { // Level
-            if (direction < 0 && seg.level > 0) seg.level = seg.level - 1;
-            if (direction > 0 && seg.level < 255) seg.level = seg.level + 1;
+        if (add_delete_confirm) {
+            add_waveform = 1 - add_waveform;
         } else {
-            if (direction < 0 && seg.time > 0) seg.time = seg.time - 1;
-            if (direction > 0 && seg.time < 8) seg.time = seg.time + 1;
+            VOSegment seg = osc.GetSegment(segment_number);
+            if (cursor == 0) { // Level
+                if (direction < 0 && seg.level > 0) seg.level = seg.level - 1;
+                if (direction > 0 && seg.level < 255) seg.level = seg.level + 1;
+            } else {
+                if (direction < 0 && seg.time > 0) seg.time = seg.time - 1;
+                if (direction > 0 && seg.time < 8) seg.time = seg.time + 1;
+            }
+            osc.SetSegment(segment_number, seg);
+            if (osc.TotalTime() == 0) {
+                // If the edit would reduce the total time to 0, force this segment's time to 1
+                seg.time = 1;
+                osc.SetSegment(segment_number, seg);
+            }
+
+            for (byte t = 0; t < 4; t++) test[t].SetSegment(segment_number, seg);
+            WaveformManager::Update(waveform_number, segment_number, &seg);
         }
-        osc.SetSegment(segment_number, seg);
-        WaveformManager::Update(waveform_number, segment_number, &seg);
     }
 
 private:
@@ -107,9 +197,16 @@ private:
     byte waveform_count;
     byte segments_remaining;
 
+    bool add_delete_confirm = 0; // 1=Show add/delete confirmation screen
+    bool add_waveform = 1; // 1=Add waveform, 0=Delete waveform
+
     // Info about currently-selected waveform
     int waveform_number = 0;
     VectorOscillator osc;
+
+    // Test Waveforms
+    VectorOscillator test[4];
+    bool gated[4];
 
     void DrawInterface() {
         // Header
@@ -154,29 +251,101 @@ private:
         gfxDottedLine(0, 43, 127, 43, 8);
     }
 
+    void DrawAddDelete() {
+        if (segments_remaining > 2) {
+            gfxPrint(12, 15, "Add Waveform ");
+            gfxPrint(waveform_count + 1);
+        } else {
+            // Not enough segments for a new waveform
+            gfxPrint(12, 15, "(Cannot Add)");
+        }
+
+        if (waveform_count > 1) {
+            gfxPrint(12, 25, "Del Waveform ");
+            gfxPrint(waveform_number + 1);
+        } else {
+            // Can't delete the last waveform
+            gfxPrint(12, 25, "(Cannot Del)");
+        }
+
+        if (add_waveform) gfxIcon(1, 15, CHECK_ICON);
+        else gfxIcon(1, 25, CHECK_ICON);
+
+        gfxPrint(0, 55, "[CANCEL]");
+        gfxPrint(104, 55, "[OK]");
+    }
+
     void SwitchWaveform(byte waveform_number_) {
         waveform_number = waveform_number_;
         osc = WaveformManager::VectorOscillatorFromWaveform(waveform_number);
         segment_number = 0;
+
+        for (byte t = 0; t < 4; t++)
+        {
+            test[t] = WaveformManager::VectorOscillatorFromWaveform(waveform_number);
+            test[t].SetScale((12 << 7) * 3);
+            gated[t] = 0;
+        }
+
+        test[0].SetFrequency(1000); // Test 0: LFO 10Hz
+
+        test[1].SetFrequency(44000); // Test 1: LFO Audio Rate
+
+        test[2].SetFrequency(50); // Test 2: Bipolar Envelope
+        test[2].Cycle(0);
+        test[2].Sustain();
+
+        test[3].SetFrequency(50); // Test 3: Unipolar Envelope
+        test[3].Offset((12 << 7) * 3);
+        test[3].Cycle(0);
+        test[3].Sustain();
     }
 
     void AddSegment() {
         // If there are any segments left, and there are fewer than VO_MAX_SEGMENTS in this waveform, add a segment
         if (segments_remaining < HS::VO_SEGMENT_COUNT && osc.SegmentCount() < HS::VO_MAX_SEGMENTS) {
             WaveformManager::AddSegmentToWaveformAtSegmentIndex(waveform_number, segment_number);
-            osc = WaveformManager::VectorOscillatorFromWaveform(waveform_number);
-            ++segment_number;
+            byte prev_segment_number = segment_number;
+            SwitchWaveform(waveform_number);
+            segment_number = prev_segment_number + 1;
             --segments_remaining;
         }
     }
 
     void DeleteSegment() {
         if (osc.SegmentCount() > 2) {
-            WaveformManager::DeleteSegmentFromWaveformAtSegmentIndex(waveform_number, segment_number);
-            byte prev_segment_number = segment_number;
-            SwitchWaveform(waveform_number);
-            segment_number = prev_segment_number;
-            if (segment_number > osc.SegmentCount() - 1) segment_number--;
+            bool ok_to_delete = 1;
+
+            // The segment cannot be deleted if this would result in a 0 total time
+            if (osc.GetSegment(segment_number).time == osc.TotalTime()) ok_to_delete = 0;
+
+            if (ok_to_delete) {
+                WaveformManager::DeleteSegmentFromWaveformAtSegmentIndex(waveform_number, segment_number);
+                byte prev_segment_number = segment_number;
+                SwitchWaveform(waveform_number);
+                segment_number = prev_segment_number;
+                if (segment_number > osc.SegmentCount() - 1) segment_number--;
+            }
+        }
+    }
+
+    void AddOrDeleteWaveform() {
+        if (add_waveform) { // ADD
+            if (segments_remaining > 2) {
+                WaveformManager::AddWaveform();
+                segments_remaining -= 3;
+                waveform_number = waveform_count;
+                waveform_count++;
+                SwitchWaveform(waveform_number);
+            }
+        } else { // DELETE
+            if (waveform_count > 1) {
+                WaveformManager::DeleteWaveform(waveform_number);
+                waveform_count--;
+                if (waveform_number > waveform_count - 1) waveform_number = waveform_count - 1;
+                segments_remaining = WaveformManager::SegmentsRemaining();
+                SwitchWaveform(waveform_number);
+            }
         }
     }
 };

@@ -118,12 +118,10 @@ public:
 
     bool Clock(int ch) {
         bool clocked = 0;
-
         if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
         if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_2>();
         if (ch == 2) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_3>();
         if (ch == 3) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_4>();
-
         if (clocked) last_clock[ch] = OC::CORE::ticks;
         return clocked;
     }
