@@ -168,14 +168,14 @@ struct CalibrationState {
 OC::DigitalInputDisplay digital_input_displays[4];
 
 // 128/6=21                  |                     |
-const char *start_footer   = "              [START]";
+const char *start_footer   = "[CANCEL]         [OK]";
 const char *end_footer     = "[PREV]         [EXIT]";
 const char *default_footer = "[PREV]         [NEXT]";
 const char *default_help_r = "[R] => Adjust";
 const char *select_help    = "[R] => Select";
 
 const CalibrationStep calibration_steps[CALIBRATION_STEP_LAST] = {
-  { HELLO, "O&C Calibration", "Use defaults? ", select_help, start_footer, CALIBRATE_NONE, 0, OC::Strings::no_yes, 0, 1 },
+  { HELLO, "Setup: Calibrate", "Use defaults? ", select_help, start_footer, CALIBRATE_NONE, 0, OC::Strings::no_yes, 0, 1 },
   { CENTER_DISPLAY, "Center Display", "Pixel offset ", default_help_r, default_footer, CALIBRATE_DISPLAY, 0, nullptr, 0, 2 },
 
   #ifdef BUCHLA_4U
@@ -325,6 +325,7 @@ void OC::Ui::Calibrate() {
 
       switch (event.control) {
         case CONTROL_BUTTON_L:
+          if (calibration_state.step == HELLO) calibration_complete = 1; // Way out --jj
           if (calibration_state.step > CENTER_DISPLAY)
             calibration_state.step = static_cast<CALIBRATION_STEP>(calibration_state.step - 1);
           break;
@@ -448,7 +449,9 @@ void calibration_draw(const CalibrationState &state) {
   GRAPHICS_BEGIN_FRAME(true);
   const CalibrationStep *step = state.current_step;
 
-  menu::DefaultTitleBar::Draw();
+  graphics.drawLine(0, 10, 127, 10);
+  graphics.drawLine(0, 12, 127, 12);
+  graphics.setPrintPos(1, 2);
   graphics.print(step->title);
 
   weegfx::coord_t y = menu::CalcLineY(0);
@@ -528,7 +531,7 @@ void calibration_draw(const CalibrationState &state) {
     x += 5;
   }
 
-  graphics.drawStr(1, menu::kDisplayHeight - menu::kFontHeight - 3, step->footer);
+  graphics.drawStr(0, menu::kDisplayHeight - menu::kFontHeight - 1, step->footer);
 
   static constexpr uint16_t step_width = (menu::kDisplayWidth << 8 ) / (CALIBRATION_STEP_LAST - 1);
   graphics.drawRect(0, menu::kDisplayHeight - 2, (state.step * step_width) >> 8, 2);

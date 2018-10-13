@@ -412,16 +412,19 @@ bool Ui::ConfirmReset() {
     }
 
     GRAPHICS_BEGIN_FRAME(true);
-    weegfx::coord_t y = menu::CalcLineY(0);
-    graphics.setPrintPos(menu::kIndentDx, y);
-    graphics.print("[L] Exit");
-    y += menu::kMenuLineH;
+    graphics.setPrintPos(1, 2);
+    graphics.print("Setup: Reset");
+    graphics.drawLine(0, 10, 127, 10);
+    graphics.drawLine(0, 12, 127, 12);
 
-    graphics.setPrintPos(menu::kIndentDx, y);
-    graphics.print("[R] Reset settings" );
-    y += menu::kMenuLineH;
-    graphics.setPrintPos(menu::kIndentDx, y);
-    graphics.print("    and erase EEPROM");
+    graphics.setPrintPos(1, 15);
+    graphics.print("Reset application");
+    graphics.setPrintPos(1, 25);
+    graphics.print("settings on EEPROM?");
+
+    graphics.setPrintPos(0, 55);
+    graphics.print("[CANCEL]         [OK]");
+
     GRAPHICS_END_FRAME();
 
   } while (!done);

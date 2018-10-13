@@ -21,6 +21,7 @@
 // SOFTWARE.
 
 #include "bjorklund.h"
+#define AF_DISPLAY_TIMEOUT 330000
 
 struct AFStepCoord {
     uint8_t x;
@@ -35,6 +36,7 @@ public:
     }
 
     void Start() {
+        display_timeout = AF_DISPLAY_TIMEOUT;
         ForEachChannel(ch)
         {
             length[ch] = 16;
@@ -68,24 +70,23 @@ public:
             // Plan for the thing to run forever and ever
             if (++step >= length[0] * length[1]) step = 0;
         }
+        if (display_timeout > 0) --display_timeout;
     }
 
     void View() {
         gfxHeader(applet_name());
         DrawSteps();
-        DrawEditor();
-    }
-
-    void ScreensaverView() {
-        DrawSteps();
+        if (display_timeout > 0) DrawEditor();
     }
 
     void OnButtonPress() {
+        display_timeout = AF_DISPLAY_TIMEOUT;
         if (++cursor > 3) cursor = 0;
         ResetCursor();
     }
 
     void OnEncoderMove(int direction) {
+        display_timeout = AF_DISPLAY_TIMEOUT;
         int ch = cursor < 2 ? 0 : 1;
         int f = cursor - (ch * 2); // Cursor function
         if (f == 0) {
@@ -118,21 +119,24 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
-        help[HEMISPHERE_HELP_CVS]      = "Offset 1=Ch1 2=Ch2";
+        help[HEMISPHERE_HELP_CVS]      = "Rotate 1=Ch1 2=Ch2";
         help[HEMISPHERE_HELP_OUTS]     = "Clock A=Ch1 B=Ch2";
         help[HEMISPHERE_HELP_ENCODER]  = "Length/Hits Ch1,2";
         //                               "------------------" <-- Size Guide
     }
     
 private:
-    int length[2];
-    int beats[2];
     int step;
     int cursor = 0; // Ch1: 0=Length, 1=Hits; Ch2: 2=Length 3=Hits
     AFStepCoord disp_coord[2][32];
     uint32_t pattern[2];
     int last_clock;
+    uint32_t display_timeout;
     
+    // Settings
+    int length[2];
+    int beats[2];
+
     void DrawSteps() {
         ForEachChannel(ch)
         {
@@ -258,10 +262,6 @@ void AnnularFusion_Controller(bool hemisphere, bool forwarding) {
 
 void AnnularFusion_View(bool hemisphere) {
     AnnularFusion_instance[hemisphere].BaseView();
-}
-
-void AnnularFusion_Screensaver(bool hemisphere) {
-    AnnularFusion_instance[hemisphere].BaseScreensaverView();
 }
 
 void AnnularFusion_OnButtonPress(bool hemisphere) {
