@@ -19,6 +19,9 @@
 // SOFTWARE.
 
 #include "vector_osc/HSVectorOscillator.h"
+#include "vector_osc/WaveformManager.h"
+
+#define BNC_MAX_PARAM 63
 
 class BootsNCat : public HemisphereApplet {
 public:
@@ -28,33 +31,67 @@ public:
     }
 
     void Start() {
+        tone[0] = 32; // Bass drum freq
+        decay[0] = 32; // Bass drum decay
+        tone[1] = 55; // Snare low limit
+        decay[1] = 16; // Snare decay
+        noise_tone_countdown = 1;
+        blend = 0;
+
+        bass = WaveformManager::VectorOscillatorFromWaveform(HS::Triangle);
+        SetBDFreq();
+        bass.SetScale((12 << 7) * 3); // Audio signal is -3V to +3V due to DAC asymmetry
+
         ForEachChannel(ch)
         {
-            sound[ch].SetWaveform(VO_TRIANGLE);
-            sound[ch].SetFrequency(5000 + (4000 * ch));
-            sound[ch].SetScale((12 << 7) * 3);
-
-            eg[ch].SetFrequency(220);
-            eg[ch].SetScale(1000);
+            levels[ch] = 0;
+            eg[ch].SetFrequency(decay[ch]);
+            eg[ch].SetScale(HEMISPHERE_MAX_CV);
+            eg[ch].Cycle(0);
             eg[ch].SetSegment(VOSegment {255,0});
             eg[ch].SetSegment(VOSegment {128,1});
-            eg[ch].Cycle(0);
+            SetEGFreq(ch);
         }
-
     }
 
     void Controller() {
+        // Bass and snare signals are calculated independently
+        int32_t signal = 0;
+        int32_t bd_signal = 0;
+        int32_t sd_signal = 0;
+
         ForEachChannel(ch)
         {
-            if (Clock(ch)) {
-                eg[ch].Start();
-            }
-
-            if (!eg[ch].GetEOC()) {
-                int32_t signal = Proportion(eg[ch].Next(), 1000, sound[ch].Next());
-                Out(ch, signal);
-            }
+            if (Changed(ch)) eg[ch].SetScale(HEMISPHERE_MAX_CV - In(ch));
+            if (Clock(ch)) eg[ch].Start();
         }
+
+        // Calculate bass drum signal
+        if (!eg[0].GetEOC()) {
+            levels[0] = eg[0].Next();
+            bd_signal = Proportion(levels[0], HEMISPHERE_MAX_CV, bass.Next());
+        }
+
+        // Calculate snare drum signal
+        if (--noise_tone_countdown == 0) {
+            noise = random(0, (12 << 7) * 6) - ((12 << 7) * 3);
+            noise_tone_countdown = BNC_MAX_PARAM - tone[1] + 1;
+        }
+
+        if (!eg[1].GetEOC()) {
+            levels[1] = eg[1].Next();
+            sd_signal = Proportion(levels[1], HEMISPHERE_MAX_CV, noise);
+        }
+
+        // Bass Drum Output
+        signal = Proportion((BNC_MAX_PARAM - blend) + BNC_MAX_PARAM, BNC_MAX_PARAM * 2, bd_signal);
+        signal += Proportion(blend, BNC_MAX_PARAM * 2, sd_signal); // Blend in snare drum
+        Out(0, signal);
+
+        // Snare Drum Output
+        signal = Proportion((BNC_MAX_PARAM - blend) + BNC_MAX_PARAM, BNC_MAX_PARAM * 2, sd_signal);
+        signal += Proportion(blend, BNC_MAX_PARAM * 2, bd_signal); // Blend in bass drum
+        Out(1, signal);
     }
 
     void View() {
@@ -63,40 +100,95 @@ public:
     }
 
     void OnButtonPress() {
+        if (++cursor > 4) cursor = 0;
     }
 
     void OnEncoderMove(int direction) {
+        if (cursor == 4) { // Blend
+            blend = constrain(blend + direction, 0, BNC_MAX_PARAM);
+        } else {
+            byte ch = cursor > 1 ? 1 : 0;
+            byte c = cursor;
+            if (ch) c -= 2;
+
+            if (c == 0) { // Tone
+                tone[ch] = constrain(tone[ch] + direction, 0, BNC_MAX_PARAM);
+                if (ch == 0) SetBDFreq();
+            }
+
+            if (c == 1) { // Decay
+                decay[ch] = constrain(decay[ch] + direction, 0, BNC_MAX_PARAM);
+                SetEGFreq(ch);
+            }
+        }
     }
         
     uint32_t OnDataRequest() {
         uint32_t data = 0;
-        // example: pack property_name at bit 0, with size of 8 bits
-        // Pack(data, PackLocation {0,8}, property_name); 
+        Pack(data, PackLocation {0,6}, tone[0]);
+        Pack(data, PackLocation {6,6}, decay[0]);
+        Pack(data, PackLocation {12,6}, tone[1]);
+        Pack(data, PackLocation {18,6}, decay[1]);
+        Pack(data, PackLocation {24,6}, blend);
         return data;
     }
 
     void OnDataReceive(uint32_t data) {
-        // example: unpack value at bit 0 with size of 8 bits to property_name
-        // property_name = Unpack(data, PackLocation {0,8}); 
+        tone[0] = Unpack(data, PackLocation {0,6});
+        decay[0] = Unpack(data, PackLocation {6,6});
+        tone[1] = Unpack(data, PackLocation {12,6});
+        decay[1] = Unpack(data, PackLocation {18,6});
+        blend = Unpack(data, PackLocation {24,6});
     }
 
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1,2 Play";
-        help[HEMISPHERE_HELP_CVS]      = "";
+        help[HEMISPHERE_HELP_CVS]      = "Atten. 1=BD 2=SD";
         help[HEMISPHERE_HELP_OUTS]     = "A=Left B=Right";
         help[HEMISPHERE_HELP_ENCODER]  = "Preset/Pan";
         //                               "------------------" <-- Size Guide
     }
     
 private:
-    int cursor;
-    VectorOscillator sound[2];
+    int cursor = 0;
+    VectorOscillator bass;
     VectorOscillator eg[2];
+    int noise_tone_countdown = 0;
+    uint32_t noise;
+    int levels[2]; // For display
     
+    // Settings
+    int tone[2];
+    int decay[2];
+    int8_t blend;
+
     void DrawInterface() {
-        gfxSkyline();
+        gfxPrint(1, 15, "BD Tone ");
+        gfxPrint(pad(10, tone[0]), tone[0]);
+        gfxPrint(1, 25, "Decay   ");
+        gfxPrint(pad(10, decay[0]), decay[0]);
+        gfxPrint(1, 35, "SD Tone ");
+        gfxPrint(pad(10, tone[1]), tone[1]);
+        gfxPrint(1, 45, "Decay   ");
+        gfxPrint(pad(10, decay[1]), decay[1]);
+        gfxPrint(1, 55, "Blend   ");
+        gfxPrint(pad(10, blend), blend);
+
+        // Cursor
+        gfxCursor(48, 23 + (cursor * 10), 12);
+
+        // Level indicators
+        ForEachChannel(ch) gfxInvert(1, 14 + (20 * ch), ProportionCV(levels[ch], 42), 9);
+    }
+
+    void SetBDFreq() {
+        bass.SetFrequency(Proportion(tone[0], BNC_MAX_PARAM, 3000) + 3000);
+    }
+
+    void SetEGFreq(byte ch) {
+        eg[ch].SetFrequency(1000 - Proportion(decay[ch], BNC_MAX_PARAM, 900));
     }
 };
 

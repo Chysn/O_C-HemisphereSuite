@@ -156,7 +156,7 @@ UiMode Ui::Splashscreen(bool &reset_settings) {
     if (read_immediate(CONTROL_BUTTON_R))
       mode = UI_MODE_APP_SETTINGS;
 
-    reset_settings = 
+    reset_settings =
     #ifdef BUCHLA_4U
        read_immediate(CONTROL_BUTTON_UP) && read_immediate(CONTROL_BUTTON_R);
     #else
@@ -165,42 +165,9 @@ UiMode Ui::Splashscreen(bool &reset_settings) {
 
     now = millis();
 
+    // This graphics frame is necessary for the keys to be read. I don't know why this is the case,
+    // since the keys are read above, but I don't have time to figure that out right now. --jj
     GRAPHICS_BEGIN_FRAME(true);
-
-    menu::DefaultTitleBar::Draw();
-    #ifdef BUCHLA_cOC
-      graphics.print("NLM card HS");
-    #else
-      graphics.print("Hemisphere Suite");
-    #endif
-    weegfx::coord_t y = menu::CalcLineY(0);
-
-    graphics.setPrintPos(menu::kIndentDx, y + menu::kTextDy);
-    graphics.print("[L] => Calibrate");
-    if (UI_MODE_CALIBRATE == mode)
-      graphics.invertRect(menu::kIndentDx, y, 128, menu::kMenuLineH);
-
-    y += menu::kMenuLineH;
-    graphics.setPrintPos(menu::kIndentDx, y + menu::kTextDy);
-    graphics.print("[R] => Main Menu");
-    if (UI_MODE_APP_SETTINGS == mode)
-      graphics.invertRect(menu::kIndentDx, y, 128, menu::kMenuLineH);
-
-    y += menu::kMenuLineH;
-    graphics.setPrintPos(menu::kIndentDx, y + menu::kTextDy);
-    if (reset_settings)
-      graphics.print("!! RESET EEPROM !!");
-
-    y += menu::kMenuLineH;
-    graphics.setPrintPos(menu::kIndentDx, y + menu::kTextDy);
-    graphics.print(OC_VERSION);
-
-    weegfx::coord_t w;
-    if (now - start < SPLASHSCREEN_DELAY_MS)
-      w = 128;
-    else
-      w = ((start + SPLASHSCREEN_DELAY_MS + SPLASHSCREEN_TIMEOUT_MS - now) << 7) / SPLASHSCREEN_TIMEOUT_MS;
-    graphics.drawRect(0, 62, w, 2);
 
     /* fixes spurious button presses when booting ? */
     while (event_queue_.available())

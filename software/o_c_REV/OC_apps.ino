@@ -43,6 +43,7 @@ OC::App available_apps[] = {
   DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
   DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR, SCALEEDITOR_isr),
   DECLARE_APP('W','A', "Waveform Editor", WaveformEditor, WaveformEditor_isr),
+  DECLARE_APP('S','E', "Setup / About", Settings, Settings_isr),
 };
 
 static constexpr int NUM_AVAILABLE_APPS = ARRAY_SIZE(available_apps);
