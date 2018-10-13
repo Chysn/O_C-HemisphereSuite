@@ -85,7 +85,6 @@ private:
     
     void DrawInterface() {
         gfxPrint(1, 15, Hz);
-        gfxPrint(1, 35, osc.Diagnostic());
     }
 };
 

@@ -29,6 +29,10 @@ public:
 	    if (!WaveformManager::Validate()) {
 	        WaveformManager::Setup();
 	    }
+	    test_freq[0] = 100;    // Test 0: LFO
+	    test_freq[1] = 44000;  // Test 1: Audio-Rate
+	    test_freq[2] = 50;     // Test 2: Bi-polar one-shot modulation
+	    test_freq[3] = 50;     // Test 3: Uni-polar EG
         waveform_number = 0;
 	    Resume();
 	}
@@ -43,6 +47,22 @@ public:
     void Controller() {
         // Receive MIDI dumps
         ListenForSysEx();
+
+        // Modulation input values
+        // LFO: .03Hz to 15Hz
+        // Audio: 110Hz to 880Hz
+        // EGs: .03Hz to 8Hz
+        int mod_range_low[4] = {3, 11000, 3, 3};
+        int mod_range_high[4] = {1500, 88000, 800, 800};
+        for (byte ch = 0; ch < 4; ch++)
+        {
+            if (Changed(ch)) {
+                int freq = Proportion(In(ch), HSAPPLICATION_5V, mod_range_high[ch] - mod_range_low[ch]) + mod_range_low[ch];
+                freq = constrain(freq, mod_range_low[ch], mod_range_high[ch]);
+                test[ch].SetFrequency(freq);
+                test_freq[ch] = freq;
+            }
+        }
 
         // LFO Outputs
         Out(0, test[0].Next());
@@ -177,7 +197,7 @@ public:
                 if (direction > 0 && seg.level < 255) seg.level = seg.level + 1;
             } else {
                 if (direction < 0 && seg.time > 0) seg.time = seg.time - 1;
-                if (direction > 0 && seg.time < 8) seg.time = seg.time + 1;
+                if (direction > 0 && seg.time < 9) seg.time = seg.time + 1;
             }
             osc.SetSegment(segment_number, seg);
             if (osc.TotalTime() == 0) {
@@ -207,6 +227,7 @@ private:
     // Test Waveforms
     VectorOscillator test[4];
     bool gated[4];
+    uint32_t test_freq[4];
 
     void DrawInterface() {
         // Header
@@ -233,15 +254,18 @@ private:
 
     void DrawWaveform() {
         uint16_t total_time = osc.TotalTime();
+        VOSegment seg = osc.GetSegment(osc.SegmentCount() - 1);
         byte prev_x = 0; // Starting coordinates
-        byte prev_y = 63;
+        byte prev_y = 63 - Proportion(seg.level, 255, 40);
         for (byte i = 0; i < osc.SegmentCount(); i++)
         {
-            VOSegment seg = osc.GetSegment(i);
+            seg = osc.GetSegment(i);
             byte y = 63 - Proportion(seg.level, 255, 40);
             byte seg_x = Proportion(seg.time, total_time, 128);
             byte x = prev_x + seg_x;
             byte p = segment_number == i ? 1 : 2;
+            x = constrain(x, 0, 127);
+            y = constrain(y, 0, 63);
             gfxDottedLine(prev_x, prev_y, x, y, p);
             prev_x = x;
             prev_y = y;
@@ -284,21 +308,18 @@ private:
         {
             test[t] = WaveformManager::VectorOscillatorFromWaveform(waveform_number);
             test[t].SetScale((12 << 7) * 3);
+            test[t].SetFrequency(test_freq[t]);
             gated[t] = 0;
         }
 
-        test[0].SetFrequency(1000); // Test 0: LFO 10Hz
+        test[2].Cycle(0); // Test 2: Bi-polar one-shot modulation
 
-        test[1].SetFrequency(44000); // Test 1: LFO Audio Rate
-
-        test[2].SetFrequency(50); // Test 2: Bipolar Envelope
-        test[2].Cycle(0);
-        test[2].Sustain();
-
-        test[3].SetFrequency(50); // Test 3: Unipolar Envelope
-        test[3].Offset((12 << 7) * 3);
-        test[3].Cycle(0);
+        test[3].Offset(3840); // Test 3: Uni-polar envelope
+        test[3].SetScale(3840);
+         test[3].Cycle(0);
         test[3].Sustain();
+
+        for (byte t = 0; t < 4; t++) test[t].Reset();
     }
 
     void AddSegment() {

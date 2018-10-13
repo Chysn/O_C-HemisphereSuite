@@ -98,8 +98,13 @@ public:
         ForEachChannel(ch)
         {
             // Set CV inputs
+
             ADC_CHANNEL channel = (ADC_CHANNEL)(ch + io_offset);
             inputs[ch] = OC::ADC::raw_pitch_value(channel);
+            if (abs(inputs[ch] - last_cv[ch]) > 16) {
+                changed_cv[ch] = 1;
+                last_cv[ch] = inputs[ch];
+            } else changed_cv[ch] = 0;
 
             // Handle clock timing
             if (clock_countdown[ch] > 0) {
@@ -348,11 +353,12 @@ public:
         Out(ch, 0, (high ? 5 : 0));
     }
 
-    // Buffered I/O functions for use in Views
+    // Buffered I/O functions
     int ViewIn(int ch) {return inputs[ch];}
     int ViewOut(int ch) {return outputs[ch];}
     int TicksSinceClock(int ch) {return OC::CORE::ticks - last_clock[ch];} // in ticks
     int TimeSinceClock(int ch) {return TicksSinceClock(ch) / 17;} // in approx. ms
+    bool Changed(int ch) {return changed_cv[ch];}
 
 protected:
     bool hemisphere; // Which hemisphere (0, 1) this applet uses
@@ -446,4 +452,6 @@ private:
     bool applet_started; // Allow the app to maintain state during switching
     int last_view_tick; // Tick number of the most recent view
     int help_active;
+    bool changed_cv[2]; // Has the input changed by more than 1/8 semitone since the last read?
+    int last_cv[2]; // For change detection
 };

@@ -48,15 +48,6 @@ public:
 
         if (Clock(1)) clock_m->Reset();
 
-        // Set the tempo via CV 1. This takes presidence over tap tempo.
-        if (DetentedIn(0)) {
-            uint16_t bpm = Proportion(In(0), HEMISPHERE_MAX_CV, 270) + 30;
-            clock_m->SetTempoBPM(bpm);
-        }
-
-        if (In(1) > HEMISPHERE_3V_CV) clock_m->Pause();
-        else clock_m->Unpause();
-
         // Outputs
         if (clock_m->IsRunning()) {
             if (clock_m->Tock()) {
@@ -111,7 +102,7 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Tap BPM 2=Reset";
-        help[HEMISPHERE_HELP_CVS]      = "1=Set BPM 2=Pause";
+        help[HEMISPHERE_HELP_CVS]      = "";
         help[HEMISPHERE_HELP_OUTS]     = "A=Multiply B=Beat";
         help[HEMISPHERE_HELP_ENCODER]  = "T=BPM/Mult/Start";
         //                               "------------------" <-- Size Guide

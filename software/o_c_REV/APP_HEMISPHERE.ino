@@ -224,7 +224,8 @@ public:
     }
 
     void ToggleForwarding() {
-        if (clock_m->IsRunning()) clock_m->Stop();
+        if (clock_m->IsRunning()) clock_m->Pause();
+        else if (clock_m->IsPaused()) clock_m->Start();
         else forwarding = forwarding ? 0 : 1;
     }
 

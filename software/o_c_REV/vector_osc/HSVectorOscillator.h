@@ -67,10 +67,6 @@ typedef HS::VOSegment VOSegment;
 
 class VectorOscillator {
 public:
-    int Diagnostic() {
-        return diag;
-    }
-
     /* Oscillator defaults to cycling. Turn off cycling for EGs, etc */
     void Cycle(bool cycle_ = 1) {cycle = cycle_;}
 
@@ -82,6 +78,7 @@ public:
         segment_index = segment_count - 1;
         rise = calculate_rise(segment_index);
         sustained = 0;
+        countdown = 1;
     }
 
     /* The offset amount will be added to each voltage output */
@@ -157,28 +154,6 @@ public:
         return signal2int(signal) + offset;
     }
 
-    /* Some simple waveform presets */
-    void SetWaveform(byte waveform) {
-        switch (waveform) {
-            case VO_TRIANGLE:
-                SetSegment(VOSegment {255,1});
-                SetSegment(VOSegment {0,1});
-                break;
-
-            case VO_SAWTOOTH:
-                SetSegment(VOSegment {255, 0});
-                SetSegment(VOSegment {0,1});
-                break;
-
-            case VO_SQUARE:
-                SetSegment(VOSegment {255,0});
-                SetSegment(VOSegment {255,1});
-                SetSegment(VOSegment {0,0});
-                SetSegment(VOSegment {0,1});
-                break;
-        }
-    }
-
 private:
     VOSegment segments[12]; // Array of segments in this Oscillator
     byte segment_count = 0; // Number of segments
@@ -195,8 +170,6 @@ private:
     int32_t offset = 0; // Amount added to each voltage output (e.g., to make it unipolar)
     bool sustain = 0; // Waveform stops when it reaches the end of the penultimate stage
     bool sustained = 0; // Current state of sustain. Only active when sustain = 1
-
-    int diag = 0; // Diagnostic
 
     /*
      * The Oscillator can only oscillate if the following conditions are true:
@@ -250,27 +223,44 @@ private:
         target = scale_level(level);
 
         // Determine the starting level of this segment to get the total segment rise
-        /* TODO: Probably remove this after testing
         if (ix > 0) ix--;
         else ix = segment_count - 1;
         level = segments[ix].level;
         vosignal_t starting = scale_level(level);
-        */
 
         // How many ticks should a complete cycle last? cycle_ticks is 10 times that number.
         int32_t cycle_ticks = 16666667 / frequency;
 
         // How many ticks should the current segment last?
         int32_t segment_ticks = Proportion(time, total_time, cycle_ticks);
-        diag = segment_ticks;
 
         // The total difference between the target and the current signal, divided by how many ticks
         // it should take to get there, is the rise. The / 10 is to cancel the extra precision
         // from the previous two calculations.
         vosignal_t new_rise = 0;
         if (segment_ticks > 0) {
-            new_rise = ((target - signal) * 10) / segment_ticks;
-            if (new_rise == 0) countdown = segment_ticks / 10;
+            new_rise = ((target - starting) * 10) / segment_ticks;
+            if (new_rise == 0) {
+                uint32_t prev_countdown = countdown;
+                countdown = segment_ticks / 10;
+                if (prev_countdown > 0 && prev_countdown < countdown) countdown = prev_countdown;
+            }
+
+            // The following line is here to deal with the cases where the signal is coming from a different
+            // direction than it would be coming from if it were coming from the previous segment. This can
+            // only happen when the Vector Oscillator is being used as an envelope generator with Sustain/Release,
+            // and the envelope is ungated prior to the sustain (penultimate) segment, and one of these happens:
+            //
+            // (1) The signal level at release is lower than the final signal level, but the sustain segment's
+            //     level is higher, OR
+            // (2) The signal level at release is higher than the final signal level, but the sustain segment's
+            //     level is lower.
+            //
+            // This scenario would result in a rise with the wrong polarity; that is, the signal would move away
+            // from the target instead of toward it. The remedy, as the Third Doctor would say, is to Reverse
+            // The Polarity. So I test for a difference in sign via multiplication. A negative result (value < 0)
+            // indicates that the rise is the reverse of what it should be:
+            else if ((signal2int(target) - signal2int(starting)) * (signal2int(target) - signal2int(signal)) < 0) new_rise = -new_rise;
         } else {
             signal = target;
             countdown = 1;

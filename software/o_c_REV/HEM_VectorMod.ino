@@ -21,20 +21,19 @@
 #include "vector_osc/HSVectorOscillator.h"
 #include "vector_osc/WaveformManager.h"
 
-class VectorLFO : public HemisphereApplet {
+class VectorMod : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "VectorLFO";
+        return "VectorMod";
     }
 
     void Start() {
         ForEachChannel(ch)
         {
-            freq[ch] = 200;
+            freq[ch] = 50;
             waveform_number[ch] = 0;
             SwitchWaveform(ch, 0);
-            last_clock[ch] = OC::CORE::ticks;
             Out(ch, 0);
         }
     }
@@ -42,20 +41,10 @@ public:
     void Controller() {
         ForEachChannel(ch)
         {
-            if (Clock(ch)) {
-                uint32_t ticks = OC::CORE::ticks - last_clock[ch];
-                int new_freq = 1666666 / ticks;
-                new_freq = constrain(new_freq, 3, 99900);
-                osc[ch].SetFrequency(new_freq);
-                freq[ch] = new_freq;
-                osc[ch].Reset();
-                last_clock[ch] = OC::CORE::ticks;
-            }
+            if (Clock(ch)) osc[ch].Start();
 
-            if (Changed(ch)) {
-                int mod = Proportion(DetentedIn(ch), HEMISPHERE_3V_CV, freq[ch]);
-                if (mod + freq[ch] > 3) osc[ch].SetFrequency(freq[ch] + mod);
-            }
+            bool cycle = (In(ch) > HEMISPHERE_3V_CV);
+            osc[ch].Cycle(cycle);
 
             Out(ch, osc[ch].Next());
         }
@@ -80,11 +69,8 @@ public:
             SwitchWaveform(ch, waveform_number[ch]);
         }
         if (c == 0) { // Frequency
-            if (freq[ch] > 100000) direction *= 10000;
-            else if (freq[ch] > 10000) direction *= 1000;
-            else if (freq[ch] > 1000) direction *= 100;
-            else if (freq[ch] > 300) direction *= 10;
-            freq[ch] = constrain(freq[ch] + direction, 10, 99900);
+            if (freq[ch] > 50) direction *= 10;
+            freq[ch] = constrain(freq[ch] + direction, 10, 500);
             osc[ch].SetFrequency(freq[ch]);
         }
     }
@@ -103,8 +89,8 @@ public:
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "1,2=Sync";
-        help[HEMISPHERE_HELP_CVS]      = "1,2=Freq. Mod";
+        help[HEMISPHERE_HELP_DIGITALS] = "1,2=Trigger";
+        help[HEMISPHERE_HELP_CVS]      = "1,2=Cycle";
         help[HEMISPHERE_HELP_OUTS]     = "A,B=Out";
         help[HEMISPHERE_HELP_ENCODER]  = "Wave/Freq.";
         //                               "------------------" <-- Size Guide
@@ -112,7 +98,6 @@ protected:
     
 private:
     int cursor; // 0=Freq A; 1=Waveform A; 2=Freq B; 3=Waveform B
-    uint32_t last_clock[2];
     VectorOscillator osc[2];
 
     // Settings
@@ -169,6 +154,7 @@ private:
         waveform_number[ch] = waveform;
         osc[ch].SetFrequency(freq[ch]);
         osc[ch].SetScale((12 << 7) * 3);
+        osc[ch].Cycle(1); // Non cycling
     }
 
     int ones(int n) {return (n / 100);}
@@ -179,19 +165,19 @@ private:
 ////////////////////////////////////////////////////////////////////////////////
 //// Hemisphere Applet Functions
 ///
-///  Once you run the find-and-replace to make these refer to VectorLFO,
+///  Once you run the find-and-replace to make these refer to VectorMod,
 ///  it's usually not necessary to do anything with these functions. You
 ///  should prefer to handle things in the HemisphereApplet child class
 ///  above.
 ////////////////////////////////////////////////////////////////////////////////
-VectorLFO VectorLFO_instance[2];
+VectorMod VectorMod_instance[2];
 
-void VectorLFO_Start(bool hemisphere) {VectorLFO_instance[hemisphere].BaseStart(hemisphere);}
-void VectorLFO_Controller(bool hemisphere, bool forwarding) {VectorLFO_instance[hemisphere].BaseController(forwarding);}
-void VectorLFO_View(bool hemisphere) {VectorLFO_instance[hemisphere].BaseView();}
-void VectorLFO_Screensaver(bool hemisphere) {VectorLFO_instance[hemisphere].BaseScreensaverView();}
-void VectorLFO_OnButtonPress(bool hemisphere) {VectorLFO_instance[hemisphere].OnButtonPress();}
-void VectorLFO_OnEncoderMove(bool hemisphere, int direction) {VectorLFO_instance[hemisphere].OnEncoderMove(direction);}
-void VectorLFO_ToggleHelpScreen(bool hemisphere) {VectorLFO_instance[hemisphere].HelpScreen();}
-uint32_t VectorLFO_OnDataRequest(bool hemisphere) {return VectorLFO_instance[hemisphere].OnDataRequest();}
-void VectorLFO_OnDataReceive(bool hemisphere, uint32_t data) {VectorLFO_instance[hemisphere].OnDataReceive(data);}
+void VectorMod_Start(bool hemisphere) {VectorMod_instance[hemisphere].BaseStart(hemisphere);}
+void VectorMod_Controller(bool hemisphere, bool forwarding) {VectorMod_instance[hemisphere].BaseController(forwarding);}
+void VectorMod_View(bool hemisphere) {VectorMod_instance[hemisphere].BaseView();}
+void VectorMod_Screensaver(bool hemisphere) {VectorMod_instance[hemisphere].BaseScreensaverView();}
+void VectorMod_OnButtonPress(bool hemisphere) {VectorMod_instance[hemisphere].OnButtonPress();}
+void VectorMod_OnEncoderMove(bool hemisphere, int direction) {VectorMod_instance[hemisphere].OnEncoderMove(direction);}
+void VectorMod_ToggleHelpScreen(bool hemisphere) {VectorMod_instance[hemisphere].HelpScreen();}
+uint32_t VectorMod_OnDataRequest(bool hemisphere) {return VectorMod_instance[hemisphere].OnDataRequest();}
+void VectorMod_OnDataReceive(bool hemisphere, uint32_t data) {VectorMod_instance[hemisphere].OnDataReceive(data);}

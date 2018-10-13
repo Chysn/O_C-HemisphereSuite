@@ -8,7 +8,7 @@
 // 0x40 = Logic
 // 0x80 = Other
 
-#define HEMISPHERE_AVAILABLE_APPLETS 47
+#define HEMISPHERE_AVAILABLE_APPLETS 49
 
 //////////////////  id  cat   class name
 #define HEMISPHERE_APPLETS { \
@@ -57,7 +57,9 @@
     DECLARE_APPLET( 11, 0x06, TrigSeq), \
     DECLARE_APPLET( 25, 0x06, TrigSeq16), \
     DECLARE_APPLET( 39, 0x80, Tuner), \
-    DECLARE_APPLET( 49, 0x80, VectorLFO), \
+    DECLARE_APPLET( 52, 0x01, VectorEG), \
+    DECLARE_APPLET( 49, 0x01, VectorLFO), \
+    DECLARE_APPLET( 53, 0x01, VectorMod), \
     DECLARE_APPLET( 43, 0x10, Voltage), \
 }
 /*    DECLARE_APPLET(127, 0x80, DIAGNOSTIC), \ */

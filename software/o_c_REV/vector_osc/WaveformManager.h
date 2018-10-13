@@ -21,6 +21,8 @@
 #ifndef WAVEFORM_MANAGER_H
 #define WAVEFORM_MANAGER_H
 
+#include "waveform_library.h"
+
 class WaveformManager {
 public:
     /*
@@ -53,6 +55,22 @@ public:
         return count;
     }
 
+    /* Allows a client application to navigate back and forth between the user waveforms and library
+     * waveforms without having to think about the spaces between them.
+     *
+     * waveform_number is the starting waveform, and direction is -1 or 1, which way you want to move
+     * in the list.
+     */
+    byte static GetNextWaveform(byte waveform_number, int direction) {
+        int new_number = waveform_number + direction;
+        byte count = WaveformCount();
+        if (new_number < 0) new_number = 0;
+        if (new_number == count) new_number = 32; // Move from last user waveform to first library waveform
+        if (new_number == 31) new_number = count - 1; // Move from first library waveform to last user waveform
+        if (new_number == (HS::WAVEFORM_LIBRARY_COUNT + 32)) new_number = HS::WAVEFORM_LIBRARY_COUNT + 31;
+        return new_number;
+    }
+
     byte static SegmentsRemaining() {
         byte segment_count = 1; // Include validation segment
         for (byte i = 0; i < HS::VO_SEGMENT_COUNT; i++)
@@ -66,14 +84,39 @@ public:
 
     VectorOscillator static VectorOscillatorFromWaveform(byte waveform_number) {
         VectorOscillator osc;
+        if (waveform_number >= 32) { // Library waveforms start at 32
+            osc = VectorOscillatorFromLibrary(waveform_number);
+        } else {
+            byte count = 0;
+            for (byte i = 0; i < HS::VO_SEGMENT_COUNT; i++)
+            {
+                if (HS::user_waveforms[i].IsTOC()) {
+                    if (count == waveform_number) {
+                        for (int s = 0; s < HS::user_waveforms[i].Segments(); s++)
+                        {
+                            osc.SetSegment(HS::user_waveforms[i + s + 1]);
+                        }
+                        break;
+                    }
+                    count++;
+                }
+            }
+        }
+        return osc;
+    }
+
+    VectorOscillator static VectorOscillatorFromLibrary(byte waveform_number) {
+        waveform_number = waveform_number - 32; // Library waveforms start at 32
+        if (waveform_number >= HS::WAVEFORM_LIBRARY_COUNT) waveform_number = HS::WAVEFORM_LIBRARY_COUNT - 1;
+        VectorOscillator osc;
         byte count = 0;
-        for (byte i = 0; i < HS::VO_SEGMENT_COUNT; i++)
+        for (byte i = 0; i < 255; i++)
         {
-            if (HS::user_waveforms[i].IsTOC()) {
+            if (HS::library_waveforms[i].IsTOC()) {
                 if (count == waveform_number) {
-                    for (int s = 0; s < HS::user_waveforms[i].Segments(); s++)
+                    for (int s = 0; s < HS::library_waveforms[i].Segments(); s++)
                     {
-                        osc.SetSegment(HS::user_waveforms[i + s + 1]);
+                        osc.SetSegment(HS::library_waveforms[i + s + 1]);
                     }
                     break;
                 }

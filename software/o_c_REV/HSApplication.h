@@ -52,6 +52,10 @@ public:
         {
             // Set ADC input values
             inputs[ch] = OC::ADC::raw_pitch_value((ADC_CHANNEL)ch);
+            if (abs(inputs[ch] - last_cv[ch]) > 16) {
+                changed_cv[ch] = 1;
+                last_cv[ch] = inputs[ch];
+            } else changed_cv[ch] = 0;
 
             if (clock_countdown[ch] > 0) {
                 if (--clock_countdown[ch] == 0) Out(ch, 0);
@@ -101,6 +105,10 @@ public:
     // Apply small center detent to input, so it reads zero before a threshold
     int DetentedIn(int ch) {
         return (In(ch) > 64 || In(ch) < -64) ? In(ch) : 0;
+    }
+
+    bool Changed(int ch) {
+        return changed_cv[ch];
     }
 
     bool Gate(int ch) {
@@ -260,6 +268,8 @@ private:
     uint32_t last_view_tick; // Time since the last view, for activating screen blanking
     int inputs[4]; // Last ADC values
     int outputs[4]; // Last DAC values; inputs[] and outputs[] are used to allow access to values in Views
+    bool changed_cv[4]; // Has the input changed by more than 1/8 semitone since the last read?
+    int last_cv[4]; // For change detection
     uint32_t last_clock[4]; // Keeps time since last clock
 };
 
