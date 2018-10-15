@@ -170,7 +170,6 @@ Squanch Squanch_instance[2];
 void Squanch_Start(bool hemisphere) {Squanch_instance[hemisphere].BaseStart(hemisphere);}
 void Squanch_Controller(bool hemisphere, bool forwarding) {Squanch_instance[hemisphere].BaseController(forwarding);}
 void Squanch_View(bool hemisphere) {Squanch_instance[hemisphere].BaseView();}
-void Squanch_Screensaver(bool hemisphere) {Squanch_instance[hemisphere].BaseScreensaverView();}
 void Squanch_OnButtonPress(bool hemisphere) {Squanch_instance[hemisphere].OnButtonPress();}
 void Squanch_OnEncoderMove(bool hemisphere, int direction) {Squanch_instance[hemisphere].OnEncoderMove(direction);}
 void Squanch_ToggleHelpScreen(bool hemisphere) {Squanch_instance[hemisphere].HelpScreen();}

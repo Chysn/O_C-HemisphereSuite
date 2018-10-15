@@ -172,7 +172,6 @@ Metronome Metronome_instance[2];
 void Metronome_Start(bool hemisphere) {Metronome_instance[hemisphere].BaseStart(hemisphere);}
 void Metronome_Controller(bool hemisphere, bool forwarding) {Metronome_instance[hemisphere].BaseController(forwarding);}
 void Metronome_View(bool hemisphere) {Metronome_instance[hemisphere].BaseView();}
-void Metronome_Screensaver(bool hemisphere) {Metronome_instance[hemisphere].BaseScreensaverView();}
 void Metronome_OnButtonPress(bool hemisphere) {Metronome_instance[hemisphere].OnButtonPress();}
 void Metronome_OnEncoderMove(bool hemisphere, int direction) {Metronome_instance[hemisphere].OnEncoderMove(direction);}
 void Metronome_ToggleHelpScreen(bool hemisphere) {Metronome_instance[hemisphere].HelpScreen();}

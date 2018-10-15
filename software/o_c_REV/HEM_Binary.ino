@@ -55,10 +55,6 @@ public:
         DrawDisplay();
     }
 
-    void ScreensaverView() {
-        DrawDisplay();
-    }
-
     void OnButtonPress() {
     }
 
@@ -122,10 +118,6 @@ void Binary_Controller(bool hemisphere, bool forwarding) {
 
 void Binary_View(bool hemisphere) {
     Binary_instance[hemisphere].BaseView();
-}
-
-void Binary_Screensaver(bool hemisphere) {
-    Binary_instance[hemisphere].BaseScreensaverView();
 }
 
 void Binary_OnButtonPress(bool hemisphere) {

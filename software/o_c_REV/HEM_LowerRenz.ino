@@ -67,11 +67,6 @@ public:
         DrawOutput();
     }
 
-    void ScreensaverView() {
-        DrawEditor();
-        DrawOutput();
-    }
-
     void OnButtonPress() {
         cursor = 1 - cursor;
     }
@@ -152,10 +147,6 @@ void LowerRenz_Controller(bool hemisphere, bool forwarding) {
 
 void LowerRenz_View(bool hemisphere) {
     LowerRenz_instance[hemisphere].BaseView();
-}
-
-void LowerRenz_Screensaver(bool hemisphere) {
-    LowerRenz_instance[hemisphere].BaseScreensaverView();
 }
 
 void LowerRenz_OnButtonPress(bool hemisphere) {

@@ -78,11 +78,6 @@ public:
         DrawIndicator();
     }
 
-    void ScreensaverView() {
-        DrawSelector();
-        DrawIndicator();
-    }
-
     void OnButtonPress() {
         if (++cursor > 2) cursor = 0;
     }
@@ -193,10 +188,6 @@ void TM_Controller(bool hemisphere, bool forwarding) {
 
 void TM_View(bool hemisphere) {
     TM_instance[hemisphere].BaseView();
-}
-
-void TM_Screensaver(bool hemisphere) {
-    TM_instance[hemisphere].BaseScreensaverView();
 }
 
 void TM_OnButtonPress(bool hemisphere) {

@@ -59,11 +59,6 @@ public:
         DrawIndicator();
     }
 
-    void ScreensaverView() {
-        DrawSelector();
-        DrawIndicator();
-    }
-
     void OnButtonPress() {
         cursor = 1 - cursor;
     }
@@ -165,10 +160,6 @@ void Shuffle_Controller(bool hemisphere, bool forwarding) {
 
 void Shuffle_View(bool hemisphere) {
     Shuffle_instance[hemisphere].BaseView();
-}
-
-void Shuffle_Screensaver(bool hemisphere) {
-    Shuffle_instance[hemisphere].BaseScreensaverView();
 }
 
 void Shuffle_OnButtonPress(bool hemisphere) {

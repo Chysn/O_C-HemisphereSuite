@@ -98,10 +98,6 @@ public:
         DrawSelector();
     }
 
-    void ScreensaverView() {
-        DrawSelector();
-    }
-
     void OnButtonPress() {
         cursor = 1 - cursor;
         ResetCursor();
@@ -185,10 +181,6 @@ void ClockDivider_Controller(bool hemisphere, bool forwarding) {
 
 void ClockDivider_View(bool hemisphere) {
     ClockDivider_instance[hemisphere].BaseView();
-}
-
-void ClockDivider_Screensaver(bool hemisphere) {
-    ClockDivider_instance[hemisphere].BaseScreensaverView();
 }
 
 void ClockDivider_OnButtonPress(bool hemisphere) {

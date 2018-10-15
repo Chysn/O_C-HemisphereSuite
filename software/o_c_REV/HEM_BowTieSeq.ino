@@ -44,10 +44,6 @@ public:
         DrawIndicator();
     }
 
-    void ScreensaverView() {
-        DrawIndicator();
-    }
-
     void OnButtonPress() {
         step = 0;
     }
@@ -110,10 +106,6 @@ void BowTieSeq_Controller(bool hemisphere, bool forwarding) {
 
 void BowTieSeq_View(bool hemisphere) {
     BowTieSeq_instance[hemisphere].BaseView();
-}
-
-void BowTieSeq_Screensaver(bool hemisphere) {
-    BowTieSeq_instance[hemisphere].BaseScreensaverView();
 }
 
 void BowTieSeq_OnButtonPress(bool hemisphere) {

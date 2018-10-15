@@ -65,11 +65,6 @@ public:
         DrawMaskIndicators();
     }
 
-    void ScreensaverView() {
-        DrawKeyboard();
-        DrawMaskIndicators();
-    }
-
     void OnButtonPress() {
         uint8_t scale = cursor > 11 ? 1 : 0;
         uint8_t bit = cursor - (scale * 12);
@@ -176,10 +171,6 @@ void ScaleDuet_Controller(bool hemisphere, bool forwarding) {
 
 void ScaleDuet_View(bool hemisphere) {
     ScaleDuet_instance[hemisphere].BaseView();
-}
-
-void ScaleDuet_Screensaver(bool hemisphere) {
-    ScaleDuet_instance[hemisphere].BaseScreensaverView();
 }
 
 void ScaleDuet_OnButtonPress(bool hemisphere) {

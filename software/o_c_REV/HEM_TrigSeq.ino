@@ -54,10 +54,6 @@ public:
         DrawDisplay();
     }
 
-    void ScreensaverView() {
-        DrawDisplay();
-    }
-
     void OnButtonPress() {
         cursor++;
         if (cursor > 5) cursor = 0;
@@ -184,10 +180,6 @@ void TrigSeq_Controller(bool hemisphere, bool forwarding) {
 
 void TrigSeq_View(bool hemisphere) {
     TrigSeq_instance[hemisphere].BaseView();
-}
-
-void TrigSeq_Screensaver(bool hemisphere) {
-    TrigSeq_instance[hemisphere].BaseScreensaverView();
 }
 
 void TrigSeq_OnButtonPress(bool hemisphere) {

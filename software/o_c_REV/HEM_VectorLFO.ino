@@ -193,7 +193,6 @@ VectorLFO VectorLFO_instance[2];
 void VectorLFO_Start(bool hemisphere) {VectorLFO_instance[hemisphere].BaseStart(hemisphere);}
 void VectorLFO_Controller(bool hemisphere, bool forwarding) {VectorLFO_instance[hemisphere].BaseController(forwarding);}
 void VectorLFO_View(bool hemisphere) {VectorLFO_instance[hemisphere].BaseView();}
-void VectorLFO_Screensaver(bool hemisphere) {VectorLFO_instance[hemisphere].BaseScreensaverView();}
 void VectorLFO_OnButtonPress(bool hemisphere) {VectorLFO_instance[hemisphere].OnButtonPress();}
 void VectorLFO_OnEncoderMove(bool hemisphere, int direction) {VectorLFO_instance[hemisphere].OnEncoderMove(direction);}
 void VectorLFO_ToggleHelpScreen(bool hemisphere) {VectorLFO_instance[hemisphere].HelpScreen();}

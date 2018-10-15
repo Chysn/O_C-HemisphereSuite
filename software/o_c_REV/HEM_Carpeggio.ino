@@ -75,11 +75,6 @@ public:
         DrawGrid();
     }
 
-    void ScreensaverView() {
-        DrawSelector();
-        DrawGrid();
-    }
-
     void OnButtonPress() {
         // Set a chord imprint if a new chord is picked
         if (cursor == 1 && chord != sel_chord) {
@@ -220,10 +215,6 @@ void Carpeggio_Controller(bool hemisphere, bool forwarding) {
 
 void Carpeggio_View(bool hemisphere) {
     Carpeggio_instance[hemisphere].BaseView();
-}
-
-void Carpeggio_Screensaver(bool hemisphere) {
-    Carpeggio_instance[hemisphere].BaseScreensaverView();
 }
 
 void Carpeggio_OnButtonPress(bool hemisphere) {

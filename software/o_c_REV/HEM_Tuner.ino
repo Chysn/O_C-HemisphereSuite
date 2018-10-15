@@ -75,11 +75,6 @@ public:
         else DrawWarning();
     }
 
-    void ScreensaverView() {
-        if (hemisphere == 1) DrawTuner();
-        else DrawWarning();
-    }
-
     void OnButtonPress() {
         Start();
     }
@@ -222,10 +217,6 @@ void Tuner_Controller(bool hemisphere, bool forwarding) {
 
 void Tuner_View(bool hemisphere) {
     Tuner_instance[hemisphere].BaseView();
-}
-
-void Tuner_Screensaver(bool hemisphere) {
-    Tuner_instance[hemisphere].BaseScreensaverView();
 }
 
 void Tuner_OnButtonPress(bool hemisphere) {

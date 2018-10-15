@@ -206,7 +206,6 @@ BootsNCat BootsNCat_instance[2];
 void BootsNCat_Start(bool hemisphere) {BootsNCat_instance[hemisphere].BaseStart(hemisphere);}
 void BootsNCat_Controller(bool hemisphere, bool forwarding) {BootsNCat_instance[hemisphere].BaseController(forwarding);}
 void BootsNCat_View(bool hemisphere) {BootsNCat_instance[hemisphere].BaseView();}
-void BootsNCat_Screensaver(bool hemisphere) {BootsNCat_instance[hemisphere].BaseScreensaverView();}
 void BootsNCat_OnButtonPress(bool hemisphere) {BootsNCat_instance[hemisphere].OnButtonPress();}
 void BootsNCat_OnEncoderMove(bool hemisphere, int direction) {BootsNCat_instance[hemisphere].OnEncoderMove(direction);}
 void BootsNCat_ToggleHelpScreen(bool hemisphere) {BootsNCat_instance[hemisphere].HelpScreen();}

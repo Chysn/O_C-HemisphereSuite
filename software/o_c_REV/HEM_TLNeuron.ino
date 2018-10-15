@@ -73,12 +73,6 @@ public:
         DrawStates();
     }
 
-    void ScreensaverView() {
-        DrawDendrites();
-        DrawAxon();
-        DrawStates();
-    }
-
     void OnButtonPress() {
         if (++selected > 3) selected = 0;
         ResetCursor();
@@ -180,10 +174,6 @@ void TLNeuron_Controller(bool hemisphere, bool forwarding) {
 
 void TLNeuron_View(bool hemisphere) {
     TLNeuron_instance[hemisphere].BaseView();
-}
-
-void TLNeuron_Screensaver(bool hemisphere) {
-    TLNeuron_instance[hemisphere].BaseScreensaverView();
 }
 
 void TLNeuron_OnButtonPress(bool hemisphere) {

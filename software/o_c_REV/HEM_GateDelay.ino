@@ -60,10 +60,6 @@ public:
         DrawInterface();
     }
 
-    void ScreensaverView() {
-        DrawInterface();
-    }
-
     void OnButtonPress() {
         cursor = 1 - cursor;
     }
@@ -163,10 +159,6 @@ void GateDelay_Controller(bool hemisphere, bool forwarding) {
 
 void GateDelay_View(bool hemisphere) {
     GateDelay_instance[hemisphere].BaseView();
-}
-
-void GateDelay_Screensaver(bool hemisphere) {
-    GateDelay_instance[hemisphere].BaseScreensaverView();
 }
 
 void GateDelay_OnButtonPress(bool hemisphere) {

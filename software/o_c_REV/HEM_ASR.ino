@@ -150,7 +150,6 @@ ASR ASR_instance[2];
 void ASR_Start(bool hemisphere) {ASR_instance[hemisphere].BaseStart(hemisphere);}
 void ASR_Controller(bool hemisphere, bool forwarding) {ASR_instance[hemisphere].BaseController(forwarding);}
 void ASR_View(bool hemisphere) {ASR_instance[hemisphere].BaseView();}
-void ASR_Screensaver(bool hemisphere) {ASR_instance[hemisphere].BaseScreensaverView();}
 void ASR_OnButtonPress(bool hemisphere) {ASR_instance[hemisphere].OnButtonPress();}
 void ASR_OnEncoderMove(bool hemisphere, int direction) {ASR_instance[hemisphere].OnEncoderMove(direction);}
 void ASR_ToggleHelpScreen(bool hemisphere) {ASR_instance[hemisphere].HelpScreen();}

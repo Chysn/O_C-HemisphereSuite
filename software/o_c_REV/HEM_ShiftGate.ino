@@ -133,7 +133,6 @@ ShiftGate ShiftGate_instance[2];
 void ShiftGate_Start(bool hemisphere) {ShiftGate_instance[hemisphere].BaseStart(hemisphere);}
 void ShiftGate_Controller(bool hemisphere, bool forwarding) {ShiftGate_instance[hemisphere].BaseController(forwarding);}
 void ShiftGate_View(bool hemisphere) {ShiftGate_instance[hemisphere].BaseView();}
-void ShiftGate_Screensaver(bool hemisphere) {ShiftGate_instance[hemisphere].BaseScreensaverView();}
 void ShiftGate_OnButtonPress(bool hemisphere) {ShiftGate_instance[hemisphere].OnButtonPress();}
 void ShiftGate_OnEncoderMove(bool hemisphere, int direction) {ShiftGate_instance[hemisphere].OnEncoderMove(direction);}
 void ShiftGate_ToggleHelpScreen(bool hemisphere) {ShiftGate_instance[hemisphere].HelpScreen();}

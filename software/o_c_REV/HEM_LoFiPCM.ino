@@ -67,11 +67,6 @@ public:
         DrawWaveform();
     }
 
-    void ScreensaverView() {
-        DrawTransportBar();
-        DrawWaveform();
-    }
-
     void OnButtonPress() {
         record = 1 - record;
         play = 0;
@@ -191,10 +186,6 @@ void LoFiPCM_Controller(bool hemisphere, bool forwarding) {
 
 void LoFiPCM_View(bool hemisphere) {
     LoFiPCM_instance[hemisphere].BaseView();
-}
-
-void LoFiPCM_Screensaver(bool hemisphere) {
-    LoFiPCM_instance[hemisphere].BaseScreensaverView();
 }
 
 void LoFiPCM_OnButtonPress(bool hemisphere) {

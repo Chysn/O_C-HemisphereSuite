@@ -68,10 +68,6 @@ public:
         DrawIndicator();
     }
 
-    void ScreensaverView() {
-        DrawIndicator();
-    }
-
     void OnButtonPress() {
         cursor = 1 - cursor;
     }
@@ -165,10 +161,6 @@ void Slew_Controller(bool hemisphere, bool forwarding) {
 
 void Slew_View(bool hemisphere) {
     Slew_instance[hemisphere].BaseView();
-}
-
-void Slew_Screensaver(bool hemisphere) {
-    Slew_instance[hemisphere].BaseScreensaverView();
 }
 
 void Slew_OnButtonPress(bool hemisphere) {

@@ -51,11 +51,6 @@ public:
         gfxSkyline();
     }
 
-    void ScreensaverView() {
-        DrawBalanceIndicator();
-        gfxSkyline();
-    }
-
     void OnButtonPress() {
     }
 
@@ -115,10 +110,6 @@ void MixerBal_Controller(bool hemisphere, bool forwarding) {
 
 void MixerBal_View(bool hemisphere) {
     MixerBal_instance[hemisphere].BaseView();
-}
-
-void MixerBal_Screensaver(bool hemisphere) {
-    MixerBal_instance[hemisphere].BaseScreensaverView();
 }
 
 void MixerBal_OnButtonPress(bool hemisphere) {

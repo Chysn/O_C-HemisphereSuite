@@ -50,10 +50,6 @@ public:
         DrawInterface();
     }
 
-    void ScreensaverView() {
-        DrawInterface();
-    }
-
     // No controls
     void OnButtonPress() {
         if (++cursor == 3) cursor = 0;
@@ -175,10 +171,6 @@ void Schmitt_Controller(bool hemisphere, bool forwarding) {
 
 void Schmitt_View(bool hemisphere) {
     Schmitt_instance[hemisphere].BaseView();
-}
-
-void Schmitt_Screensaver(bool hemisphere) {
-    Schmitt_instance[hemisphere].BaseScreensaverView();
 }
 
 void Schmitt_OnButtonPress(bool hemisphere) {

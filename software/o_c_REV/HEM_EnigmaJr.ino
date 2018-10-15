@@ -211,7 +211,6 @@ EnigmaJr EnigmaJr_instance[2];
 void EnigmaJr_Start(bool hemisphere) {EnigmaJr_instance[hemisphere].BaseStart(hemisphere);}
 void EnigmaJr_Controller(bool hemisphere, bool forwarding) {EnigmaJr_instance[hemisphere].BaseController(forwarding);}
 void EnigmaJr_View(bool hemisphere) {EnigmaJr_instance[hemisphere].BaseView();}
-void EnigmaJr_Screensaver(bool hemisphere) {EnigmaJr_instance[hemisphere].BaseScreensaverView();}
 void EnigmaJr_OnButtonPress(bool hemisphere) {EnigmaJr_instance[hemisphere].OnButtonPress();}
 void EnigmaJr_OnEncoderMove(bool hemisphere, int direction) {EnigmaJr_instance[hemisphere].OnEncoderMove(direction);}
 void EnigmaJr_ToggleHelpScreen(bool hemisphere) {EnigmaJr_instance[hemisphere].HelpScreen();}

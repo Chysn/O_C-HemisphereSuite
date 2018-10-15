@@ -54,11 +54,6 @@ public:
         DrawIndicator();
     }
 
-    void ScreensaverView() {
-        DrawSelector();
-        DrawIndicator();
-    }
-
     void OnButtonPress() {
         cursor = 1 - cursor;
     }
@@ -134,10 +129,6 @@ void ClockSkip_Controller(bool hemisphere, bool forwarding) {
 
 void ClockSkip_View(bool hemisphere) {
     ClockSkip_instance[hemisphere].BaseView();
-}
-
-void ClockSkip_Screensaver(bool hemisphere) {
-    ClockSkip_instance[hemisphere].BaseScreensaverView();
 }
 
 void ClockSkip_OnButtonPress(bool hemisphere) {

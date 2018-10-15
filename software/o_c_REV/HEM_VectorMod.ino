@@ -179,7 +179,6 @@ VectorMod VectorMod_instance[2];
 void VectorMod_Start(bool hemisphere) {VectorMod_instance[hemisphere].BaseStart(hemisphere);}
 void VectorMod_Controller(bool hemisphere, bool forwarding) {VectorMod_instance[hemisphere].BaseController(forwarding);}
 void VectorMod_View(bool hemisphere) {VectorMod_instance[hemisphere].BaseView();}
-void VectorMod_Screensaver(bool hemisphere) {VectorMod_instance[hemisphere].BaseScreensaverView();}
 void VectorMod_OnButtonPress(bool hemisphere) {VectorMod_instance[hemisphere].OnButtonPress();}
 void VectorMod_OnEncoderMove(bool hemisphere, int direction) {VectorMod_instance[hemisphere].OnEncoderMove(direction);}
 void VectorMod_ToggleHelpScreen(bool hemisphere) {VectorMod_instance[hemisphere].HelpScreen();}

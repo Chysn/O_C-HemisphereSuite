@@ -114,7 +114,6 @@ DIAGNOSTIC DIAGNOSTIC_instance[2];
 void DIAGNOSTIC_Start(bool hemisphere) {DIAGNOSTIC_instance[hemisphere].BaseStart(hemisphere);}
 void DIAGNOSTIC_Controller(bool hemisphere, bool forwarding) {DIAGNOSTIC_instance[hemisphere].BaseController(forwarding);}
 void DIAGNOSTIC_View(bool hemisphere) {DIAGNOSTIC_instance[hemisphere].BaseView();}
-void DIAGNOSTIC_Screensaver(bool hemisphere) {DIAGNOSTIC_instance[hemisphere].BaseScreensaverView();}
 void DIAGNOSTIC_OnButtonPress(bool hemisphere) {DIAGNOSTIC_instance[hemisphere].OnButtonPress();}
 void DIAGNOSTIC_OnEncoderMove(bool hemisphere, int direction) {DIAGNOSTIC_instance[hemisphere].OnEncoderMove(direction);}
 void DIAGNOSTIC_ToggleHelpScreen(bool hemisphere) {DIAGNOSTIC_instance[hemisphere].HelpScreen();}

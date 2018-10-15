@@ -55,12 +55,6 @@ public:
         gfxSkyline();
     }
 
-    void ScreensaverView() {
-        DrawCaptions();
-        DrawIndicator();
-        gfxSkyline();
-    }
-
     void OnButtonPress() {
     }
 
@@ -125,10 +119,6 @@ void Switch_Controller(bool hemisphere, bool forwarding) {
 
 void Switch_View(bool hemisphere) {
     Switch_instance[hemisphere].BaseView();
-}
-
-void Switch_Screensaver(bool hemisphere) {
-    Switch_instance[hemisphere].BaseScreensaverView();
 }
 
 void Switch_OnButtonPress(bool hemisphere) {

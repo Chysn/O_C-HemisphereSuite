@@ -78,12 +78,6 @@ public:
         }
     }
 
-    void ScreensaverView() {
-        DrawBPM();
-        DrawInput1();
-        DrawInput2();
-    }
-
     void OnButtonPress() {
         freeze = 1 - freeze;
     }
@@ -187,10 +181,6 @@ void Scope_Controller(bool hemisphere, bool forwarding) {
 
 void Scope_View(bool hemisphere) {
     Scope_instance[hemisphere].BaseView();
-}
-
-void Scope_Screensaver(bool hemisphere) {
-    Scope_instance[hemisphere].BaseScreensaverView();
 }
 
 void Scope_OnButtonPress(bool hemisphere) {

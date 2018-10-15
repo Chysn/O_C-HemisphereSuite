@@ -189,7 +189,6 @@ VectorEG VectorEG_instance[2];
 void VectorEG_Start(bool hemisphere) {VectorEG_instance[hemisphere].BaseStart(hemisphere);}
 void VectorEG_Controller(bool hemisphere, bool forwarding) {VectorEG_instance[hemisphere].BaseController(forwarding);}
 void VectorEG_View(bool hemisphere) {VectorEG_instance[hemisphere].BaseView();}
-void VectorEG_Screensaver(bool hemisphere) {VectorEG_instance[hemisphere].BaseScreensaverView();}
 void VectorEG_OnButtonPress(bool hemisphere) {VectorEG_instance[hemisphere].OnButtonPress();}
 void VectorEG_OnEncoderMove(bool hemisphere, int direction) {VectorEG_instance[hemisphere].OnEncoderMove(direction);}
 void VectorEG_ToggleHelpScreen(bool hemisphere) {VectorEG_instance[hemisphere].HelpScreen();}

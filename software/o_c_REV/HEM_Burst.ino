@@ -97,11 +97,6 @@ public:
         DrawIndicator();
     }
 
-    void ScreensaverView() {
-        DrawSelector();
-        DrawIndicator();
-    }
-
     void OnButtonPress() {
         cursor += 1;
         if (cursor > 2) cursor = 0;
@@ -222,10 +217,6 @@ void Burst_Controller(bool hemisphere, bool forwarding) {
 
 void Burst_View(bool hemisphere) {
     Burst_instance[hemisphere].BaseView();
-}
-
-void Burst_Screensaver(bool hemisphere) {
-    Burst_instance[hemisphere].BaseScreensaverView();
 }
 
 void Burst_OnButtonPress(bool hemisphere) {

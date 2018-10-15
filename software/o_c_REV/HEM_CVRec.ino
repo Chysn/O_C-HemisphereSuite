@@ -59,13 +59,6 @@ public:
         DrawSequence();
     }
 
-    void ScreensaverView() {
-        DrawTransportBar();
-        DrawPositionIndicator();
-        DrawLengthIndicator();
-        DrawSequence();
-    }
-
     void OnButtonPress() {
         if (!record) {
             record = 1;
@@ -184,10 +177,6 @@ void CVRec_Controller(bool hemisphere, bool forwarding) {
 
 void CVRec_View(bool hemisphere) {
     CVRec_instance[hemisphere].BaseView();
-}
-
-void CVRec_Screensaver(bool hemisphere) {
-    CVRec_instance[hemisphere].BaseScreensaverView();
 }
 
 void CVRec_OnButtonPress(bool hemisphere) {

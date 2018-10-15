@@ -62,12 +62,6 @@ public:
         DrawWaveformPosition();
     }
 
-    void ScreensaverView() {
-        DrawSkewedWaveform();
-        DrawRateIndicator();
-        DrawWaveformPosition();
-    }
-
     void OnButtonPress() {
         cursor = 1 - cursor;
     }
@@ -182,10 +176,6 @@ void SkewedLFO_Controller(bool hemisphere, bool forwarding) {
 
 void SkewedLFO_View(bool hemisphere) {
     SkewedLFO_instance[hemisphere].BaseView();
-}
-
-void SkewedLFO_Screensaver(bool hemisphere) {
-    SkewedLFO_instance[hemisphere].BaseScreensaverView();
 }
 
 void SkewedLFO_OnButtonPress(bool hemisphere) {

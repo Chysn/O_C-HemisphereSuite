@@ -98,11 +98,6 @@ public:
         DrawADSR();
     }
 
-    void ScreensaverView() {
-        DrawIndicator();
-        DrawADSR();
-    }
-
     void OnButtonPress() {
         if (++edit_stage > HEM_EG_RELEASE) {edit_stage = HEM_EG_ATTACK;}
     }
@@ -287,10 +282,6 @@ void ADSREG_Controller(bool hemisphere, bool forwarding) {
 
 void ADSREG_View(bool hemisphere) {
     ADSREG_instance[hemisphere].BaseView();
-}
-
-void ADSREG_Screensaver(bool hemisphere) {
-    ADSREG_instance[hemisphere].BaseScreensaverView();
 }
 
 void ADSREG_OnButtonPress(bool hemisphere) {

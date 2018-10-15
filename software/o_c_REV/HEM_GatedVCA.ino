@@ -49,10 +49,6 @@ public:
         DrawInterface();
     }
 
-    void ScreensaverView() {
-        DrawInterface();
-    }
-
     void OnButtonPress() {
     }
 
@@ -109,10 +105,6 @@ void GatedVCA_Controller(bool hemisphere, bool forwarding) {
 
 void GatedVCA_View(bool hemisphere) {
     GatedVCA_instance[hemisphere].BaseView();
-}
-
-void GatedVCA_Screensaver(bool hemisphere) {
-    GatedVCA_instance[hemisphere].BaseScreensaverView();
 }
 
 void GatedVCA_OnButtonPress(bool hemisphere) {

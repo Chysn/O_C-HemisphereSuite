@@ -82,11 +82,6 @@ public:
         gfxSkyline();
     }
 
-    void ScreensaverView() {
-        DrawSelector();
-        gfxSkyline();
-    }
-
     void OnButtonPress() {
         selected = 1 - selected;
         ResetCursor();
@@ -160,10 +155,6 @@ void Calculate_Controller(bool hemisphere, bool forwarding) {
 
 void Calculate_View(bool hemisphere) {
     Calculate_instance[hemisphere].BaseView();
-}
-
-void Calculate_Screensaver(bool hemisphere) {
-    Calculate_instance[hemisphere].BaseScreensaverView();
 }
 
 void Calculate_OnButtonPress(bool hemisphere) {

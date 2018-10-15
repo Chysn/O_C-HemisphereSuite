@@ -85,11 +85,6 @@ public:
         DrawSequence();
     }
 
-    void ScreensaverView() {
-        DrawControls();
-        DrawSequence();
-    }
-
     void OnButtonPress() {
         cursor++;
         if (cursor > 2) cursor = 0;
@@ -192,10 +187,6 @@ void Palimpsest_Controller(bool hemisphere, bool forwarding) {
 
 void Palimpsest_View(bool hemisphere) {
     Palimpsest_instance[hemisphere].BaseView();
-}
-
-void Palimpsest_Screensaver(bool hemisphere) {
-    Palimpsest_instance[hemisphere].BaseScreensaverView();
 }
 
 void Palimpsest_OnButtonPress(bool hemisphere) {

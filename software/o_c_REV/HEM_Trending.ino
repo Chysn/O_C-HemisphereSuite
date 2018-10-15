@@ -80,11 +80,6 @@ public:
         DrawIndicator();
     }
 
-    void ScreensaverView() {
-        DrawSelector();
-        DrawIndicator();
-    }
-
     void OnButtonPress() {
         if (++cursor > 2) cursor = 0;
         ResetCursor();
@@ -194,10 +189,6 @@ void Trending_Controller(bool hemisphere, bool forwarding) {
 
 void Trending_View(bool hemisphere) {
     Trending_instance[hemisphere].BaseView();
-}
-
-void Trending_Screensaver(bool hemisphere) {
-    Trending_instance[hemisphere].BaseScreensaverView();
 }
 
 void Trending_OnButtonPress(bool hemisphere) {

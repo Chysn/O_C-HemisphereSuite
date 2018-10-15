@@ -99,7 +99,6 @@ RunglBook RunglBook_instance[2];
 void RunglBook_Start(bool hemisphere) {RunglBook_instance[hemisphere].BaseStart(hemisphere);}
 void RunglBook_Controller(bool hemisphere, bool forwarding) {RunglBook_instance[hemisphere].BaseController(forwarding);}
 void RunglBook_View(bool hemisphere) {RunglBook_instance[hemisphere].BaseView();}
-void RunglBook_Screensaver(bool hemisphere) {RunglBook_instance[hemisphere].BaseScreensaverView();}
 void RunglBook_OnButtonPress(bool hemisphere) {RunglBook_instance[hemisphere].OnButtonPress();}
 void RunglBook_OnEncoderMove(bool hemisphere, int direction) {RunglBook_instance[hemisphere].OnEncoderMove(direction);}
 void RunglBook_ToggleHelpScreen(bool hemisphere) {RunglBook_instance[hemisphere].HelpScreen();}

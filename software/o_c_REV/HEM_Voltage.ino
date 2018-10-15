@@ -55,10 +55,6 @@ public:
         DrawInterface();
     }
 
-    void ScreensaverView() {
-        DrawInterface();
-    }
-
     void OnButtonPress() {
         if (++cursor > 3) cursor = 0;
         ResetCursor();
@@ -142,7 +138,6 @@ Voltage Voltage_instance[2];
 void Voltage_Start(bool hemisphere) {Voltage_instance[hemisphere].BaseStart(hemisphere);}
 void Voltage_Controller(bool hemisphere, bool forwarding) {Voltage_instance[hemisphere].BaseController(forwarding);}
 void Voltage_View(bool hemisphere) {Voltage_instance[hemisphere].BaseView();}
-void Voltage_Screensaver(bool hemisphere) {Voltage_instance[hemisphere].BaseScreensaverView();}
 void Voltage_OnButtonPress(bool hemisphere) {Voltage_instance[hemisphere].OnButtonPress();}
 void Voltage_OnEncoderMove(bool hemisphere, int direction) {Voltage_instance[hemisphere].OnEncoderMove(direction);}
 void Voltage_ToggleHelpScreen(bool hemisphere) {Voltage_instance[hemisphere].HelpScreen();}

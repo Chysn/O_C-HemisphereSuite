@@ -53,10 +53,6 @@ public:
         DrawInterface();
     }
 
-    void ScreensaverView() {
-        DrawInterface();
-    }
-
     void OnButtonPress() {
     }
 
@@ -125,10 +121,6 @@ void Compare_Controller(bool hemisphere, bool forwarding) {
 
 void Compare_View(bool hemisphere) {
     Compare_instance[hemisphere].BaseView();
-}
-
-void Compare_Screensaver(bool hemisphere) {
-    Compare_instance[hemisphere].BaseScreensaverView();
 }
 
 void Compare_OnButtonPress(bool hemisphere) {

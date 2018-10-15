@@ -52,10 +52,6 @@ public:
         DrawInterface();
     }
 
-    void ScreensaverView() {
-        DrawInterface();
-    }
-
     void OnButtonPress() {
     		choice = 1 - choice;
     }
@@ -121,10 +117,6 @@ void Brancher_Controller(bool hemisphere, bool forwarding) {
 
 void Brancher_View(bool hemisphere) {
     Brancher_instance[hemisphere].BaseView();
-}
-
-void Brancher_Screensaver(bool hemisphere) {
-    Brancher_instance[hemisphere].BaseScreensaverView();
 }
 
 void Brancher_OnButtonPress(bool hemisphere) {
