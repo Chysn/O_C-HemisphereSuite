@@ -151,7 +151,8 @@ public:
     void DrawNotifications() {
             // Metronome Icon
             ClockManager *clock_m = clock_m->get();
-            if (hemisphere == 0 && clock_m->IsRunning()) gfxIcon(56, 1, clock_m->Cycle() ? METRO_L_ICON : METRO_R_ICON);
+            if (hemisphere == 0 && (clock_m->IsRunning() || clock_m->IsPaused()))
+                gfxIcon(56, 1, clock_m->Cycle() ? METRO_L_ICON : METRO_R_ICON);
 
             // CV Forwarding Icon
             if (master_clock_bus) gfxIcon(-8, 1, CLOCK_ICON);
