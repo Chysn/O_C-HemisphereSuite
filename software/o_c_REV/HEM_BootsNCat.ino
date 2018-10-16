@@ -121,6 +121,7 @@ public:
                 SetEGFreq(ch);
             }
         }
+        ResetCursor();
     }
         
     uint32_t OnDataRequest() {
@@ -165,22 +166,31 @@ private:
     int8_t blend;
 
     void DrawInterface() {
-        gfxPrint(1, 15, "BD Tone ");
-        gfxPrint(pad(10, tone[0]), tone[0]);
-        gfxPrint(1, 25, "Decay   ");
-        gfxPrint(pad(10, decay[0]), decay[0]);
-        gfxPrint(1, 35, "SD Tone ");
-        gfxPrint(pad(10, tone[1]), tone[1]);
-        gfxPrint(1, 45, "Decay   ");
-        gfxPrint(pad(10, decay[1]), decay[1]);
-        gfxPrint(1, 55, "Blend   ");
-        gfxPrint(pad(10, blend), blend);
+        gfxPrint(1, 15, "BD Tone");
+        DrawKnobAt(15, tone[0], cursor == 0);
 
-        // Cursor
-        gfxCursor(48, 23 + (cursor * 10), 12);
+        gfxPrint(1, 25, "  Decay");
+        DrawKnobAt(25, decay[0], cursor == 1);
+
+        gfxPrint(1, 35, "SD Tone");
+        DrawKnobAt(35, tone[1], cursor == 2);
+
+        gfxPrint(1, 45, "  Decay");
+        DrawKnobAt(45, decay[1], cursor == 3);
+
+        gfxPrint(1, 55, "Blend");
+        DrawKnobAt(55, blend, cursor == 4);
 
         // Level indicators
         ForEachChannel(ch) gfxInvert(1, 14 + (20 * ch), ProportionCV(levels[ch], 42), 9);
+    }
+
+    void DrawKnobAt(byte y, byte value, bool is_cursor) {
+        byte x = 45;
+        byte w = Proportion(value, BNC_MAX_PARAM, 16);
+        byte p = is_cursor ? 1 : 3;
+        gfxDottedLine(x, y + 4, 62, y + 4, p);
+        gfxRect(x + w, y, 2, 7);
     }
 
     void SetBDFreq() {
