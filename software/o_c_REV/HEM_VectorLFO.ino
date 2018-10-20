@@ -130,8 +130,8 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1,2=Sync";
-        help[HEMISPHERE_HELP_CVS]      = "1,2=Freq. Mod";
-        help[HEMISPHERE_HELP_OUTS]     = "Out A=1, B=1+2";
+        help[HEMISPHERE_HELP_CVS]      = "1=Freq1 2=Atten1@B";
+        help[HEMISPHERE_HELP_OUTS]     = "Out A=1, B=2+1";
         help[HEMISPHERE_HELP_ENCODER]  = "Wave/Freq.";
         //                               "------------------" <-- Size Guide
     }
