@@ -34,7 +34,6 @@ public:
             count[ch] = 0;
             next_clock[ch] = 0;
         }
-        last_clock = OC::CORE::ticks;
         cycle_time = 0;
         cursor = 0;
     }
@@ -58,7 +57,7 @@ public:
 
         if (Clock(0)) {
             // The input was clocked; set timing info
-            cycle_time = this_tick - last_clock;
+            cycle_time = TimeSinceClock(0);
 
             // At the clock input, handle clock division
             ForEachChannel(ch)
@@ -76,8 +75,6 @@ public:
                     ClockOut(ch); // Sync
                 }
             }
-
-            last_clock = this_tick;
         }
 
         // Handle clock multiplication
@@ -136,7 +133,6 @@ private:
     int div[2]; // Division data for outputs. Positive numbers are divisions, negative numbers are multipliers
     int count[2]; // Number of clocks since last output (for clock divide)
     int next_clock[2]; // Tick number for the next output (for clock multiply)
-    int last_clock; // The tick number of the last received clock
     int cursor; // Which output is currently being edited
     int cycle_time; // Cycle time between the last two clock inputs
 

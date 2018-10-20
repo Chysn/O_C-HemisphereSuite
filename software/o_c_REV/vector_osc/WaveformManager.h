@@ -66,8 +66,8 @@ public:
         byte count = WaveformCount();
         if (new_number < 0) new_number = 0;
         if (new_number == count) new_number = 32; // Move from last user waveform to first library waveform
-        if (new_number == 31) new_number = count - 1; // Move from first library waveform to last user waveform
-        if (new_number == (HS::WAVEFORM_LIBRARY_COUNT + 32)) new_number = HS::WAVEFORM_LIBRARY_COUNT + 31;
+        if (new_number <= 31 && new_number >= count) new_number = count - 1; // Move from first library waveform to last user waveform
+        if (new_number >= (HS::WAVEFORM_LIBRARY_COUNT + 32)) new_number = HS::WAVEFORM_LIBRARY_COUNT + 31;
         return new_number;
     }
 

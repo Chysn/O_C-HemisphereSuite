@@ -34,30 +34,32 @@ public:
             freq[ch] = 200;
             waveform_number[ch] = 0;
             SwitchWaveform(ch, 0);
-            last_clock[ch] = OC::CORE::ticks;
             Out(ch, 0);
         }
     }
 
     void Controller() {
+        int signal = 0;
         ForEachChannel(ch)
         {
             if (Clock(ch)) {
-                uint32_t ticks = OC::CORE::ticks - last_clock[ch];
+                uint32_t ticks = TimeSinceClock(ch);
                 int new_freq = 1666666 / ticks;
                 new_freq = constrain(new_freq, 3, 99900);
                 osc[ch].SetFrequency(new_freq);
                 freq[ch] = new_freq;
                 osc[ch].Reset();
-                last_clock[ch] = OC::CORE::ticks;
             }
 
             if (Changed(ch)) {
-                int mod = Proportion(DetentedIn(ch), HEMISPHERE_3V_CV, freq[ch]);
-                if (mod + freq[ch] > 3) osc[ch].SetFrequency(freq[ch] + mod);
+                int mod = Proportion(DetentedIn(ch), HEMISPHERE_3V_CV, 3000);
+                mod = constrain(mod, -3000, 3000);
+                if (mod + freq[ch] > 10) osc[ch].SetFrequency(freq[ch] + mod);
             }
 
-            Out(ch, osc[ch].Next());
+            signal += osc[ch].Next();
+            if (ch == 1) signal = signal / 2;
+            Out(ch, signal);
         }
     }
 
@@ -109,14 +111,13 @@ protected:
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1,2=Sync";
         help[HEMISPHERE_HELP_CVS]      = "1,2=Freq. Mod";
-        help[HEMISPHERE_HELP_OUTS]     = "A,B=Out";
+        help[HEMISPHERE_HELP_OUTS]     = "Out A=1, B=1+2";
         help[HEMISPHERE_HELP_ENCODER]  = "Wave/Freq.";
         //                               "------------------" <-- Size Guide
     }
     
 private:
     int cursor; // 0=Freq A; 1=Waveform A; 2=Freq B; 3=Waveform B
-    uint32_t last_clock[2];
     VectorOscillator osc[2];
 
     // Settings

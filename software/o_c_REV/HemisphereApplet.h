@@ -312,7 +312,13 @@ public:
         outputs[ch] = value + (octave * (12 << 7));
     }
 
-    bool Clock(int ch) {
+    /*
+     * Has the specified Digital input been clocked this cycle?
+     *
+     * If physical is true, then logical clock types (master clock forwarding and metronome) will
+     * not be used.
+     */
+    bool Clock(int ch, bool physical = 0) {
         bool clocked = 0;
         if (hemisphere == 0) {
             if (ch == 0) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
@@ -322,7 +328,7 @@ public:
             if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_4>();
         }
 
-        if (ch == 0) {
+        if (ch == 0 && !physical) {
             ClockManager *clock_m = clock_m->get();
             if (clock_m->IsRunning()) clocked = clock_m->Tock();
             else if (master_clock_bus) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
