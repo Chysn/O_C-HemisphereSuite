@@ -20,12 +20,12 @@
 
 #define TRENDING_MAX_SENS 124
 
-const char* const Trending_assignments[7] = {
-    "Rising", "Falling", "Moving", "Steady", "ChgState", "ChgValue", "PassThru"
+const char* const Trending_assignments[6] = {
+    "Rising", "Falling", "Moving", "Steady", "ChgState", "ChgValue"
 };
 
 enum Trend {
-    rising, falling, moving, steady, changedstate, changedvalue, passthru
+    rising, falling, moving, steady, changedstate, changedvalue
 };
 
 class Trending : public HemisphereApplet {
@@ -80,7 +80,6 @@ public:
                 bool changed = Changed(ch);
                 signal[ch] = In(ch);
                 if (Observe(ch, signal[ch], last_signal[ch])) last_signal[ch] = signal[ch];
-                if (assign[ch] == Trend::passthru) Out(ch, signal[ch]);
                 if (assign[ch] == Trend::changedvalue && changed) fire[ch] = 1;
             }
         }
@@ -99,10 +98,10 @@ public:
 
     void OnEncoderMove(int direction) {
         if (cursor < 2) {
-            assign[cursor] = constrain(assign[cursor] + direction, 0, 6);
+            assign[cursor] = constrain(assign[cursor] + direction, 0, 5);
             reset[cursor] = 1;
         }
-        else sensitivity = constrain(sensitivity + direction, 5, TRENDING_MAX_SENS);
+        else sensitivity = constrain(sensitivity + direction, 4, TRENDING_MAX_SENS);
     }
         
     uint32_t OnDataRequest() {
