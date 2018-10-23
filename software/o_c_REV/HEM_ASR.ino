@@ -106,7 +106,7 @@ private:
     int cursor;
     RingBufferManager *buffer_m = buffer_m->get();
     braids::Quantizer quantizer;
-    byte scale;
+    int scale;
     
     void DrawInterface() {
         // Show Link icon if linked with another ASR
