@@ -45,11 +45,11 @@ public:
         ForEachChannel(ch)
         {
             levels[ch] = 0;
+            eg[ch] = WaveformManager::VectorOscillatorFromWaveform(HS::Sawtooth);
             eg[ch].SetFrequency(decay[ch]);
-            eg[ch].SetScale(HEMISPHERE_MAX_CV);
+            eg[ch].SetScale(ch ? HEMISPHERE_3V_CV : HEMISPHERE_MAX_CV);
+            eg[ch].Offset(ch ? HEMISPHERE_3V_CV : HEMISPHERE_MAX_CV);
             eg[ch].Cycle(0);
-            eg[ch].SetSegment(VOSegment {255,0});
-            eg[ch].SetSegment(VOSegment {128,1});
             SetEGFreq(ch);
         }
     }
@@ -62,7 +62,7 @@ public:
 
         ForEachChannel(ch)
         {
-            if (Changed(ch)) eg[ch].SetScale(HEMISPHERE_MAX_CV - In(ch));
+            if (Changed(ch)) eg[ch].SetScale((ch ? HEMISPHERE_3V_CV : HEMISPHERE_MAX_CV) - In(ch));
             if (Clock(ch, 1)) eg[ch].Start(); // Use physical-only clocking
         }
 
