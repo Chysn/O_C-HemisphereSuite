@@ -20,7 +20,7 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-#include "HSRingBufferManager.h" // Singleton Lorenz manager
+#include "HSRingBufferManager.h" // Singleton Ring Buffer manager
 
 class ASR : public HemisphereApplet {
 public:
