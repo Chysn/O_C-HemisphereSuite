@@ -25,28 +25,12 @@ public:
         return "Metronome";
     }
 
-    void Start() {
-        last_tap = OC::CORE::ticks;
-    }
+    void Start() { }
 
     void Controller() {
-        // Use the OC clocked() method here instead of Clock(0) because when the
-        // Metronome is running, Clock(0) will ignore the actual jacks in favor
-        // of the Metronome tempo.
-        bool tap = hemisphere
-          ? OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_3>()
-          : OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_1>();
-        if (tap) {
-            // Tap tempo is overridden by CV-set tempo
-            if (!DetentedIn(0)) clock_m->SetTempoTap(last_tap);
-            last_tap = OC::CORE::ticks;
-        }
-
-        // But check the clock anyway, so that the little Metronome icon animates while
+        // Check the clock so that the little Metronome icon animates while
         // Metronome is selected
         Clock(0);
-
-        if (Clock(1)) clock_m->Reset();
 
         // Outputs
         if (clock_m->IsRunning()) {
@@ -101,7 +85,7 @@ public:
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Tap BPM 2=Reset";
+        help[HEMISPHERE_HELP_DIGITALS] = "";
         help[HEMISPHERE_HELP_CVS]      = "";
         help[HEMISPHERE_HELP_OUTS]     = "A=Multiply B=Beat";
         help[HEMISPHERE_HELP_ENCODER]  = "T=BPM/Mult/Start";
@@ -111,7 +95,6 @@ protected:
 private:
     int cursor; // 0=Tempo, 1=Multiply, 2=Start/Stop
     ClockManager *clock_m = clock_m->get();
-    uint32_t last_tap; // For setting tap tempo via Digital 1
     
     void DrawInterface() {
         gfxIcon(1, 15, NOTE4_ICON);

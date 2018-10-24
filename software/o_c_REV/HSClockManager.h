@@ -80,14 +80,6 @@ public:
      */
     uint16_t GetTempo() {return tempo;}
 
-    /* Sets tempo by specifying the last tick a clock was received. This can be used to set tempo via
-     * tap or incoming clock, without having to specify BPM.
-     */
-    void SetTempoTap(uint32_t penultimate_tick) {
-        ticks_per_tock = OC::CORE::ticks - penultimate_tick;
-        tempo = 1000000 / ticks_per_tock;
-    }
-
     void Reset() {
         last_tock_tick = OC::CORE::ticks;
         count = 0;
