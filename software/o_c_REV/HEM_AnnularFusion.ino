@@ -41,12 +41,12 @@ public:
         {
             length[ch] = 16;
             beats[ch] = 4 + (ch * 4);
-            pattern[ch] = 0;
+            pattern[ch] = EuclideanPattern(length[ch] - 1, beats[ch], 0);;
         }
         step = 0;
         SetDisplayPositions(0, 24);
         SetDisplayPositions(1, 16);
-        last_clock = 0;
+        last_clock = OC::CORE::ticks;
     }
 
     void Controller() {
