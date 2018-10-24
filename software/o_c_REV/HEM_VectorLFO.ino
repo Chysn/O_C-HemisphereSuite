@@ -100,6 +100,8 @@ public:
         if (c == 1) { // Waveform
             waveform_number[ch] = WaveformManager::GetNextWaveform(waveform_number[ch], direction);
             SwitchWaveform(ch, waveform_number[ch]);
+            // Reset both waveform to provide a sync mechanism
+            ForEachChannel(ch) osc[ch].Reset();
         }
         if (c == 0) { // Frequency
             if (freq[ch] > 100000) direction *= 10000;
