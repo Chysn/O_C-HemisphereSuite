@@ -37,8 +37,8 @@ public:
 
     void Controller() {
         if (Clock(0) || Clock(1)) {
-            if (Clock(1)) step = 0;
-            else step++;
+            if (Clock(1)) step = -1;
+            step++;
             bool swap = In(0) >= HEMISPHERE_3V_CV;
             if (step < 8) {
                 if ((pattern[0] >> step) & 0x01) ClockOut(swap ? 1 : 0);
@@ -47,7 +47,7 @@ public:
                 if ((pattern[1] >> (step - 8)) & 0x01) ClockOut(swap ? 1 : 0);
                 else ClockOut(swap ? 0 : 1);
             }
-            if (step > end_step) step = 0;
+            if (step > end_step) step = -1;
         }
     }
 
