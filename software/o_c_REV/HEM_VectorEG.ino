@@ -32,8 +32,7 @@ public:
         ForEachChannel(ch)
         {
             freq[ch] = 50;
-            waveform_number[ch] = 0;
-            SwitchWaveform(ch, 0);
+            SwitchWaveform(ch, HS::EG1 + ch);
             gated[ch] = 0;
             Out(ch, 0);
         }

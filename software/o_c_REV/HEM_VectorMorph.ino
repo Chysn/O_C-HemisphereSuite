@@ -87,8 +87,8 @@ public:
         return data;
     }
     void OnDataReceive(uint32_t data) {
-        waveform_number[0] = Unpack(data, PackLocation {0,6});
-        waveform_number[1] = Unpack(data, PackLocation {6,6});
+        SwitchWaveform(0, Unpack(data, PackLocation {0,6}));
+        SwitchWaveform(1, Unpack(data, PackLocation {6,6}));
         phase[0] = Unpack(data, PackLocation {12,9});
         phase[1] = Unpack(data, PackLocation {21,9});
         linked = Unpack(data, PackLocation {30,1});
