@@ -21,31 +21,35 @@
 #include "vector_osc/HSVectorOscillator.h"
 #include "vector_osc/WaveformManager.h"
 
-class VectorMod : public HemisphereApplet {
+class VectorMorph : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "VectorMod";
+        return "VectMorph";
     }
 
     void Start() {
         ForEachChannel(ch)
         {
-            freq[ch] = 50;
-            SwitchWaveform(ch, 0);
+        		phase[ch] = (ch * 180) + (hemisphere * 90);
+        		last_phase[ch] = 0;
+            SwitchWaveform(ch, HS::Morph1);
             Out(ch, 0);
         }
     }
 
     void Controller() {
+    		int cv_phase = 0;
+    		if (DetentedIn(1)) linked = 0; // Turn off linking if CV 2 gets input
+    		
         ForEachChannel(ch)
         {
-            if (Clock(ch)) osc[ch].Start();
-
-            bool cycle = (In(ch) > HEMISPHERE_3V_CV);
-            osc[ch].Cycle(cycle);
-
-            Out(ch, osc[ch].Next());
+        		if (!linked || ch == 0) {
+        		    cv_phase = Proportion(In(ch), HEMISPHERE_MAX_CV, 3599);
+        		    	cv_phase = constrain(cv_phase, -3599, 3599);
+        		}
+        		last_phase[ch] = (phase[ch] * 10) + cv_phase;
+			Out(ch, osc[ch].Phase(last_phase[ch]));
         }
     }
 
@@ -66,11 +70,10 @@ public:
         if (c == 1) { // Waveform
             waveform_number[ch] = WaveformManager::GetNextWaveform(waveform_number[ch], direction);
             SwitchWaveform(ch, waveform_number[ch]);
+            linked = 1; // Restore link when waveform is changed
         }
-        if (c == 0) { // Frequency
-            if (freq[ch] > 50) direction *= 10;
-            freq[ch] = constrain(freq[ch] + direction, 10, 500);
-            osc[ch].SetFrequency(freq[ch]);
+        if (c == 0) { // Phase
+        		phase[ch] = constrain(phase[ch] + (direction * 5), 0, 355);
         }
     }
         
@@ -78,34 +81,38 @@ public:
         uint32_t data = 0;
         Pack(data, PackLocation {0,6}, waveform_number[0]);
         Pack(data, PackLocation {6,6}, waveform_number[1]);
-        Pack(data, PackLocation {12,10}, freq[0] & 0x03ff);
-        Pack(data, PackLocation {22,10}, freq[1] & 0x03ff);
+        Pack(data, PackLocation {12,9}, phase[0]);
+        Pack(data, PackLocation {21,9}, phase[1]);
+        Pack(data, PackLocation {30,1}, linked);
         return data;
     }
     void OnDataReceive(uint32_t data) {
         waveform_number[0] = Unpack(data, PackLocation {0,6});
         waveform_number[1] = Unpack(data, PackLocation {6,6});
-        freq[0] = Unpack(data, PackLocation {12,10});
-        freq[1] = Unpack(data, PackLocation {22,10});
+        phase[0] = Unpack(data, PackLocation {12,9});
+        phase[1] = Unpack(data, PackLocation {21,9});
+        linked = Unpack(data, PackLocation {30,1});
     }
 
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "1,2=Trigger";
-        help[HEMISPHERE_HELP_CVS]      = "1,2=Cycle";
+        help[HEMISPHERE_HELP_DIGITALS] = "";
+        help[HEMISPHERE_HELP_CVS]      = "1,2=Phase";
         help[HEMISPHERE_HELP_OUTS]     = "A,B=Out";
-        help[HEMISPHERE_HELP_ENCODER]  = "Wave/Freq.";
+        help[HEMISPHERE_HELP_ENCODER]  = "Phase/Waveform";
         //                               "------------------" <-- Size Guide
     }
     
 private:
-    int cursor; // 0=Freq A; 1=Waveform A; 2=Freq B; 3=Waveform B
+    int cursor; // 0=Phase A; 1=Waveform A; 2=Phase B; 3=Waveform B
     VectorOscillator osc[2];
+    int last_phase[2]; // For display
 
     // Settings
     int waveform_number[2];
-    int freq[2];
+    int phase[2];
+    bool linked = 1;
     
     void DrawInterface() {
         byte c = cursor;
@@ -118,16 +125,16 @@ private:
         else gfxPrint(ch ? "D" : "C");
         gfxInvert(1, 14, 7, 9);
 
-        gfxPrint(10, 15, ones(freq[ch]));
-        gfxPrint(".");
-        int h = hundredths(freq[ch]);
-        if (h < 10) gfxPrint("0");
-        gfxPrint(h);
-        gfxPrint(" Hz");
+        gfxPrint(10, 15, phase[ch]);
+        gfxPrint("`"); // Grave accent has been converted to the degree symbol in gfx_font6x8.h
         DrawWaveform(ch);
-
+        
+        // Cursors
         if (c == 0) gfxCursor(8, 23, 55);
         if (c == 1 && CursorBlink()) gfxFrame(0, 24, 63, 40);
+        
+        // Link icon
+        if (linked) gfxIcon(54, 15, LINK_ICON);
     }
 
     void DrawWaveform(byte ch) {
@@ -135,6 +142,7 @@ private:
         VOSegment seg = osc[ch].GetSegment(osc[ch].SegmentCount() - 1);
         byte prev_x = 0; // Starting coordinates
         byte prev_y = 63 - Proportion(seg.level, 255, 38);
+
         for (byte i = 0; i < osc[ch].SegmentCount(); i++)
         {
             seg = osc[ch].GetSegment(i);
@@ -150,36 +158,35 @@ private:
 
         // Zero line
         gfxDottedLine(0, 44, 63, 44, 8);
+        
+        // Phase transport location
+        byte transport_x = Proportion(abs(last_phase[ch]) % 3600, 3600, 63);
+        gfxDottedLine(transport_x, 24, transport_x, 63, 3);
     }
 
     void SwitchWaveform(byte ch, int waveform) {
         osc[ch] = WaveformManager::VectorOscillatorFromWaveform(waveform);
         waveform_number[ch] = waveform;
-        osc[ch].SetFrequency(freq[ch]);
-        osc[ch].SetScale((12 << 7) * 3);
-        osc[ch].Cycle(1); // Non cycling
+        osc[ch].SetScale(HEMISPHERE_MAX_CV);
     }
-
-    int ones(int n) {return (n / 100);}
-    int hundredths(int n) {return (n % 100);}
 };
 
 
 ////////////////////////////////////////////////////////////////////////////////
 //// Hemisphere Applet Functions
 ///
-///  Once you run the find-and-replace to make these refer to VectorMod,
+///  Once you run the find-and-replace to make these refer to VectorMorph,
 ///  it's usually not necessary to do anything with these functions. You
 ///  should prefer to handle things in the HemisphereApplet child class
 ///  above.
 ////////////////////////////////////////////////////////////////////////////////
-VectorMod VectorMod_instance[2];
+VectorMorph VectorMorph_instance[2];
 
-void VectorMod_Start(bool hemisphere) {VectorMod_instance[hemisphere].BaseStart(hemisphere);}
-void VectorMod_Controller(bool hemisphere, bool forwarding) {VectorMod_instance[hemisphere].BaseController(forwarding);}
-void VectorMod_View(bool hemisphere) {VectorMod_instance[hemisphere].BaseView();}
-void VectorMod_OnButtonPress(bool hemisphere) {VectorMod_instance[hemisphere].OnButtonPress();}
-void VectorMod_OnEncoderMove(bool hemisphere, int direction) {VectorMod_instance[hemisphere].OnEncoderMove(direction);}
-void VectorMod_ToggleHelpScreen(bool hemisphere) {VectorMod_instance[hemisphere].HelpScreen();}
-uint32_t VectorMod_OnDataRequest(bool hemisphere) {return VectorMod_instance[hemisphere].OnDataRequest();}
-void VectorMod_OnDataReceive(bool hemisphere, uint32_t data) {VectorMod_instance[hemisphere].OnDataReceive(data);}
+void VectorMorph_Start(bool hemisphere) {VectorMorph_instance[hemisphere].BaseStart(hemisphere);}
+void VectorMorph_Controller(bool hemisphere, bool forwarding) {VectorMorph_instance[hemisphere].BaseController(forwarding);}
+void VectorMorph_View(bool hemisphere) {VectorMorph_instance[hemisphere].BaseView();}
+void VectorMorph_OnButtonPress(bool hemisphere) {VectorMorph_instance[hemisphere].OnButtonPress();}
+void VectorMorph_OnEncoderMove(bool hemisphere, int direction) {VectorMorph_instance[hemisphere].OnEncoderMove(direction);}
+void VectorMorph_ToggleHelpScreen(bool hemisphere) {VectorMorph_instance[hemisphere].HelpScreen();}
+uint32_t VectorMorph_OnDataRequest(bool hemisphere) {return VectorMorph_instance[hemisphere].OnDataRequest();}
+void VectorMorph_OnDataReceive(bool hemisphere, uint32_t data) {VectorMorph_instance[hemisphere].OnDataReceive(data);}

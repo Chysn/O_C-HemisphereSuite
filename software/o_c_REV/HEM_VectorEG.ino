@@ -148,17 +148,17 @@ private:
         {
             seg = osc[ch].GetSegment(i);
             byte y = 63 - Proportion(seg.level, 255, 38);
-            byte seg_x = Proportion(seg.time, total_time, 64);
+            byte seg_x = Proportion(seg.time, total_time, 62);
             byte x = prev_x + seg_x;
-            x = constrain(x, 0, 63);
-            y = constrain(y, 25, 63);
+            x = constrain(x, 0, 62);
+            y = constrain(y, 25, 62);
             gfxLine(prev_x, prev_y, x, y);
             prev_x = x;
             prev_y = y;
         }
 
         // Zero line
-        gfxDottedLine(0, 43, 63, 43, 8);
+        gfxDottedLine(0, 44, 63, 44, 8);
     }
 
     void SwitchWaveform(byte ch, int waveform) {

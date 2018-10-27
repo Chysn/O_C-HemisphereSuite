@@ -1,7 +1,7 @@
 namespace HS {
 
 #define VO_TOC 255
-const byte WAVEFORM_LIBRARY_COUNT = 16;
+const byte WAVEFORM_LIBRARY_COUNT = 29;
 
 // Waveform Library Names
 enum {
@@ -9,6 +9,7 @@ enum {
     Sawtooth,
     Ramp,
     Sine,
+	Cosine,
     Square,
     Pulse2,
     Pulse3,
@@ -16,6 +17,7 @@ enum {
     Trapezoid,
     Logarithmic,
     Exponential,
+	Morph1 = 55,
 };
 
 VOSegment library_waveforms[] = {
@@ -40,16 +42,31 @@ VOSegment library_waveforms[] = {
     VOSegment {238, 1},
     VOSegment {255, 1},
     VOSegment {238, 1},
-    VOSegment {191, 1},
+    VOSegment {192, 1},
     VOSegment {128, 1},
     VOSegment {64, 1},
     VOSegment {18, 1},
-    VOSegment {1, 1},
+    VOSegment {0, 1},
     VOSegment {18, 1},
-    VOSegment {65, 1},
+    VOSegment {64, 1},
     VOSegment {128, 1},
 
-    // Square
+    // Cosine
+    VOSegment {12, VO_TOC},
+    VOSegment {64, 1},
+    VOSegment {18, 1},
+    VOSegment {0, 1},
+    VOSegment {18, 1},
+    VOSegment {64, 1},
+    VOSegment {128, 1},
+    VOSegment {192, 1},
+    VOSegment {238, 1},
+    VOSegment {255, 1},
+    VOSegment {238, 1},
+    VOSegment {192, 1},
+    VOSegment {128, 1},
+
+	// Square
     VOSegment {4, VO_TOC},
     VOSegment {255, 0},
     VOSegment {255, 1},
@@ -158,6 +175,90 @@ VOSegment library_waveforms[] = {
     VOSegment {192, 1},
     VOSegment {0, 1},
 
+    // Half-Rectified Sine
+    VOSegment {7, VO_TOC},
+    VOSegment {192, 1},
+    VOSegment {238, 1},
+    VOSegment {255, 1},
+    VOSegment {238, 1},
+    VOSegment {191, 1},
+    VOSegment {128, 1},
+    VOSegment {128, 6},
+
+    // Positive Triangle
+    VOSegment {2, VO_TOC},
+    VOSegment {255, 1},
+    VOSegment {128, 1},
+
+    // Positive Sawtooth
+    VOSegment {2, VO_TOC},
+    VOSegment {255, 0},
+    VOSegment {128, 1},
+
+    // Positive Ramp
+    VOSegment {2, VO_TOC},
+    VOSegment {128, 0},
+    VOSegment {255, 1},
+
+    // Positive Sine
+    VOSegment {12, VO_TOC},
+    VOSegment {128, 1},
+    VOSegment {137, 1},
+    VOSegment {160, 1},
+    VOSegment {192, 1},
+    VOSegment {224, 1},
+    VOSegment {247, 1},
+    VOSegment {255, 1},
+    VOSegment {247, 1},
+    VOSegment {224, 1},
+    VOSegment {192, 1},
+    VOSegment {160, 1},
+    VOSegment {137, 1},
+
+    // Positive Square
+    VOSegment {4, VO_TOC},
+    VOSegment {255, 0},
+    VOSegment {255, 1},
+    VOSegment {128, 0},
+    VOSegment {128, 1},
+
+	// Morph Wave 1
+	VOSegment {3, VO_TOC},
+	VOSegment {255, 1},
+	VOSegment {128, 1},
+	VOSegment {128, 1},
+
+	// Morph Wave 2
+	VOSegment {3, VO_TOC},
+	VOSegment {255, 1},
+	VOSegment {128, 1},
+	VOSegment {128, 2},
+
+	// Morph Wave 3
+	VOSegment {3, VO_TOC},
+	VOSegment {255, 1},
+	VOSegment {128, 1},
+	VOSegment {128, 4},
+
+	// Morph Wave 4
+	VOSegment {3, VO_TOC},
+	VOSegment {255, 2},
+	VOSegment {128, 2},
+	VOSegment {128, 1},
+
+	// Morph Wave 5
+	VOSegment {5, VO_TOC},
+	VOSegment {255, 1},
+	VOSegment {128, 1},
+	VOSegment {220, 1},
+	VOSegment {128, 1},
+	VOSegment {128, 4},
+
+	// Morph Wave 6
+	VOSegment {3, VO_TOC},
+	VOSegment {255, 3},
+	VOSegment {128, 1},
+	VOSegment {128, 2},
 };
 
 }; // namespace HS

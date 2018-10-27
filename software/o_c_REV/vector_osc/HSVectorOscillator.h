@@ -154,6 +154,38 @@ public:
         return signal2int(signal) + offset;
     }
 
+    /* Get the value of the waveform at a specific phase. Degrees are expressed in tenths of a degree */
+    int32_t Phase(int degrees) {
+    		degrees = degrees % 3600;
+    		degrees = abs(degrees);
+
+    		// I need to find out which segment the specified phase occurs in
+    		byte time_index = Proportion(degrees, 3600, total_time);
+    		byte segment = 0;
+    		byte time = 0;
+    		for (byte ix = 0; ix < segment_count; ix++)
+    		{
+    			time += segments[ix].time;
+    			if (time > time_index) {
+    				segment = ix;
+    				break;
+    			}
+    		}
+
+    		// Where does this segment start, and how many degrees does it span?
+    		int start_degree = Proportion(time - segments[segment].time, total_time, 3600);
+    		int segment_degrees = Proportion(segments[segment].time, total_time, 3600);
+
+    		// Start and end point of the total segment
+    		int start = signal2int(scale_level(segment == 0 ? segments[segment_count - 1].level : segments[segment - 1].level));
+    		int end = signal2int(scale_level(segments[segment].level));
+
+    		// Determine the signal based on the levels and the position within the segment
+    		int signal = Proportion(degrees - start_degree, segment_degrees, end - start) + start;
+
+        return signal + offset;
+    }
+
 private:
     VOSegment segments[12]; // Array of segments in this Oscillator
     byte segment_count = 0; // Number of segments
