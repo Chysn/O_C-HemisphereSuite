@@ -25,38 +25,40 @@
 
 class WaveformEditor : public HSApplication, public SystemExclusiveHandler {
 public:
-	void Start() {
-	    if (!WaveformManager::Validate()) {
-	        WaveformManager::Setup();
-	    }
-	    test_freq[0] = 100;    // Test 0: LFO
-	    test_freq[1] = 44000;  // Test 1: Audio-Rate
-	    test_freq[2] = 50;     // Test 2: Bi-polar one-shot modulation
-	    test_freq[3] = 50;     // Test 3: Uni-polar EG
+    void Start() {
+        if (!WaveformManager::Validate()) {
+            WaveformManager::Setup();
+        }
+        test_freq[0] = 100;    // Test 0: LFO
+        test_freq[1] = 44000;  // Test 1: Audio-Rate
+        test_freq[2] = 50;     // Test 2: Bi-polar one-shot modulation
+        test_freq[3] = 50;     // Test 3: Uni-polar EG
         waveform_number = 0;
-	    Resume();
-	}
+        Resume();
+    }
 
-	void Resume() {
+    void Resume() {
         segment_number = 0;
         waveform_count = WaveformManager::WaveformCount();
         segments_remaining = WaveformManager::SegmentsRemaining();
         SwitchWaveform(waveform_number);
-	}
+    }
 
     void Controller() {
         // Receive MIDI dumps
         ListenForSysEx();
 
         // Modulation input values
-        // LFO: .03Hz to 15Hz
+        // LFO: .10Hz to 15Hz
         // Audio: 110Hz to 880Hz
-        // EGs: .03Hz to 8Hz
-        int mod_range_low[4] = {3, 11000, 3, 3};
+        // EGs: .10Hz to 8Hz
+        int mod_range_low[4] = {10, 11000, 10, 10};
         int mod_range_high[4] = {1500, 88000, 800, 800};
         for (byte ch = 0; ch < 4; ch++)
         {
-            if (Changed(ch)) {
+            if (DetentedIn(ch) && Changed(ch)) {
+            		int cv = In(ch);
+            		cv = constrain(cv, 0, HSAPPLICATION_5V);
                 int freq = Proportion(In(ch), HSAPPLICATION_5V, mod_range_high[ch] - mod_range_low[ch]) + mod_range_low[ch];
                 freq = constrain(freq, mod_range_low[ch], mod_range_high[ch]);
                 test[ch].SetFrequency(freq);
@@ -64,25 +66,21 @@ public:
             }
         }
 
-        // LFO Outputs
-        Out(0, test[0].Next());
-        Out(1, test[1].Next());
-
-        for (byte t = 2; t < 4; t++)
-        {
-            if (Gate(t)) {
-                if (!gated[t]) { // Gate wasn't on last time, so start the waveform
-                    test[t].Start();
-                }
-                gated[t] = 1;
-            } else {
-                if (gated[t]) { // Gate isn't on now, but was on last time, so release
-                    test[t].Release();
-                }
-                gated[t] = 0;
-            }
-            Out(t, test[t].Next());
-        }
+		// Handle triggered one-shot start
+        if (Clock(2)) test[2].Start();
+        
+        // Handle gated EG
+		if (Gate(3)) {
+			// Gate wasn't on last time, so start the waveform
+			if (!gated) test[3].Start();
+		} else {
+			// Gate isn't on now, but was on last time, so release
+			if (gated) test[3].Release();
+		}
+		gated = Gate(3);
+		
+		// Output for all test oscillators
+		for (byte ch = 0; ch < 4; ch++) Out(ch, test[ch].Next());
     }
 
     void View() {
@@ -226,7 +224,7 @@ private:
 
     // Test Waveforms
     VectorOscillator test[4];
-    bool gated[4];
+    bool gated = 0;
     uint32_t test_freq[4];
 
     void DrawInterface() {
@@ -309,14 +307,13 @@ private:
             test[t] = WaveformManager::VectorOscillatorFromWaveform(waveform_number);
             test[t].SetScale((12 << 7) * 3);
             test[t].SetFrequency(test_freq[t]);
-            gated[t] = 0;
         }
 
         test[2].Cycle(0); // Test 2: Bi-polar one-shot modulation
 
         test[3].Offset(3840); // Test 3: Uni-polar envelope
         test[3].SetScale(3840);
-         test[3].Cycle(0);
+        test[3].Cycle(0);
         test[3].Sustain();
 
         for (byte t = 0; t < 4; t++) test[t].Reset();
@@ -334,13 +331,8 @@ private:
     }
 
     void DeleteSegment() {
-        if (osc.SegmentCount() > 2) {
-            bool ok_to_delete = 1;
-
-            // The segment cannot be deleted if this would result in a 0 total time
-            if (osc.GetSegment(segment_number).time == osc.TotalTime()) ok_to_delete = 0;
-
-            if (ok_to_delete) {
+        if (osc.SegmentCount() > 2) { // The segment cannot be deleted if it's the only segment in the waveform...
+            if (osc.GetSegment(segment_number).time != osc.TotalTime()) {  // ...or if deletion would result in a 0 total time
                 WaveformManager::DeleteSegmentFromWaveformAtSegmentIndex(waveform_number, segment_number);
                 byte prev_segment_number = segment_number;
                 SwitchWaveform(waveform_number);
@@ -384,7 +376,7 @@ size_t WaveformEditor_save(void *storage) {return 0;}
 size_t WaveformEditor_restore(const void *storage) {return 0;}
 
 void WaveformEditor_isr() {
-	return WaveformEditor_instance.BaseController();
+    return WaveformEditor_instance.BaseController();
 }
 
 void WaveformEditor_handleAppEvent(OC::AppEvent event) {
