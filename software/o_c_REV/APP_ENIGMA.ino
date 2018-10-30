@@ -28,33 +28,33 @@
 #include "enigma/EnigmaTrack.h"
 
 // Modes
-const byte ENIGMA_MODE_LIBRARY = 0;  // Create, edit, save, favorite, sysex dump Turing Machines
-const byte ENIGMA_MODE_ASSIGN = 1;   // Assign CV and MIDI output
-const byte ENIGMA_MODE_SONG = 2;     // Assemble compositions by chaining Turing Machines
-const byte ENIGMA_MODE_PLAY = 3;     // Play information and transport controls
-const byte ENIGMA_CONFIRM_RESET = 4; // Special page for confirming song reset
+#define ENIGMA_MODE_LIBRARY 0  // Create, edit, save, favorite, sysex dump Turing Machines
+#define ENIGMA_MODE_ASSIGN 1   // Assign CV and MIDI output
+#define ENIGMA_MODE_SONG 2     // Assemble compositions by chaining Turing Machines
+#define ENIGMA_MODE_PLAY 3     // Play information and transport controls
+#define ENIGMA_CONFIRM_RESET 4 // Special page for confirming song reset
 
 // Parameters for Manaage mode (per Turing Machine)
-const byte ENIGMA_TM_LENGTH = 0;
-const byte ENIGMA_TM_PROBABILITY = 1;
-const byte ENIGMA_TM_ROTATE = 2;
+#define ENIGMA_TM_LENGTH 0
+#define ENIGMA_TM_PROBABILITY 1
+#define ENIGMA_TM_ROTATE 2
 
 // Parameters for Assign mode (per output)
-const byte ENIGMA_OUTPUT_TRACK = 0;
-const byte ENIGMA_OUTPUT_TYPE = 1;
-const byte ENIGMA_OUTPUT_SCALE = 2;
-const byte ENIGMA_OUTPUT_MIDI_CH = 3;
+#define ENIGMA_OUTPUT_TRACK 0
+#define ENIGMA_OUTPUT_TYPE 1
+#define ENIGMA_OUTPUT_SCALE 2
+#define ENIGMA_OUTPUT_MIDI_CH 3
 
 // Parameters for Song mode (per step)
-const byte ENIGMA_STEP_NUMBER = 0;
-const byte ENIGMA_STEP_TM = 1;
-const byte ENIGMA_STEP_P = 2;
-const byte ENIGMA_STEP_REPEATS = 3;
-const byte ENIGMA_STEP_TRANSPOSE = 4;
+#define ENIGMA_STEP_NUMBER 0
+#define ENIGMA_STEP_TM 1
+#define ENIGMA_STEP_P 2
+#define ENIGMA_STEP_REPEATS 3
+#define ENIGMA_STEP_TRANSPOSE 4
 
 // Parameters for Play Mode (per track)
-const byte ENIGMA_TRACK_DIVIDE = 0;
-const byte ENIGMA_TRACK_LOOP = 1;
+#define ENIGMA_TRACK_DIVIDE 0
+#define ENIGMA_TRACK_LOOP 1
 
 // Settings for various things
 #define ENIGMA_SETTING_LAST 150

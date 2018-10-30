@@ -29,7 +29,7 @@
 #include "braids_quantizer.h"
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
-const uint8_t TM_MAX_SCALE = 63;
+#define TM_MAX_SCALE 63
 
 class TM : public HemisphereApplet {
 public:

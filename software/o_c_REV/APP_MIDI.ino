@@ -25,11 +25,11 @@
 #include "HSApplication.h"
 #include "HSMIDI.h"
 
-const uint16_t MIDI_INDICATOR_COUNTDOWN = 2000;
-const int MIDI_PARAMETER_COUNT = 40;
-const int MIDI_CURRENT_SETUP = MIDI_PARAMETER_COUNT * 4;
-const int MIDI_SETTING_LAST = MIDI_CURRENT_SETUP + 1;
-const int MIDI_LOG_MAX_SIZE = 101;
+#define MIDI_INDICATOR_COUNTDOWN 2000
+#define MIDI_PARAMETER_COUNT 40
+#define MIDI_CURRENT_SETUP (MIDI_PARAMETER_COUNT * 4)
+#define MIDI_SETTING_LAST (MIDI_CURRENT_SETUP + 1)
+#define MIDI_LOG_MAX_SIZE 101
 
 // Icons that are used next to the menu items
 const uint8_t MIDI_midi_icon[8] = {0x3c, 0x42, 0x91, 0x45, 0x45, 0x91, 0x42, 0x3c};

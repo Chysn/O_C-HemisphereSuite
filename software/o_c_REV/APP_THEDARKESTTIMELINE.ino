@@ -30,9 +30,9 @@
 #include "HSApplication.h"
 #include "HSMIDI.h"
 
-const bool DT_CV_TIMELINE = 0;
-const bool DT_PROBABILITY_TIMELINE = 1;
-const int DT_SETUP_SCREEN_TIMEOUT = 166667; // 10 seconds
+#define DT_CV_TIMELINE 0
+#define DT_PROBABILITY_TIMELINE 1
+#define DT_SETUP_SCREEN_TIMEOUT 166667
 
 enum {
     DT_LENGTH,
