@@ -130,7 +130,10 @@ public:
         if (ch == 1) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_2>();
         if (ch == 2) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_3>();
         if (ch == 3) clocked = OC::DigitalInputs::clocked<OC::DIGITAL_INPUT_4>();
-        if (clocked) last_clock[ch] = OC::CORE::ticks;
+        if (clocked) {
+        		cycle_ticks[ch] = OC::CORE::ticks - last_clock[ch];
+        		last_clock[ch] = OC::CORE::ticks;
+        }
         return clocked;
     }
 
@@ -142,8 +145,7 @@ public:
     // Buffered I/O functions for use in Views
     int ViewIn(int ch) {return inputs[ch];}
     int ViewOut(int ch) {return outputs[ch];}
-    int TicksSinceClock(int ch) {return OC::CORE::ticks - last_clock[ch];} // in ticks
-    int TimeSinceClock(int ch) {return TicksSinceClock(ch) / 17;} // in approx. ms
+    int ClockCycleTicks(int ch) {return cycle_ticks[ch];}
 
     /* ADC Lag: There is a small delay between when a digital input can be read and when an ADC can be
      * read. The ADC value lags behind a bit in time. So StartADCLag() and EndADCLag() are used to
@@ -270,7 +272,8 @@ private:
     int outputs[4]; // Last DAC values; inputs[] and outputs[] are used to allow access to values in Views
     bool changed_cv[4]; // Has the input changed by more than 1/8 semitone since the last read?
     int last_cv[4]; // For change detection
-    uint32_t last_clock[4]; // Keeps time since last clock
+    uint32_t last_clock[4]; // Tick number of the last clock observed by the child class
+    uint32_t cycle_ticks[4]; // Number of ticks between last two clocks
 };
 
 #endif /* HSAPPLICATION_H_ */

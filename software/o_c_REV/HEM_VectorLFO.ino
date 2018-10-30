@@ -56,7 +56,7 @@ public:
         ForEachChannel(ch)
         {
             if (Clock(ch)) {
-                uint32_t ticks = TimeSinceClock(ch);
+                uint32_t ticks = ClockCycleTicks(ch);
                 int new_freq = 1666666 / ticks;
                 new_freq = constrain(new_freq, 3, 99900);
                 osc[ch].SetFrequency(new_freq);

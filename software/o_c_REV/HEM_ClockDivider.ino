@@ -55,10 +55,9 @@ public:
             ForEachChannel(ch) count[ch] = 0;
         }
 
+        // The input was clocked; set timing info
         if (Clock(0)) {
-            // The input was clocked; set timing info
-            cycle_time = TimeSinceClock(0);
-
+        		cycle_time = ClockCycleTicks(0);
             // At the clock input, handle clock division
             ForEachChannel(ch)
             {
