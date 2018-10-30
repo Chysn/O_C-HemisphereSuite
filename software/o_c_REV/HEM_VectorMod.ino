@@ -95,7 +95,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1,2=Trigger";
         help[HEMISPHERE_HELP_CVS]      = "1,2=Cycle";
         help[HEMISPHERE_HELP_OUTS]     = "A,B=Out";
-        help[HEMISPHERE_HELP_ENCODER]  = "Wave/Freq.";
+        help[HEMISPHERE_HELP_ENCODER]  = "Freq./Waveform";
         //                               "------------------" <-- Size Guide
     }
     

@@ -46,7 +46,7 @@ public:
             if (mod + freq[0] > 10) osc[0].SetFrequency(freq[0] + mod);
         }
 
-        // Input 2 determineds signal 1's attenuation on the B/D output mix; at 0V, signal 1
+        // Input 2 determines signal 1's attenuation on the B/D output mix; at 0V, signal 1
         // accounts for 50% of the B/D output. At 5V, signal 1 accounts for none of the
         // B/D output.
         int atten1 = DetentedIn(1);
@@ -134,7 +134,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1,2=Sync";
         help[HEMISPHERE_HELP_CVS]      = "1=Freq1 2=Atten1@B";
         help[HEMISPHERE_HELP_OUTS]     = "Out A=1, B=2+1";
-        help[HEMISPHERE_HELP_ENCODER]  = "Wave/Freq.";
+        help[HEMISPHERE_HELP_ENCODER]  = "Freq./Waveform";
         //                               "------------------" <-- Size Guide
     }
     

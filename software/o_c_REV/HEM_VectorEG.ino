@@ -102,7 +102,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "1,2=Gate";
         help[HEMISPHERE_HELP_CVS]      = "";
         help[HEMISPHERE_HELP_OUTS]     = "A,B=Out";
-        help[HEMISPHERE_HELP_ENCODER]  = "Wave/Freq.";
+        help[HEMISPHERE_HELP_ENCODER]  = "Freq./Waveform";
         //                               "------------------" <-- Size Guide
     }
     
