@@ -30,8 +30,7 @@ static constexpr size_t kMaxTriggerDelayTicks = 96;
 #define OCTAVES 10      // # octaves
 #define SEMITONES (OCTAVES * 12)
 
-static constexpr unsigned long SPLASHSCREEN_DELAY_MS = 5; // HS deprecates splash screen
-static constexpr unsigned long SPLASHSCREEN_TIMEOUT_MS = 5;
+static constexpr unsigned long SPLASHSCREEN_DELAY_MS = 100; // HS deprecates splash screen, but keep a slight delay
 
 static constexpr unsigned long APP_SELECTION_TIMEOUT_MS = 25000;
 static constexpr unsigned long SETTINGS_SAVE_TIMEOUT_MS = 1000;

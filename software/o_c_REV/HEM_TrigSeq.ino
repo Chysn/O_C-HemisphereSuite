@@ -40,10 +40,9 @@ public:
             bool swap = In(0) >= HEMISPHERE_3V_CV;
             ForEachChannel(ch)
             {
-                if (Clock(1)) step[ch] = -1;
+                if (Clock(1) || step[ch] >= end_step[ch]) step[ch] = -1;
                 step[ch]++;
                 if ((pattern[ch] >> step[ch]) & 0x01) ClockOut(swap ? (1 - ch) : ch);
-                if (step[ch] > end_step[ch]) step[ch] = -1;
             }
 
         }

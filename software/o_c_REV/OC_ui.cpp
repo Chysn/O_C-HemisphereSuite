@@ -175,7 +175,7 @@ UiMode Ui::Splashscreen(bool &reset_settings) {
 
     GRAPHICS_END_FRAME();
 
-  } while (now - start < SPLASHSCREEN_TIMEOUT_MS + SPLASHSCREEN_DELAY_MS);
+  } while (now - start < SPLASHSCREEN_DELAY_MS);
 
   SetButtonIgnoreMask();
   return mode;
