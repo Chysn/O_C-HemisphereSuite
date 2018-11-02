@@ -75,10 +75,10 @@ public:
 
     /* Move to the release stage after sustain */
     void Release() {
+        sustained = 0;
         segment_index = segment_count - 1;
         rise = calculate_rise(segment_index);
-        sustained = 0;
-        countdown = 1;
+//        if (rise == 0) countdown = 1;
     }
 
     /* The offset amount will be added to each voltage output */
@@ -122,8 +122,8 @@ public:
     byte SegmentCount() {return segment_count;}
 
     void Start() {
-        eoc = 0;
         Reset();
+        eoc = 0;
     }
 
     void Reset() {
@@ -131,25 +131,29 @@ public:
         signal = scale_level(segments[segment_count - 1].level);
         rise = calculate_rise(segment_index);
         sustained = 0;
+        eoc = !cycle;
     }
 
     int32_t Next() {
+    		// For non-cycling waveforms, send the level of the last step if eoc
+    		if (eoc && cycle == 0) {
+    			vosignal_t nr_signal = scale_level(segments[segment_count - 1].level);
+    			return signal2int(nr_signal) + offset;
+    		}
         if (!sustained) { // Observe sustain state
-            if (!eoc || cycle) { // Observe cycle setting
-                eoc = 0;
-                if (validate()) {
-                    if (rise) {
-                        signal += rise;
-                        if (rise >= 0 && signal >= target) advance_segment();
-                        if (rise < 0 && signal <= target) advance_segment();
-                    } else {
-                        if (countdown) {
-                            --countdown;
-                            if (countdown == 0) advance_segment();
-                        }
-                    }
-                }
-            }
+			eoc = 0;
+			if (validate()) {
+				if (rise) {
+					signal += rise;
+					if (rise >= 0 && signal >= target) advance_segment();
+					if (rise < 0 && signal <= target) advance_segment();
+				} else {
+					if (countdown) {
+						--countdown;
+						if (countdown == 0) advance_segment();
+					}
+				}
+			}
         }
         return signal2int(signal) + offset;
     }

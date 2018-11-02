@@ -157,7 +157,8 @@ private:
         waveform_number[ch] = waveform;
         osc[ch].SetFrequency(freq[ch]);
         osc[ch].SetScale((12 << 7) * 3);
-        osc[ch].Cycle(1); // Non cycling
+        osc[ch].Cycle(0); // Non cycling
+        osc[ch].Reset();
     }
 
     int ones(int n) {return (n / 100);}
