@@ -38,9 +38,9 @@ public:
     void Start() {
         A4_Hz = 440;
 #ifdef FLIP_180
-        if (hemisphere == 1) {
-#else
         if (hemisphere == 0) {
+#else
+        if (hemisphere == 1) {
 #endif
             FreqMeasure.begin();
         }
