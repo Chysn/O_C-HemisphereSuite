@@ -45,8 +45,8 @@ public:
         ForEachChannel(ch)
         {
             if (DetentedIn(ch)) {
-                div[ch] = Proportion(In(ch), HEMISPHERE_MAX_CV / 2, 8);
-                div[ch] = constrain(div[ch], -8, 8);
+                div[ch] = Proportion(In(ch), HEMISPHERE_MAX_CV / 2, HEM_CLOCKDIV_MAX);
+                div[ch] = constrain(div[ch], -HEM_CLOCKDIV_MAX, HEM_CLOCKDIV_MAX);
                 if (div[ch] == 0 || div[ch] == -1) div[ch] = 1;
             }
         }

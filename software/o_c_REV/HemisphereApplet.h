@@ -81,7 +81,12 @@ public:
         cursor_countdown = HEMISPHERE_CURSOR_TICKS;
 
         // Shutdown FTM capture on Digital 4, used by Tuner
-        if (hemisphere == 1) {
+#ifdef FLIP_180
+        if (hemisphere == 0)
+#else
+        if (hemisphere == 1)
+#endif
+        {
             FreqMeasure.end();
             OC::DigitalInputs::reInit();
         }
