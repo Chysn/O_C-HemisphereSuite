@@ -31,7 +31,8 @@
 #define HEMISPHERE_3V_CV 4608
 #define HEMISPHERE_CLOCK_TICKS 100
 #define HEMISPHERE_CURSOR_TICKS 12000
-#define HEMISPHERE_ADC_LAG 33;
+#define HEMISPHERE_ADC_LAG 33
+#define HEMISPHERE_CHANGE_THRESHOLD 32
 
 // Codes for help system sections
 #define HEMISPHERE_HELP_DIGITALS 0
@@ -106,7 +107,7 @@ public:
 
             ADC_CHANNEL channel = (ADC_CHANNEL)(ch + io_offset);
             inputs[ch] = OC::ADC::raw_pitch_value(channel);
-            if (abs(inputs[ch] - last_cv[ch]) > 16) {
+            if (abs(inputs[ch] - last_cv[ch]) > HEMISPHERE_CHANGE_THRESHOLD) {
                 changed_cv[ch] = 1;
                 last_cv[ch] = inputs[ch];
             } else changed_cv[ch] = 0;

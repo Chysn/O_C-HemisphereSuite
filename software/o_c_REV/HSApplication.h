@@ -39,6 +39,7 @@ typedef int32_t simfloat;
 #define HSAPPLICATION_CURSOR_TICKS 12000
 #define HSAPPLICATION_5V 7680
 #define HSAPPLICATION_3V 4608
+#define HSAPPLICATION_CHANGE_THRESHOLD 32
 
 class HSApplication {
 public:
@@ -52,7 +53,7 @@ public:
         {
             // Set ADC input values
             inputs[ch] = OC::ADC::raw_pitch_value((ADC_CHANNEL)ch);
-            if (abs(inputs[ch] - last_cv[ch]) > 16) {
+            if (abs(inputs[ch] - last_cv[ch]) > HSAPPLICATION_CHANGE_THRESHOLD) {
                 changed_cv[ch] = 1;
                 last_cv[ch] = inputs[ch];
             } else changed_cv[ch] = 0;
