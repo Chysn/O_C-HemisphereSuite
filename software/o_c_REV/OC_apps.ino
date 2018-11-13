@@ -24,26 +24,26 @@
 #include "OC_digital_inputs.h"
 #include "OC_autotune.h"
 
-#define DECLARE_APP(a, b, name, prefix, isr) \
+#define DECLARE_APP(a, b, name, prefix) \
 { TWOCC<a,b>::value, name, \
   prefix ## _init, prefix ## _storageSize, prefix ## _save, prefix ## _restore, \
   prefix ## _handleAppEvent, \
   prefix ## _loop, prefix ## _menu, prefix ## _screensaver, \
   prefix ## _handleButtonEvent, \
   prefix ## _handleEncoderEvent, \
-  isr \
+  prefix ## _isr \
 }
 
 OC::App available_apps[] = {
-  DECLARE_APP('H','S', "Hemisphere", HEMISPHERE, HEMISPHERE_isr),
-  DECLARE_APP('M','I', "Captain MIDI", MIDI, MIDI_isr),
-  DECLARE_APP('D','2', "Darkest Timeline", TheDarkestTimeline, TheDarkestTimeline_isr),
-  DECLARE_APP('E','N', "Enigma", EnigmaTMWS, EnigmaTMWS_isr),
-  DECLARE_APP('P','O', "Pong", PONGGAME, PONGGAME_isr),
-  DECLARE_APP('N','N', "Neural Network", NEURALNET, NEURALNET_isr),
-  DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR, SCALEEDITOR_isr),
-  DECLARE_APP('W','A', "Waveform Editor", WaveformEditor, WaveformEditor_isr),
-  DECLARE_APP('S','E', "Setup / About", Settings, Settings_isr),
+  DECLARE_APP('H','S', "Hemisphere", HEMISPHERE),
+  DECLARE_APP('M','I', "Captain MIDI", MIDI),
+  DECLARE_APP('D','2', "Darkest Timeline", TheDarkestTimeline),
+  DECLARE_APP('E','N', "Enigma", EnigmaTMWS),
+  DECLARE_APP('P','O', "Pong", PONGGAME),
+  DECLARE_APP('N','N', "Neural Network", NeuralNetwork),
+  DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR),
+  DECLARE_APP('W','A', "Waveform Editor", WaveformEditor),
+  DECLARE_APP('S','E', "Setup / About", Settings),
 };
 
 static constexpr int NUM_AVAILABLE_APPS = ARRAY_SIZE(available_apps);
