@@ -1233,3 +1233,5 @@ void EnigmaTMWS_handleEncoderEvent(const UI::Event &event) {
     // Right encoder turned
     if (event.control == OC::CONTROL_ENCODER_R) EnigmaTMWS_instance.OnRightEncoderMove(event.value);
 }
+
+

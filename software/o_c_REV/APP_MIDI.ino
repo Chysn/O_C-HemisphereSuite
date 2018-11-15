@@ -903,3 +903,5 @@ void MIDI_handleEncoderEvent(const UI::Event &event) {
         captain_midi_instance.SwitchScreenOrLogView(event.value);
     }
 }
+
+

@@ -444,3 +444,5 @@ void HEMISPHERE_handleButtonEvent(const UI::Event &event) {
 void HEMISPHERE_handleEncoderEvent(const UI::Event &event) {
     manager.DelegateEncoderMovement(event);
 }
+
+

@@ -38,12 +38,13 @@ public:
 
     void Controller() {
         ListenForSysEx();
-        uint16_t tmp_state = source_state; // Set temporary state for this cycle
+        uint16_t tmp_source_state = source_state; // Set temporary state for this cycle
+
         // Check inputs
         for (byte i = 0; i < 8; i++)
         {
             bool set = (i < 4) ? Gate(i) : (In(i - 4) > HSAPPLICATION_3V);
-            tmp_state = SetSource(tmp_state, i, set);
+            tmp_source_state = SetSource(tmp_source_state, i, set);
             input_state[i] = set; // For display
         }
         
@@ -51,20 +52,20 @@ public:
         for (byte n = 0; n < 6; n++)
         {
             byte ix = (setup * 6) + n;
-            bool set = neuron[ix].Calculate(tmp_state);
-            tmp_state = SetSource(tmp_state, 8 + n, set);
+            bool set = neuron[ix].Calculate(tmp_source_state);
+            tmp_source_state = SetSource(tmp_source_state, 8 + n, set);
         }
         
         // Set outputs based on assigned neuron's last state
         for (byte o = 0; o < 4; o++)
         {
             byte ix = (setup * 4) + o;
-            byte n = output_neuron[ix] + (selected * 6);
+            byte n = output_neuron[ix] + (setup * 6);
             bool set = neuron[n].state;
             Out(o, set * HSAPPLICATION_5V);
         }
 
-        source_state = tmp_state;
+        source_state = tmp_source_state;
     }
 
     void View() {
@@ -141,7 +142,9 @@ private:
     uint16_t source_state = 0;
 
     void DrawInterface() {
-        gfxHeader("Neural Network");
+        gfxHeader("Neural Net");
+        gfxPrint(128 - 42, 1, "Setup ");
+        gfxPrint(setup + 1);
         if (screen) DrawEditScreen();
         else DrawSelectorScreen();
     }
@@ -160,7 +163,7 @@ private:
             byte cell_y = n % 2;
             byte x = (cell_x * 32) + 24;
             byte y = (cell_y * 24) + 16;
-            neuron[ix].DrawSmallAt(x, y);
+            neuron[ix].DrawSmallAt(x + 1, y);
             
             if (selected == ix && CursorBlink()) gfxLine(x, y, x, y + 24);
         }
@@ -180,7 +183,7 @@ private:
             byte y = (cell_y * 10) + 24;
             gfxPrint(x, y, cell_y + 1);
             
-            if (input_state[i]) gfxInvert(x - 1, y - 1, 8, 9);
+            if (input_state[i]) gfxInvert(x, y, 6, 8);
         }
         
         // Draw outputs
@@ -192,23 +195,39 @@ private:
             char out_name[2] = {static_cast<char>(o + 'A'), '\0'};
             gfxPrint(x, y, out_name);
             
-            if (ViewOut(o)) gfxInvert(x - 1, y - 1, 8, 9);
+            if (ViewOut(o)) gfxInvert(x, y, 6, 8);
         }
-        if (selected == 6 && CursorBlink()) gfxFrame(116, 16, 116, 48);
+        if (selected == 6 && CursorBlink()) gfxLine(118, 16, 118, 60);
     }
     
     void DrawEditScreen() {
         if (selected < 6) {
-            // Draw the editor for a Neuron
+            // Draw the neuron header
+            gfxPrint(0, 15, "#");
+            gfxPrint(selected + 1);
+            for (byte n = 0; n < 6; n++)
+            {
+                byte cell_x = n / 2;
+                byte cell_y = n % 2;
+                byte x = (cell_x * 8) + 40;
+                byte y = (cell_y * 5) + 15;
+                if (n == selected) gfxRect(x, y, 6, 4);
+                else gfxFrame(x, y, 6, 4);
+            }
+
+            // Draw the editor for a neuron
             byte ix = (setup * 6) + selected;
             byte p = neuron[ix].NumParam(); // Number of parameters for this neuron
             for (byte c = 0; c < p; c++)
             {
-                byte y = (c * 10) + 16;
-                neuron[ix].PrintParamNameAt(64, y, c);
-                neuron[ix].PrintValueAt(96, y, c);
-                if (c == cursor) gfxCursor(96, y + 8, 31);
+                if (c < 4) { // This is the right-hand pane, so only show first four parameters
+                    byte y = (c * 10) + 26;
+                    neuron[ix].PrintParamNameAt(0, y, c);
+                    neuron[ix].PrintValueAt(38, y, c);
+                    if (c == cursor) gfxCursor(39, y + 8, 23);
+                }
             }
+            DrawLarge(ix);
         } else {
             // Draw the Output Assign editor
         }
@@ -220,16 +239,50 @@ private:
             setup = setup_;
     }
     
-    uint16_t SetSource(uint16_t state, byte b, bool v)
+    uint16_t SetSource(uint16_t source_state, byte b, bool v)
     {
-        if (v) state |= (0x01 << b);
-        else state &= ~(0x01 << b);
-        return state;
+        if (v) source_state |= (0x01 << b);
+        else source_state &= ~(0x01 << b);
+        return source_state;
     }
     
     /* The system settings are just bytes. Move them into the instance variables here */
     void LoadFromEEPROM() {
             
+    }
+    
+    void DrawLarge(byte ix) {
+        switch (neuron[ix].type) {
+            case LogicGateType::TL_NEURON: DrawTLNeuron(ix); break;
+        }
+    }
+    
+    //////// LOGIC GATE EDIT SCREEN REPRESENTATIONS
+    void DrawTLNeuron(byte ix) {
+        // Draw Dendrites
+        int dendrite_weight[3] = {neuron[ix].weight1, neuron[ix].weight2, neuron[ix].weight3};
+        for (int d = 0; d < 3; d++)
+        {
+            int weight = dendrite_weight[d];
+            gfxCircle(73, 22 + (16 * d), 8); // Dendrite
+            gfxPrint(weight < 0 ? 66 : 72 , 19 + (16 * d), weight);
+            if (cursor == (d + 4) && CursorBlink()) gfxCircle(73, 22 + (16 * d), 7);
+        }
+
+        // Draw Axon
+        int threshold = neuron[ix].threshold;
+        gfxCircle(112, 38, 12);
+        int x = 105; // Starting x position for number
+        if (threshold < 10 && threshold > -10) x += 5; // Shove over a bit if a one-digit number
+        if (threshold < 0) x -= 5; // Pull back if a sign is necessary
+        gfxPrint(x, 34, threshold);
+        if (cursor == 7 && CursorBlink()) gfxCircle(112, 38, 11);
+
+        // Draw states
+        for (int d = 0; d < 3; d++)
+        {
+            if (neuron[ix].SourceValue(d)) gfxLine(81, 22 + (16 * d), 100, 37); // Synapse
+        }
     }
     
 };
