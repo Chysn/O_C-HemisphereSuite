@@ -82,7 +82,7 @@ public:
             V[ix++] = s; // Setup number
             for (byte n = 0; n < 6; n++)
             {
-                byte ni = (setup * 6) + n;
+                byte ni = (s * 6) + n;
 
                 // Encode a neuron
                 V[ix++] = (neuron[ni].type << 4) | neuron[ni].source1;
@@ -94,7 +94,7 @@ public:
             }
 
             // Encode the output assignments
-            byte o = (setup * 4);
+            byte o = (s * 4);
             V[ix++] = (output_neuron[o] << 4) | output_neuron[o + 1];
             V[ix++] = (output_neuron[o + 2] << 4) | output_neuron[o + 3];
 
@@ -112,10 +112,12 @@ public:
         if (ExtractSysExData(V, 'N')) {
             int ix = 0;
             byte b = 0;
-            byte setup = V[ix++];
+            byte s = V[ix++];
+
+            // Decode neurons
             for (byte n = 0; n < 6; n++)
             {
-                byte ni = (setup * 6) + n;
+                byte ni = (s * 6) + n;
                 b = V[ix++]; // Type and source 1
                 neuron[ni].type = (b >> 4) & 0x0f;
                 neuron[ni].source1 = b & 0x0f;
@@ -130,7 +132,8 @@ public:
                 neuron[ni].source_state = 0;
             }
 
-            byte o = (setup * 4);
+            // Decode output assignments
+            byte o = (s * 4);
             b = V[ix++]; // Output 1 and 2
             output_neuron[o] = (b >> 4) & 0x0f;
             output_neuron[o + 1] = b & 0x0f;

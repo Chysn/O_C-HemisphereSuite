@@ -135,7 +135,7 @@ struct CaptainMIDILog {
     void DrawAt(int y) {
         if (message == 5) {
             int app_code = static_cast<char>(data1);
-            if (app_code >0) {
+            if (app_code > 0) {
                 graphics.setPrintPos(1, y);
                 graphics.print("SysEx: ");
                 if (app_code == 'M') graphics.print("Captain MIDI");

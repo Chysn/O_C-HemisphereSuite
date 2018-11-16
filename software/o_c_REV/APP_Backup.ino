@@ -20,11 +20,6 @@
 
 #include "HSMIDI.h"
 
-// Each packet is 32 bytes, because a single SysEx message needs to be pretty small for Teensy USB
-// MIDI. The EEPROM is 2048 bytes of storage, and the first 128 bytes are used for calibration. So
-// the total number of SysEx packets is (2048 - 128) / 32 = 60
-#define Backup_NUMBER_OF_PACKETS 60
-
 class Backup: public SystemExclusiveHandler {
 public:
     void Init() {
@@ -62,7 +57,7 @@ public:
             uint8_t V[33];
             
             byte start = calibration ? 0 : (EEPROM_CALIBRATIONDATA_END / 32);
-            byte end = calibration ?  (EEPROM_CALIBRATIONDATA_END / 32) : Backup_NUMBER_OF_PACKETS;
+            byte end = calibration ?  (EEPROM_CALIBRATIONDATA_END / 32) : 64;
             for (byte p = start; p < end; p++)
             {
                 uint16_t address = p * 32;
@@ -88,11 +83,10 @@ public:
             uint8_t p = V[ix++]; // Get packet number
             packet = p;
             uint16_t address = p * 32;
-            for (byte b = 0; b < 32; b++)
-            {
-                EEPROM.write(address++, V[ix++]);
-            }
-            if (p == Backup_NUMBER_OF_PACKETS - 1) {
+            for (byte b = 0; b < 32; b++) EEPROM.write(address++, V[ix++]);
+
+            // Reset on last packet
+            if (p == ((EEPROM_CALIBRATIONDATA_END / 32) - 1) || p == 63) {
                 receiving = 0;
                 OC::apps::Init(0);
             }
@@ -121,17 +115,18 @@ private:
             else graphics.print("Listening...");
         } else {
             if (packet > 0) graphics.print("Done!");
-            else graphics.print("Receive or Send?");
+            else graphics.print("Restore or Backup?");
         }
         
         graphics.setPrintPos(0, 55);
         if (receiving) graphics.print("[CANCEL]");
         else {
-            graphics.print("[RECEIVE]");
-            graphics.setPrintPos(90, 55);
-            graphics.print("[SEND]");
+            graphics.print("[RESTORE]");
+            graphics.setPrintPos(78, 55);
+            graphics.print("[BACKUP]");
             graphics.setPrintPos(6, 35);
-            graphics.print(calibration ? "Send: Calibration" : "Send: Data");
+            graphics.print("Backup: ");
+            graphics.print(calibration ? "Calibration" : "Data");
         }
     }
     
