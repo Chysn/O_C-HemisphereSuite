@@ -33,7 +33,7 @@ public:
     }
     
     void Resume() {
-        LoadFromEEPROM();
+        LoadFromEEPROMStage();
     }
 
     void Controller() {
@@ -69,40 +69,41 @@ public:
     }
 
     void View() {
-        DrawInterface();
+        if (copy_mode) DrawCopyScreen();
+        else DrawInterface();
     }
 
+    // Public access to save method
+    void OnSaveSettings() {SaveToEEPROMStage();}
+
+    /* Send the current setup via SysEx */
     void OnSendSysEx() {
         byte V[39];
         int ix = 0;
 
-        for (int s = 0; s < 4; s++)
+        ix = 0;
+        for (byte n = 0; n < 6; n++)
         {
-            ix = 0;
-            V[ix++] = s; // Setup number
-            for (byte n = 0; n < 6; n++)
-            {
-                byte ni = (s * 6) + n;
+            byte ni = (setup * 6) + n;
 
-                // Encode a neuron
-                V[ix++] = (neuron[ni].type << 4) | neuron[ni].source1;
-                V[ix++] = (neuron[ni].source2 << 4) | neuron[ni].source3;
-                V[ix++] = neuron[ni].weight1 + 128;
-                V[ix++] = neuron[ni].weight2 + 128;
-                V[ix++] = neuron[ni].weight3 + 128;
-                V[ix++] = neuron[ni].threshold + 128;
-            }
-
-            // Encode the output assignments
-            byte o = (s * 4);
-            V[ix++] = (output_neuron[o] << 4) | output_neuron[o + 1];
-            V[ix++] = (output_neuron[o + 2] << 4) | output_neuron[o + 3];
-
-            UnpackedData unpacked;
-            unpacked.set_data(ix, V);
-            PackedData packed = unpacked.pack();
-            SendSysEx(packed, 'N');
+            // Encode a neuron
+            V[ix++] = (neuron[ni].type << 4) | neuron[ni].source1;
+            V[ix++] = (neuron[ni].source2 << 4) | neuron[ni].source3;
+            V[ix++] = neuron[ni].weight1 + 128;
+            V[ix++] = neuron[ni].weight2 + 128;
+            V[ix++] = neuron[ni].weight3 + 128;
+            V[ix++] = neuron[ni].threshold + 128;
         }
+
+        // Encode the output assignments
+        byte o = (setup * 4);
+        V[ix++] = (output_neuron[o] << 4) | output_neuron[o + 1];
+        V[ix++] = (output_neuron[o + 2] << 4) | output_neuron[o + 3];
+
+        UnpackedData unpacked;
+        unpacked.set_data(ix, V);
+        PackedData packed = unpacked.pack();
+        SendSysEx(packed, 'N');
     }
 
     void OnReceiveSysEx() {
@@ -112,12 +113,11 @@ public:
         if (ExtractSysExData(V, 'N')) {
             int ix = 0;
             byte b = 0;
-            byte s = V[ix++];
 
             // Decode neurons
             for (byte n = 0; n < 6; n++)
             {
-                byte ni = (s * 6) + n;
+                byte ni = (setup * 6) + n;
                 b = V[ix++]; // Type and source 1
                 neuron[ni].type = (b >> 4) & 0x0f;
                 neuron[ni].source1 = b & 0x0f;
@@ -133,7 +133,7 @@ public:
             }
 
             // Decode output assignments
-            byte o = (s * 4);
+            byte o = (setup * 4);
             b = V[ix++]; // Output 1 and 2
             output_neuron[o] = (b >> 4) & 0x0f;
             output_neuron[o + 1] = b & 0x0f;
@@ -144,55 +144,85 @@ public:
 
     }
 
+    /* Perform a copy or sysex dump */
+    void CopySetup(int target, int source) {
+        if (source == target) {
+            OnSendSysEx();
+        } else {
+            for (byte n = 0; n < 6; n++)
+                memcpy(&neuron[(target * 6) + n], &neuron[(source * 6) + n], sizeof(neuron[(source * 6) + n]));
+
+            for (byte o = 0; o < 4; o++)
+                output_neuron[(target * 4) + 0] = output_neuron[(source * 4) + o];
+
+            setup = target;
+        }
+        copy_mode = 0;
+    }
+
     /////////////////////////////////////////////////////////////////
     // Control handlers
     /////////////////////////////////////////////////////////////////
     void OnLeftButtonPress() {
-            screen = 1 - screen;
+        if (copy_mode) copy_mode = 0;
+        else screen = 1 - screen;
     }
 
     void OnLeftButtonLongPress() {
-            all_connections = 1 - all_connections;
+        all_connections = 1 - all_connections;
     }
 
     void OnRightButtonPress() {
-            cursor++;
-            if (selected < 6) {
-                byte ix = (setup * 6) + selected;
-                if (cursor >= neuron[ix].NumParam()) cursor = 0;
-            } else {
-                if (cursor >= 4) cursor = 0;
-            }
-            ResetCursor();
+        if (copy_mode) {
+            CopySetup(copy_setup_target, setup);
+            copy_mode = 0;
+        }
+        cursor++;
+        if (selected < 6) {
+            byte ix = (setup * 6) + selected;
+            if (cursor >= neuron[ix].NumParam()) cursor = 0;
+        } else {
+            if (cursor >= 4) cursor = 0;
+        }
+        ResetCursor();
     }
 
     void OnUpButtonPress() {
+        if (copy_mode) {
+            copy_setup_target = constrain(copy_setup_target + 1, 0, 3);
+        } else {
             setup = constrain(setup + 1, 0, 3);
             LoadSetup(setup);
+        }
     }
 
     void OnDownButtonPress() {
-            setup = constrain(setup - 1, 0, 3);
+        if (copy_mode) {
+            copy_setup_target = constrain(copy_setup_target - 1, 0, 3);
+        }
+        setup = constrain(setup - 1, 0, 3);
     }
 
     void OnDownButtonLongPress() {
-            copy_mode = 1 - copy_mode;
+        copy_mode = 1 - copy_mode;
+        copy_setup_target = setup + 1;
+        if (copy_setup_target > 3) copy_setup_target = 0;
     }
 
     void OnLeftEncoderMove(int direction) {
-            selected = constrain(selected + direction, 0, 6);
-            cursor = 0;
-            ResetCursor();
+        selected = constrain(selected + direction, 0, 6);
+        cursor = 0;
+        ResetCursor();
     }
 
     void OnRightEncoderMove(int direction) {
-            if (selected < 6) {
-                byte ix = (setup * 6) + selected;
-                neuron[ix].UpdateValue(cursor, direction);
-            } else {
-                byte ix = (setup * 4) + cursor;
-                output_neuron[ix] = constrain(output_neuron[ix] + direction, 0, 5);
-            }
+        if (selected < 6) {
+            byte ix = (setup * 6) + selected;
+            neuron[ix].UpdateValue(cursor, direction);
+        } else {
+            byte ix = (setup * 4) + cursor;
+            output_neuron[ix] = constrain(output_neuron[ix] + direction, 0, 5);
+        }
     }
 
 private:
@@ -203,6 +233,7 @@ private:
     bool screen = 0; // 0 = selector screen, 1 = edit screen
     bool copy_mode = 0; // Copy mode on/off
     bool all_connections = 0; // Connections for all neurons shown instead of just selected
+    int copy_setup_target; // Which setup is being copied TO?
     
     LogicGate neuron[24]; // Four sets of six neurons
     int output_neuron[16]; // Four sets of four output assignments
@@ -278,10 +309,10 @@ private:
             byte ix = (setup * 4) + o;
             if (output_neuron[ix] == selected || all_connections) {
                 if (neuron[(setup * 6) + output_neuron[ix]].type > LogicGateType::NONE) {
-                    byte fx = ((output_neuron[ix] / 2) * 32) + 39;
-                    byte fy = ((output_neuron[ix] % 2) * 24) + 30;
+                    byte fx = ((output_neuron[ix] / 2) * 32) + 45;
+                    byte fy = ((output_neuron[ix] % 2) * 24) + 29;
                     byte ty = (o * 12) + 20;
-                    gfxDottedLine(fx, fy, 124, ty, 4);
+                    gfxDottedLine(fx, fy, 120, ty, 4);
                 }
             }
         }
@@ -335,6 +366,28 @@ private:
         }
     }
 
+    void DrawCopyScreen() {
+        gfxHeader("Copy");
+
+        graphics.setPrintPos(8, 28);
+        graphics.print("Setup ");
+        graphics.print(setup + 1);
+        graphics.print(" -");
+        graphics.setPrintPos(58, 28);
+        graphics.print("> ");
+        if (setup == copy_setup_target) graphics.print("SysEx");
+        else {
+            graphics.print("Setup ");
+            graphics.print(copy_setup_target + 1);
+        }
+
+        graphics.setPrintPos(0, 55);
+        graphics.print("[CANCEL]");
+
+        graphics.setPrintPos(90, 55);
+        graphics.print(setup == copy_setup_target ? "[DUMP]" : "[COPY]");
+    }
+
     void LoadSetup(byte setup_) {
             cursor = 0;
             if (selected < 6) selected = 0;
@@ -349,10 +402,39 @@ private:
     }
     
     /* The system settings are just bytes. Move them into the instance variables here */
-    void LoadFromEEPROM() {
+    void LoadFromEEPROMStage() {
+        byte ix = 0;
+        for (byte n = 0; n < 24; n++)
+        {
+            neuron[n].type = values_[ix++];
+            neuron[n].source1 = values_[ix++];
+            neuron[n].source2 = values_[ix++];
+            neuron[n].source3 = values_[ix++];
+            neuron[n].weight1 = values_[ix++];
+            neuron[n].weight2 = values_[ix++];
+            neuron[n].weight3 = values_[ix++];
+            neuron[n].threshold = values_[ix++];
+        }
+        for (byte o = 0; o < 16; o++) output_neuron[o] = values_[ix++];
             
     }
     
+    void SaveToEEPROMStage() {
+        byte ix = 0;
+        for (byte n = 0; n < 24; n++)
+        {
+            values_[ix++] = neuron[n].type;
+            values_[ix++] = neuron[n].source1;
+            values_[ix++] = neuron[n].source2;
+            values_[ix++] = neuron[n].source3;
+            values_[ix++] = neuron[n].weight1;
+            values_[ix++] = neuron[n].weight2;
+            values_[ix++] = neuron[n].weight3;
+            values_[ix++] = neuron[n].threshold;
+        }
+        for (byte o = 0; o < 16; o++) values_[ix++] = output_neuron[o];
+    }
+
     void DrawLarge(byte ix) {
         switch (neuron[ix].type) {
             case LogicGateType::TL_NEURON: DrawTLNeuron(ix); break;
@@ -424,6 +506,7 @@ void NeuralNetwork_handleAppEvent(OC::AppEvent event) {
         NeuralNetwork_instance.Resume();
     }
     if (event == OC::APP_EVENT_SUSPEND) {
+        NeuralNetwork_instance.OnSaveSettings();
         NeuralNetwork_instance.OnSendSysEx();
     }
 }

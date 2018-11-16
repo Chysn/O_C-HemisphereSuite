@@ -387,7 +387,7 @@ private:
     bool display; // 0=Setup Edit 1=Log
     bool copy_mode; // Copy mode on/off
     int copy_setup_source; // Which setup is being copied?
-    int copy_setup_target; // Which setup is the
+    int copy_setup_target; // Which setup is being copied to?
 
     CaptainMIDILog log[MIDI_LOG_MAX_SIZE];
     int log_index; // Index of log for writing

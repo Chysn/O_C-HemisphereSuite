@@ -39,12 +39,12 @@ OC::App available_apps[] = {
   DECLARE_APP('M','I', "Captain MIDI", MIDI),
   DECLARE_APP('D','2', "Darkest Timeline", TheDarkestTimeline),
   DECLARE_APP('E','N', "Enigma", EnigmaTMWS),
-  DECLARE_APP('P','O', "Pong", PONGGAME),
-  DECLARE_APP('N','N', "Neural Network", NeuralNetwork),
+  DECLARE_APP('N','N', "Neural Net", NeuralNetwork),
   DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR),
   DECLARE_APP('W','A', "Waveform Editor", WaveformEditor),
   DECLARE_APP('B','R', "Backup / Restore", Backup),
   DECLARE_APP('S','E', "Setup / About", Settings),
+  DECLARE_APP('P','O', "Pong", PONGGAME),
 };
 
 static constexpr int NUM_AVAILABLE_APPS = ARRAY_SIZE(available_apps);

@@ -84,7 +84,7 @@ public:
 
 	void Resume() {
 	    SwitchTuringMachine(tm_cursor);
-	    LoadFromEEPROM();
+	    LoadFromEEPROMStage();
 	}
 
     void Controller() {
@@ -111,7 +111,7 @@ public:
     }
 
     // Public access to save method
-    void OnSaveSettings() {SaveToEEPROM();}
+    void OnSaveSettings() {SaveToEEPROMStage();}
 
     void OnSendSysEx() {
         SendTuringMachineLibrary();
@@ -1086,7 +1086,7 @@ private:
     }
 
     //////// Data Storage
-    void SaveToEEPROM() {
+    void SaveToEEPROMStage() {
         byte ix = 0;
 
         // Outputs
@@ -1114,7 +1114,7 @@ private:
         for (byte t = 0; t < 4; t++) values_[ix++] = track[t].data;
     }
 
-    void LoadFromEEPROM() {
+    void LoadFromEEPROMStage() {
         byte ix = 0;
 
         // Outputs
