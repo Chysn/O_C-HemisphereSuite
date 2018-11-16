@@ -29,7 +29,7 @@ class NeuralNetwork : public HSApplication, public SystemExclusiveHandler,
     public settings::SettingsBase<NeuralNetwork, NN_SETTING_LAST> {
 public:
     void Start() {
-        for (int ch = 0; ch < 4; ch++) output_neuron[ch] = ch;
+        for (int ch = 0; ch < 16; ch++) output_neuron[ch] = ch % 4;
     }
     
     void Resume() {
@@ -91,8 +91,12 @@ public:
 
     void OnRightButtonPress() {
             cursor++;
-            byte ix = (setup * 6) + selected;
-            if (cursor >= neuron[ix].NumParam()) cursor = 0;
+            if (selected < 6) {
+                byte ix = (setup * 6) + selected;
+                if (cursor >= neuron[ix].NumParam()) cursor = 0;
+            } else {
+                if (cursor >= 4) cursor = 0;
+            }
             ResetCursor();
     }
 
@@ -116,8 +120,13 @@ public:
     }
 
     void OnRightEncoderMove(int direction) {
-            byte ix = (setup * 6) + selected;
-            neuron[ix].UpdateValue(cursor, direction);
+            if (selected < 6) {
+                byte ix = (setup * 6) + selected;
+                neuron[ix].UpdateValue(cursor, direction);
+            } else {
+                byte ix = (setup * 4) + cursor;
+                output_neuron[ix] = constrain(output_neuron[ix] + direction, 0, 5);
+            }
     }
 
 private:
@@ -130,7 +139,7 @@ private:
     bool all_connections = 0; // Connections for all neurons shown instead of just selected
     
     LogicGate neuron[24]; // Four sets of six neurons
-    byte output_neuron[16]; // Four sets of four output assignments
+    int output_neuron[16]; // Four sets of four output assignments
     bool input_state[8];
     
     // Source state is passed to each neuron for use in its logic gate calculation.
@@ -163,9 +172,11 @@ private:
             byte cell_y = n % 2;
             byte x = (cell_x * 32) + 24;
             byte y = (cell_y * 24) + 16;
-            neuron[ix].DrawSmallAt(x + 1, y);
+            neuron[ix].DrawSmallAt(x + 1, y, (selected == n && CursorBlink()));
             
-            if (selected == ix && CursorBlink()) gfxLine(x, y, x, y + 24);
+            if (selected == n || all_connections) {
+                neuron[ix].DrawInputs(n);
+            }
         }
 
         // Draw the inputs
@@ -196,6 +207,17 @@ private:
             gfxPrint(x, y, out_name);
             
             if (ViewOut(o)) gfxInvert(x, y, 6, 8);
+
+            // Draw line to the output if selected
+            byte ix = (setup * 4) + o;
+            if (output_neuron[ix] == selected || all_connections) {
+                if (neuron[(setup * 6) + output_neuron[ix]].type > LogicGateType::NONE) {
+                    byte fx = ((output_neuron[ix] / 2) * 32) + 39;
+                    byte fy = ((output_neuron[ix] % 2) * 24) + 30;
+                    byte ty = (o * 12) + 20;
+                    gfxDottedLine(fx, fy, 124, ty, 4);
+                }
+            }
         }
         if (selected == 6 && CursorBlink()) gfxLine(118, 16, 118, 60);
     }
@@ -221,7 +243,7 @@ private:
             for (byte c = 0; c < p; c++)
             {
                 if (c < 4) { // This is the right-hand pane, so only show first four parameters
-                    byte y = (c * 10) + 26;
+                    byte y = (c * 10) + 25;
                     neuron[ix].PrintParamNameAt(0, y, c);
                     neuron[ix].PrintValueAt(38, y, c);
                     if (c == cursor) gfxCursor(39, y + 8, 23);
@@ -230,12 +252,26 @@ private:
             DrawLarge(ix);
         } else {
             // Draw the Output Assign editor
+            gfxPrint(0, 15, "Assign Outputs");
+            for (byte o = 0; o < 4; o++)
+            {
+                byte y = (o * 10) + 25;
+                gfxPrint(0, y, "Output ");
+                char out_name[2] = {static_cast<char>(o + 'A'), '\0'};
+                gfxPrint(out_name);
+
+                byte ix = (setup * 4) + o;
+                gfxPrint(64, y, "Neuron ");
+                gfxPrint(output_neuron[ix] + 1);
+
+                if (cursor == o) gfxCursor(65, y + 8, 47);
+            }
         }
     }
-    
+
     void LoadSetup(byte setup_) {
             cursor = 0;
-            selected = 0;
+            if (selected < 6) selected = 0;
             setup = setup_;
     }
     
@@ -281,7 +317,7 @@ private:
         // Draw states
         for (int d = 0; d < 3; d++)
         {
-            if (neuron[ix].SourceValue(d)) gfxLine(81, 22 + (16 * d), 100, 37); // Synapse
+            if (neuron[ix].SourceValue(d)) gfxLine(81, 22 + (16 * d), 100, 38); // Synapse
         }
     }
     

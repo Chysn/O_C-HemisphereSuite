@@ -254,7 +254,7 @@ public:
         graphics.drawLine(x + gfx_offset, y, x2 + gfx_offset, y2, dotted ? 2 : 1);
     }
 
-    void gfxDottedLine(int x, int y, int x2, int y2, uint8_t p) {
+    void gfxDottedLine(int x, int y, int x2, int y2, uint8_t p = 2) {
         graphics.drawLine(x + gfx_offset, y, x2 + gfx_offset, y2, p);
     }
 

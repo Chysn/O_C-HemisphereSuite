@@ -215,7 +215,7 @@ public:
         graphics.drawLine(x, y, x2, y2);
     }
 
-    void gfxDottedLine(int x, int y, int x2, int y2, uint8_t p) {
+    void gfxDottedLine(int x, int y, int x2, int y2, uint8_t p = 2) {
 #ifdef HS_GFX_MOD
         graphics.drawLine(x, y, x2, y2, p);
 #else
