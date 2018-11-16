@@ -43,6 +43,7 @@ OC::App available_apps[] = {
   DECLARE_APP('N','N', "Neural Network", NeuralNetwork),
   DECLARE_APP('S','C', "Scale Editor", SCALEEDITOR),
   DECLARE_APP('W','A', "Waveform Editor", WaveformEditor),
+  DECLARE_APP('B','R', "Backup / Restore", Backup),
   DECLARE_APP('S','E', "Setup / About", Settings),
 };
 

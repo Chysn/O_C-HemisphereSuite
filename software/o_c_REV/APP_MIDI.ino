@@ -145,6 +145,8 @@ struct CaptainMIDILog {
                 if (app_code == 'T') graphics.print("Enigma");
                 if (app_code == 'W') graphics.print("Waveform Ed");
                 if (app_code == '_') graphics.print("O_C EEPROM");
+                if (app_code == 'B') graphics.print("Backup");
+                if (app_code == 'N') graphics.print("Neural Net");
             }
         } else {
             graphics.setPrintPos(1, y);

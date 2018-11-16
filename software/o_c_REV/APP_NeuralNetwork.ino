@@ -73,9 +73,72 @@ public:
     }
 
     void OnSendSysEx() {
+        byte V[39];
+        int ix = 0;
+
+        for (int s = 0; s < 4; s++)
+        {
+            ix = 0;
+            V[ix++] = s; // Setup number
+            for (byte n = 0; n < 6; n++)
+            {
+                byte ni = (setup * 6) + n;
+
+                // Encode a neuron
+                V[ix++] = (neuron[ni].type << 4) | neuron[ni].source1;
+                V[ix++] = (neuron[ni].source2 << 4) | neuron[ni].source3;
+                V[ix++] = neuron[ni].weight1 + 128;
+                V[ix++] = neuron[ni].weight2 + 128;
+                V[ix++] = neuron[ni].weight3 + 128;
+                V[ix++] = neuron[ni].threshold + 128;
+            }
+
+            // Encode the output assignments
+            byte o = (setup * 4);
+            V[ix++] = (output_neuron[o] << 4) | output_neuron[o + 1];
+            V[ix++] = (output_neuron[o + 2] << 4) | output_neuron[o + 3];
+
+            UnpackedData unpacked;
+            unpacked.set_data(ix, V);
+            PackedData packed = unpacked.pack();
+            SendSysEx(packed, 'N');
+        }
     }
 
     void OnReceiveSysEx() {
+        // Since only one Setup is coming, use the currently-selected setup to determine
+        // where to stash it.
+        byte V[39];
+        if (ExtractSysExData(V, 'N')) {
+            int ix = 0;
+            byte b = 0;
+            byte setup = V[ix++];
+            for (byte n = 0; n < 6; n++)
+            {
+                byte ni = (setup * 6) + n;
+                b = V[ix++]; // Type and source 1
+                neuron[ni].type = (b >> 4) & 0x0f;
+                neuron[ni].source1 = b & 0x0f;
+                b = V[ix++]; // Source 2 and source 3
+                neuron[ni].source2 = (b >> 4) & 0x0f;
+                neuron[ni].source3 = b & 0x0f;
+                neuron[ni].weight1 = static_cast<int>(V[ix++] - 128);
+                neuron[ni].weight2 = static_cast<int>(V[ix++] - 128);
+                neuron[ni].weight3 = static_cast<int>(V[ix++] - 128);
+                neuron[ni].threshold = static_cast<int>(V[ix++] - 128);
+                neuron[ni].state = 0;
+                neuron[ni].source_state = 0;
+            }
+
+            byte o = (setup * 4);
+            b = V[ix++]; // Output 1 and 2
+            output_neuron[o] = (b >> 4) & 0x0f;
+            output_neuron[o + 1] = b & 0x0f;
+            b = V[ix++]; // Output 3 and 4
+            output_neuron[o + 2] = (b >> 4) & 0x0f;
+            output_neuron[o + 3] = b & 0x0f;
+        }
+
     }
 
     /////////////////////////////////////////////////////////////////
