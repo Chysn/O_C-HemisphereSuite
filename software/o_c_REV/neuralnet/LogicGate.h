@@ -145,6 +145,7 @@ public:
     void UpdateValue(byte cursor, int direction) {
         if (cursor == 0) {
             type = constrain(type + direction, LogicGateType::NONE, LogicGateType::TL_NEURON);
+            state = 0; // Reset when changing type
         }
         if (cursor == 1 && type > LogicGateType::NONE) {
             source1 = constrain(source1 + direction, 0, LG_MAX_SOURCE);
@@ -169,11 +170,11 @@ public:
             if (cursor == 0) graphics.print("Type");
             if (cursor > 0 && cursor < 4) {
                 if (type == LogicGateType::FLIP_FLOP) {
-                    if (cursor == 1) graphics.print("Clock");
-                    if (cursor == 2) graphics.print("Flip");
+                    if (cursor == 1) graphics.print("D");
+                    if (cursor == 2) graphics.print("Clock");
                 } else if (type == LogicGateType::LATCH) {
-                    if (cursor == 1) graphics.print("Set");
-                    if (cursor == 2) graphics.print("Reset");
+                    if (cursor == 1) graphics.print("Reset");
+                    if (cursor == 2) graphics.print("Set");
                 } else if (type == LogicGateType::TL_NEURON) {
                     graphics.print("Den ");
                     graphics.print(cursor);
@@ -219,11 +220,11 @@ private:
     bool and_fn(bool a, bool b) {return a & b;}
     bool or_fn(bool a, bool b) {return a | b;}
     bool xor_fn(bool a, bool b) {return a != b;}
-    bool flip_flop_fn(bool clock, bool flip) {
-        if (clock && flip) state = !state;
+    bool flip_flop_fn(bool D, bool clock) {
+        if (clock) state = D;
         return state;
     }
-    bool latch_fn(bool set, bool reset) {
+    bool latch_fn(bool reset, bool set) {
         if (reset) state = 0;
         if (set) state = 1;
         return state;

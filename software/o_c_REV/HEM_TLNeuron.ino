@@ -125,9 +125,10 @@ private:
         for (int d = 0; d < 3; d++)
         {
             int weight = dendrite_weight[d];
-            gfxCircle(9, 21 + (16 * d), 8); // Dendrite
-            gfxPrint(weight < 0 ? 1 : 6 , 18 + (16 * d), weight);
-            if (selected == d && CursorBlink()) gfxCircle(9, 21 + (16 * d), 7);
+            byte indent = d == 1 ? 4 : 0;
+            gfxCircle(9 + indent, 21 + (16 * d), 8); // Dendrite
+            gfxPrint((weight < 0 ? 1 : 6) + indent , 18 + (16 * d), weight);
+            if (selected == d && CursorBlink()) gfxCircle(9 + indent, 21 + (16 * d), 7);
         }
     }
 
@@ -143,7 +144,8 @@ private:
     void DrawStates() {
         for (int d = 0; d < 3; d++)
         {
-            if (dendrite_activated[d]) gfxLine(17, 21 + (16 * d), 36, 37); // Synapse
+            byte indent = d == 1 ? 4 : 0;
+            gfxDottedLine(17 + indent, 21 + (16 * d), 36, 37, dendrite_activated[d] ? 1 : 3); // Synapse
         }
 
         if (axon_activated) {

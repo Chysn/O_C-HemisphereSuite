@@ -410,10 +410,10 @@ private:
             neuron[n].source1 = values_[ix++];
             neuron[n].source2 = values_[ix++];
             neuron[n].source3 = values_[ix++];
-            neuron[n].weight1 = values_[ix++];
-            neuron[n].weight2 = values_[ix++];
-            neuron[n].weight3 = values_[ix++];
-            neuron[n].threshold = values_[ix++];
+            neuron[n].weight1 = values_[ix++] - 128;
+            neuron[n].weight2 = values_[ix++] - 128;
+            neuron[n].weight3 = values_[ix++] - 128;
+            neuron[n].threshold = values_[ix++] - 128;
         }
         for (byte o = 0; o < 16; o++) output_neuron[o] = values_[ix++];
             
@@ -427,18 +427,17 @@ private:
             values_[ix++] = neuron[n].source1;
             values_[ix++] = neuron[n].source2;
             values_[ix++] = neuron[n].source3;
-            values_[ix++] = neuron[n].weight1;
-            values_[ix++] = neuron[n].weight2;
-            values_[ix++] = neuron[n].weight3;
-            values_[ix++] = neuron[n].threshold;
+            values_[ix++] = neuron[n].weight1 + 128;
+            values_[ix++] = neuron[n].weight2 + 128;
+            values_[ix++] = neuron[n].weight3 + 128;
+            values_[ix++] = neuron[n].threshold + 128;
         }
         for (byte o = 0; o < 16; o++) values_[ix++] = output_neuron[o];
     }
 
     void DrawLarge(byte ix) {
-        switch (neuron[ix].type) {
-            case LogicGateType::TL_NEURON: DrawTLNeuron(ix); break;
-        }
+        if (neuron[ix].type == LogicGateType::TL_NEURON) DrawTLNeuron(ix);
+        else DrawLogicGate(ix);
     }
     
     //////// LOGIC GATE EDIT SCREEN REPRESENTATIONS
@@ -447,10 +446,12 @@ private:
         int dendrite_weight[3] = {neuron[ix].weight1, neuron[ix].weight2, neuron[ix].weight3};
         for (int d = 0; d < 3; d++)
         {
+            byte indent = d == 1 ? 4 : 0;
             int weight = dendrite_weight[d];
-            gfxCircle(73, 22 + (16 * d), 8); // Dendrite
-            gfxPrint(weight < 0 ? 66 : 72 , 19 + (16 * d), weight);
-            if (cursor == (d + 4) && CursorBlink()) gfxCircle(73, 22 + (16 * d), 7);
+            gfxCircle(73 + indent, 22 + (16 * d), 8); // Dendrite
+            gfxPrint((weight < 0 ? 66 : 72) + indent , 19 + (16 * d), weight);
+            if (cursor == (d + 4) && CursorBlink()) gfxCircle(73 + indent, 22 + (16 * d), 7);
+            gfxDottedLine(81 + indent, 22 + (16 * d), 100, 38, neuron[ix].SourceValue(d) ? 1 : 3); // Synapse
         }
 
         // Draw Axon
@@ -461,14 +462,100 @@ private:
         if (threshold < 0) x -= 5; // Pull back if a sign is necessary
         gfxPrint(x, 34, threshold);
         if (cursor == 7 && CursorBlink()) gfxCircle(112, 38, 11);
-
-        // Draw states
-        for (int d = 0; d < 3; d++)
-        {
-            if (neuron[ix].SourceValue(d)) gfxLine(81, 22 + (16 * d), 100, 38); // Synapse
-        }
     }
     
+    void DrawLogicGate(byte ix) {
+        if (neuron[ix].type != LogicGateType::NONE) {
+            DrawInputs(ix);
+            DrawBody(ix);
+            DrawNegation(ix);
+            DrawOutput(ix);
+        }
+    }
+
+    void DrawInputs(byte ix) {
+        if (neuron[ix].type == LogicGateType::NOT) {
+            gfxDottedLine(64, 36, 76, 36, neuron[ix].SourceValue(0) ? 1 : 3);
+        } else {
+            gfxDottedLine(64, 28, 76, 28, neuron[ix].SourceValue(0) ? 1 : 3);
+            gfxDottedLine(64, 44, 76, 44, neuron[ix].SourceValue(1) ? 1 : 3);
+        }
+    }
+
+    void DrawBody(byte ix) {
+        if (neuron[ix].type == LogicGateType::NOT) {
+            gfxLine(76, 20, 76, 52);
+            gfxLine(76, 20, 108, 36);
+            gfxLine(76, 52, 108, 36);
+        }
+        if (neuron[ix].type == LogicGateType::AND
+         || neuron[ix].type == LogicGateType::NAND
+        ) {
+            gfxLine(76, 20, 76, 52);
+            gfxLine(76, 20, 96, 20);
+            gfxLine(96, 20, 103, 26);
+            gfxLine(103, 26, 108, 32);
+            gfxLine(108, 32, 108, 40);
+            gfxLine(76, 52, 96, 52);
+            gfxLine(96, 52, 103, 46);
+            gfxLine(103, 46, 108, 40);
+        }
+        if (neuron[ix].type == LogicGateType::OR
+         || neuron[ix].type == LogicGateType::NOR
+         || neuron[ix].type == LogicGateType::XOR
+         || neuron[ix].type == LogicGateType::XNOR
+        ) {
+            gfxLine(76, 20, 96, 20);
+            gfxLine(96, 20, 108, 36);
+            gfxLine(76, 52, 96, 52);
+            gfxLine(96, 52, 108, 36);
+            gfxLine(76, 20, 80, 36);
+            gfxLine(76, 52, 80, 36);
+
+            if (neuron[ix].type == LogicGateType::XOR
+             || neuron[ix].type == LogicGateType::XNOR
+            ) {
+                gfxLine(70, 20, 74, 36);
+                gfxLine(70, 52, 74, 36);
+            }
+        }
+        if (neuron[ix].type == LogicGateType::FLIP_FLOP) {
+            gfxLine(76, 20, 76, 52);
+            gfxLine(76, 20, 108, 20);
+            gfxLine(76, 52, 108, 52);
+            gfxLine(108, 20, 108, 52);
+            gfxLine(76, 40, 84, 44);
+            gfxLine(76, 48, 84, 44);
+            gfxPrint(78, 25, "D");
+        }
+        if (neuron[ix].type == LogicGateType::LATCH) {
+            gfxLine(76, 28, 84, 28); // Lines to NOR gates
+            gfxLine(76, 44, 84, 44);
+            gfxBitmap(84, 27, 16, NN_LOGIC_ICON[6]);
+            gfxBitmap(84, 39, 16, NN_LOGIC_ICON[6]);
+            gfxLine(100, 30, 108, 30);
+            gfxLine(108, 30, 108, 36);
+            gfxLine(102, 30, 84, 40); // Line from Reset to Set in
+            gfxLine(100, 42, 84, 32); // Line from Set to Reset in
+
+        }
+    }
+
+    void DrawNegation(byte ix) {
+        if (neuron[ix].type == LogicGateType::NOT
+         || neuron[ix].type == LogicGateType::NAND
+         || neuron[ix].type == LogicGateType::NOR
+         || neuron[ix].type == LogicGateType::XNOR
+        ) {
+            gfxCircle(112, 36, 4);
+        } else {
+            gfxDottedLine(108, 36, 117, 36, neuron[ix].state ? 1 : 3);
+        }
+    }
+
+    void DrawOutput(byte ix) {
+        gfxDottedLine(116, 36, 127, 36, neuron[ix].state ? 1 : 3);
+    }
 };
 
 // Declare 216 bytes for storage
