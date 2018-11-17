@@ -21,8 +21,8 @@
 #ifndef LOGICGATE_H
 #define LOGICGATE_H
 
-// 0-7 are inputs, 8-13 are neuron outputs
-#define LG_MAX_SOURCE 13
+// 0-7 are inputs, 8-13 are neuron outputs, 14 is ON and 15 is OFF
+#define LG_MAX_SOURCE 15
 
 enum LogicGateType {
     NONE,
@@ -48,9 +48,11 @@ const char* const gate_name[11] = {
     "None", "NOT", "AND", "OR", "XOR", "NAND", "NOR", "XNOR", "FFlp", "Ltch", "TLNe"
 };
 
-const char* const source_name[14] = {
-    "Dig1", "Dig2", "Dig3", "Dig4", "CV 1", "CV 2", "CV 3", "CV 4",
-    "Neu1", "Neu2", "Neu3", "Neu4", "Neu5", "Neu6"
+const char* const source_name[16] = {
+    "Dig1", "Dig2", "Dig3", "Dig4",
+	"CV 1", "CV 2", "CV 3", "CV 4",
+    "Neu1", "Neu2", "Neu3", "Neu4", "Neu5", "Neu6",
+	"ON", "OFF"
 };
 
 const uint8_t NN_LOGIC_ICON[11][16] = {
@@ -89,7 +91,7 @@ public:
 
     /* Set the state based on gate type and source valutes */
     bool Calculate(uint16_t source_state_) {
-        source_state = source_state_;
+        source_state = source_state_ | (0x01 << 14); // Add the ON state
         bool v1 = source_value(source1);
         bool v2 = source_value(source2);
         bool v3 = source_value(source3);
@@ -243,13 +245,16 @@ private:
             // Physical input sources
             fx = ((source / 4) * 6) + 4;
             fy = ((source % 4) * 10) + 27;
-        } else {
+            graphics.drawLine(fx, fy, tx, ty);
+        } else if (source < 14) {
             // Logical output sources
             source -= 8;
             fx = ((source / 2) * 32) + 45;
             fy = ((source % 2) * 24) + 29;
+            graphics.drawLine(fx, fy, tx, ty);
+        } else {
+        		// 14 and 15 are TRUE and FALSE and are not drawn
         }
-        graphics.drawLine(fx, fy, tx, ty);
     }
 };
 

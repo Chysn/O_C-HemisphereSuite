@@ -462,12 +462,17 @@ private:
 
         // Draw Axon
         int threshold = neuron[ix].threshold;
-        gfxCircle(112, 38, 12);
         int x = 105; // Starting x position for number
         if (threshold < 10 && threshold > -10) x += 5; // Shove over a bit if a one-digit number
         if (threshold < 0) x -= 5; // Pull back if a sign is necessary
         gfxPrint(x, 34, threshold);
         if (cursor == 7 && CursorBlink()) gfxCircle(112, 38, 11);
+        
+        int r = 0;
+        if (neuron[ix].state) {
+        		if (random(1, 100) > 60) r = random(0, 3) - 1;
+        }
+        gfxCircle(112, 38, 12 + (r * 2));
     }
     
     void DrawLogicGate(byte ix) {
@@ -560,7 +565,12 @@ private:
     }
 
     void DrawOutput(byte ix) {
-        gfxDottedLine(116, 36, 127, 36, neuron[ix].state ? 1 : 3);
+		int y = 0;
+    		if (neuron[ix].state) {
+    			// Shimmer
+    			if (random(1, 100) > 80) y = random(0, 3) - 1;
+    		}
+        gfxDottedLine(116, 36 + y, 127, 36 + y, neuron[ix].state ? 1 : 3);
     }
 };
 
