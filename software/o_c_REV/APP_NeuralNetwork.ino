@@ -414,6 +414,12 @@ private:
             neuron[n].weight2 = values_[ix++] - 128;
             neuron[n].weight3 = values_[ix++] - 128;
             neuron[n].threshold = values_[ix++] - 128;
+
+            // Adjust to 0 when no data is saved yet
+            if (neuron[n].weight1 == -128) neuron[n].weight1 = 0;
+            if (neuron[n].weight2 == -128) neuron[n].weight2 = 0;
+            if (neuron[n].weight3 == -128) neuron[n].weight3 = 0;
+            if (neuron[n].threshold == -128) neuron[n].threshold = 0;
         }
         for (byte o = 0; o < 16; o++) output_neuron[o] = values_[ix++];
             
