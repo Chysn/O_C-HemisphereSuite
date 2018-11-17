@@ -172,7 +172,7 @@ public:
             if (cursor == 0) graphics.print("Type");
             if (cursor > 0 && cursor < 4) {
                 if (type == LogicGateType::FLIP_FLOP) {
-                    if (cursor == 1) graphics.print("D");
+                    if (cursor == 1) graphics.print("Data");
                     if (cursor == 2) graphics.print("Clock");
                 } else if (type == LogicGateType::LATCH) {
                     if (cursor == 1) graphics.print("Reset");
@@ -181,7 +181,7 @@ public:
                     graphics.print("Den ");
                     graphics.print(cursor);
                 } else {
-                    graphics.print("Src");
+                    graphics.print("Opd");
                 }
             }
         }
