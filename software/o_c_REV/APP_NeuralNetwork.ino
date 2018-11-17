@@ -568,9 +568,9 @@ private:
 		int y = 0;
     		if (neuron[ix].state) {
     			// Shimmer
-    			if (random(1, 100) > 80) y = random(0, 3) - 1;
+    			if (random(1, 100) > 60) y = random(0, 3) - 1;
     		}
-        gfxDottedLine(116, 36 + y, 127, 36 + y, neuron[ix].state ? 1 : 3);
+        gfxDottedLine(116, 36 + (y * 2), 127, 36 + (y * 2), neuron[ix].state ? 1 : 3);
     }
 };
 
