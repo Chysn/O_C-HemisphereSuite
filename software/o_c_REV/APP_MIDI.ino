@@ -407,13 +407,14 @@ private:
 
     void DrawSetupScreens() {
         // Create the header, showing the current Setup and Screen name
-        gfxHeader("Setup ");
-        graphics.print(get_setup_number() + 1);
-        if (screen == 0) graphics.print("   MIDI Assign");
-        if (screen == 1) graphics.print("  MIDI Channel");
-        if (screen == 2) graphics.print("     Transpose");
-        if (screen == 3) graphics.print("     Range Low");
-        if (screen == 4) graphics.print("    Range High");
+        gfxHeader("");
+        if (screen == 0) graphics.print("MIDI Assign");
+        if (screen == 1) graphics.print("MIDI Channel");
+        if (screen == 2) graphics.print("Transpose");
+        if (screen == 3) graphics.print("Range Low");
+        if (screen == 4) graphics.print("Range High");
+        gfxPrint(128 - 42, 1, "Setup ");
+        gfxPrint(get_setup_number() + 1);
 
         // Iterate through the current range of settings
         menu::SettingsList<menu::kScreenLines, 0, menu::kDefaultValueX - 1> settings_list(cursor);

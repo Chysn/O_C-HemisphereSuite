@@ -136,9 +136,7 @@ private:
         gfxPrint(1, 15, Arp_Chords[chord].chord_name);
         if (cursor == 1) {
             gfxCursor(1, 23, 62);
-            if (chord == sel_chord) {
-                gfxBitmap(55, 13, 8, CHECK_ICON);
-            }
+            gfxBitmap(55, 13, 8, chord == sel_chord ? CHECK_ON_ICON : CHECK_OFF_ICON);
         }
 
         // Transpose editor

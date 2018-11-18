@@ -146,6 +146,7 @@ public:
         if (cursor == 1) transpose = constrain(transpose += direction, -24, 24);
         if (cursor == 2) function = constrain(function += direction, 0, 3);
         if (cursor == 3) legato = direction > 0 ? 1 : 0;
+        ResetCursor();
     }
         
     uint32_t OnDataRequest() {
@@ -227,11 +228,10 @@ private:
 
         // Legato
         gfxPrint(1, 45, "Legato ");
-        gfxPrint(legato ? "On" : "Off");
+        if (cursor != 3 || CursorBlink()) gfxIcon(54, 45, legato ? CHECK_ON_ICON : CHECK_OFF_ICON);
 
         // Cursor
         if (cursor < 3) gfxCursor(24, 23 + (cursor * 10), 39);
-        else gfxCursor(44, 53, 19);
 
         // Last note log
         if (last_velocity) {

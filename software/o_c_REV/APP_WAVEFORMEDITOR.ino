@@ -290,8 +290,8 @@ private:
             gfxPrint(12, 25, "(Cannot Del)");
         }
 
-        if (add_waveform) gfxIcon(1, 15, CHECK_ICON);
-        else gfxIcon(1, 25, CHECK_ICON);
+        gfxIcon(1, 15, add_waveform ? CHECK_ON_ICON : CHECK_OFF_ICON);
+        gfxIcon(1, 25, add_waveform ? CHECK_OFF_ICON : CHECK_ON_ICON);
 
         gfxPrint(0, 55, "[CANCEL]");
         gfxPrint(104, 55, "[OK]");
