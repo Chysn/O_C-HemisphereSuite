@@ -133,10 +133,10 @@ private:
 
     void DrawSelector() {
         // Chord selector
-        gfxPrint(1, 15, Arp_Chords[chord].chord_name);
+        gfxPrint(0, 15, Arp_Chords[chord].chord_name);
         if (cursor == 1) {
-            gfxCursor(1, 23, 62);
-            gfxBitmap(55, 13, 8, chord == sel_chord ? CHECK_ON_ICON : CHECK_OFF_ICON);
+            gfxCursor(1, 23, 53);
+            gfxBitmap(55, 14, 8, chord == sel_chord ? CHECK_ON_ICON : CHECK_OFF_ICON);
         }
 
         // Transpose editor

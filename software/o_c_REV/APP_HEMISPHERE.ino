@@ -331,7 +331,7 @@ private:
             graphics.print(category_name[i]);
         }
 
-        graphics.drawBitmap8(1 + offset, 29, 8, CHECK_ON_ICON);
+        graphics.drawBitmap8(1 + offset, 30, 8, CHECK_ICON);
     }
 
     int get_applet_index_by_id(int id) {
