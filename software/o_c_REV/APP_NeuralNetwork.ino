@@ -530,14 +530,14 @@ private:
                 gfxLine(70, 52, 74, 36);
             }
         }
-        if (neuron[ix].type == LogicGateType::FLIP_FLOP) {
+        if (neuron[ix].type == LogicGateType::D_FLIPFLOP || neuron[ix].type == LogicGateType::T_FLIPFLOP) {
             gfxLine(76, 20, 76, 52);
             gfxLine(76, 20, 108, 20);
             gfxLine(76, 52, 108, 52);
             gfxLine(108, 20, 108, 52);
             gfxLine(76, 40, 84, 44);
             gfxLine(76, 48, 84, 44);
-            gfxPrint(78, 25, "D");
+            gfxPrint(78, 25, neuron[ix].type == LogicGateType::D_FLIPFLOP ? "D" : "T");
         }
         if (neuron[ix].type == LogicGateType::LATCH) {
             gfxLine(76, 28, 84, 28); // Lines to NOR gates

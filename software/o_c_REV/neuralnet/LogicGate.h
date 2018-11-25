@@ -37,15 +37,16 @@ enum LogicGateType {
     NAND,
     NOR,
     XNOR,
-    FLIP_FLOP,
+    D_FLIPFLOP,
+    T_FLIPFLOP,
     LATCH,
 
     // Ternary
     TL_NEURON
 };
 
-const char* const gate_name[11] = {
-    "None", "NOT", "AND", "OR", "XOR", "NAND", "NOR", "XNOR", "FFlp", "Ltch", "TLNe"
+const char* const gate_name[12] = {
+    "None", "NOT", "AND", "OR", "XOR", "NAND", "NOR", "XNOR", "D-FF", "T-FF", "Ltch", "TLNe"
 };
 
 const char* const source_name[16] = {
@@ -55,7 +56,7 @@ const char* const source_name[16] = {
 	"ON", "OFF"
 };
 
-const uint8_t NN_LOGIC_ICON[11][16] = {
+const uint8_t NN_LOGIC_ICON[12][16] = {
     {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00}, // None
     {0x08,0x08,0x08,0x7f,0x41,0x41,0x22,0x22,0x22,0x14,0x14,0x08,0x08,0x14,0x14,0x08}, // Not
     {0x22,0x22,0x22,0x7f,0x41,0x41,0x41,0x41,0x41,0x41,0x22,0x1c,0x08,0x08,0x08,0x08}, // AND
@@ -64,7 +65,8 @@ const uint8_t NN_LOGIC_ICON[11][16] = {
     {0x22,0x22,0x22,0x7f,0x41,0x41,0x41,0x41,0x41,0x41,0x22,0x1c,0x08,0x14,0x14,0x08}, // NAND
     {0x22,0x22,0x22,0x55,0x5d,0x41,0x41,0x41,0x41,0x22,0x22,0x1c,0x08,0x14,0x14,0x08}, // NOR
     {0x22,0x22,0x7f,0x00,0x63,0x5d,0x41,0x41,0x41,0x22,0x22,0x1c,0x08,0x14,0x14,0x08}, // XNOR
-    {0x12,0x12,0x12,0xff,0xa9,0xa9,0x91,0x91,0x81,0x81,0x81,0x81,0xff,0x02,0x02,0x02}, // FlipFlop
+    {0x12,0x12,0x12,0xff,0xa9,0xa9,0x91,0x91,0x81,0x81,0x81,0x81,0xff,0x02,0x02,0x02}, // D FlipFlop
+    {0x12,0xff,0x81,0x81,0x85,0x85,0xbd,0x85,0x85,0x81,0x81,0x81,0xff,0x02,0x02,0x02}, // T FlopFlop
     {0x22,0x22,0x3e,0x22,0x14,0x14,0x08,0x08,0x14,0x14,0x22,0x22,0x22,0x3e,0x02,0x02}, // Latch
     {0x42,0xa5,0xa5,0xc3,0x99,0xa5,0xa5,0x99,0x92,0x7c,0x44,0x82,0x82,0x82,0x44,0x38}, // TLNeuron
 };
@@ -75,6 +77,7 @@ class LogicGate {
 public:
     // State attribute
     bool state; // Current state of the gate
+    bool clocked = 0; // State of clock for flipflops
     uint16_t source_state; // Source bitfield, for display purposes
 
     // General attributes
@@ -97,17 +100,18 @@ public:
         bool v3 = source_value(source3);
 
         switch(type) {
-            case LogicGateType::NOT       : state = not_fn(v1); break;
-            case LogicGateType::AND       : state = and_fn(v1, v2); break;
-            case LogicGateType::OR        : state = or_fn(v1, v2); break;
-            case LogicGateType::XOR       : state = xor_fn(v1, v2); break;
-            case LogicGateType::NAND      : state = !and_fn(v1, v2); break;
-            case LogicGateType::NOR       : state = !or_fn(v1, v2); break;
-            case LogicGateType::XNOR      : state = !xor_fn(v1, v2); break;
-            case LogicGateType::FLIP_FLOP : state = flip_flop_fn(v1, v2); break;
-            case LogicGateType::LATCH     : state = latch_fn(v1, v2); break;
-            case LogicGateType::TL_NEURON : state = tl_neuron_fn(v1, v2, v3); break;
-            default                       : state = 0;
+            case LogicGateType::NOT        : state = not_fn(v1); break;
+            case LogicGateType::AND        : state = and_fn(v1, v2); break;
+            case LogicGateType::OR         : state = or_fn(v1, v2); break;
+            case LogicGateType::XOR        : state = xor_fn(v1, v2); break;
+            case LogicGateType::NAND       : state = !and_fn(v1, v2); break;
+            case LogicGateType::NOR        : state = !or_fn(v1, v2); break;
+            case LogicGateType::XNOR       : state = !xor_fn(v1, v2); break;
+            case LogicGateType::D_FLIPFLOP : state = d_flipflop_fn(v1, v2); break;
+            case LogicGateType::T_FLIPFLOP : state = t_flipflop_fn(v1, v2); break;
+            case LogicGateType::LATCH      : state = latch_fn(v1, v2); break;
+            case LogicGateType::TL_NEURON  : state = tl_neuron_fn(v1, v2, v3); break;
+            default                        : state = 0;
         }
 
         return state;
@@ -171,8 +175,11 @@ public:
             graphics.setPrintPos(x, y);
             if (cursor == 0) graphics.print("Type");
             if (cursor > 0 && cursor < 4) {
-                if (type == LogicGateType::FLIP_FLOP) {
+                if (type == LogicGateType::D_FLIPFLOP) {
                     if (cursor == 1) graphics.print("Data");
+                    if (cursor == 2) graphics.print("Clock");
+                } else if (type == LogicGateType::T_FLIPFLOP) {
+                    if (cursor == 1) graphics.print("Toggl");
                     if (cursor == 2) graphics.print("Clock");
                 } else if (type == LogicGateType::LATCH) {
                     if (cursor == 1) graphics.print("Reset");
@@ -222,8 +229,22 @@ private:
     bool and_fn(bool a, bool b) {return a & b;}
     bool or_fn(bool a, bool b) {return a | b;}
     bool xor_fn(bool a, bool b) {return a != b;}
-    bool flip_flop_fn(bool D, bool clock) {
+    bool d_flipflop_fn(bool D, bool clock) {
+        // Handle clocking
+        if (!clock && clocked) clocked = 0;
+        if (clock && clocked) clock = 0;
+        if (clock && !clocked) clocked = 1;
+
         if (clock) state = D;
+        return state;
+    }
+    bool t_flipflop_fn(bool T, bool clock) {
+        // Handle clocking
+        if (!clock && clocked) clocked = 0;
+        if (clock && clocked) clock = 0;
+        if (clock && !clocked) clocked = 1;
+
+        if (clock && T) state = 1 - state;
         return state;
     }
     bool latch_fn(bool reset, bool set) {
