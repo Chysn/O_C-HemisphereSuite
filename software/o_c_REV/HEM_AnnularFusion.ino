@@ -171,7 +171,7 @@ private:
         int f = cursor - (ch * 2); // Cursor function
 
         // Length cursor
-        gfxBitmap(1, 15, 8, METER_ICON);
+        gfxBitmap(1, 15, 8, LOOP_ICON);
         gfxPrint(12 + pad(10, length[ch]), 15, length[ch]);
         if (f == 0) gfxCursor(13, 23, 12);
 

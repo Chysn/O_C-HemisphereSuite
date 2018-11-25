@@ -131,7 +131,7 @@ private:
     int8_t scale; // Scale used for quantized output
 
     void DrawSelector() {
-        gfxBitmap(1, 14, 8, NOTE_ICON);
+        gfxBitmap(1, 14, 8, LOOP_ICON);
         gfxPrint(12 + pad(10, length), 15, length);
         gfxPrint(32, 15, "p=");
         if (cursor == 1) {

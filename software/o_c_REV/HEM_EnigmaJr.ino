@@ -136,7 +136,10 @@ private:
             // If the Turing Machine is being selected, display the length and favorite
             // status instead of the probability
             byte length = tm_state.GetLength();
-            if (length > 0) gfxPrint(46 + pad(10, length), 15, length);
+            if (length > 0) {
+                gfxIcon(42, 15, LOOP_ICON);
+                gfxPrint(52 + pad(10, length), 15, length);
+            }
             else gfxPrint("--");
         } else {
             gfxPrint(34, 15, "p=");

@@ -94,11 +94,13 @@ private:
     bool trigger[2]; // 0=Gate, 1=Trigger
 
     void DrawInterface() {
-        gfxIcon(1, 15, METER_ICON);
-        gfxPrint(12 + pad(100, length[0]), 15, length[0]);
-        gfxPrint(45 + pad(100, length[1]), 15, length[1]);
+        gfxIcon(1, 14, LOOP_ICON);
+        gfxIcon(35, 14, LOOP_ICON);
+        gfxPrint(12 + pad(10, length[0]), 15, length[0]);
+        gfxPrint(45 + pad(10, length[1]), 15, length[1]);
 
         gfxIcon(1, 25, X_NOTE_ICON);
+        gfxIcon(35, 25, X_NOTE_ICON);
         gfxPrint(12, 25, trigger[0] ? "Trg" : "Gte");
         gfxPrint(45, 25, trigger[1] ? "Trg" : "Gte");
 
