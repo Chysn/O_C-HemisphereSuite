@@ -45,7 +45,7 @@ public:
                 int cv = In(0);
                 buffer_m->WriteValueToBuffer(cv, hemisphere);
             }
-            int index_mod = Proportion(DetentedIn(1), HEMISPHERE_MAX_CV, 32);
+            index_mod = Proportion(DetentedIn(1), HEMISPHERE_MAX_CV, 32);
             ForEachChannel(ch)
             {
                 int cv = buffer_m->ReadNextValue(ch, hemisphere, index_mod);
@@ -107,15 +107,17 @@ private:
     RingBufferManager *buffer_m = buffer_m->get();
     braids::Quantizer quantizer;
     int scale;
+    int index_mod; // Effect of modulation
     
     void DrawInterface() {
         // Show Link icon if linked with another ASR
         if (buffer_m->IsLinked(hemisphere)) gfxIcon(56, 1, LINK_ICON);
 
         // Index (shared between all instances of ASR)
-        byte ix = buffer_m->GetIndex();
+        byte ix = buffer_m->GetIndex() + index_mod;
         gfxPrint(1, 15, "Index: ");
         gfxPrint(pad(100, ix), ix);
+        if (index_mod != 0) gfxIcon(54, 26, CV_ICON);
 
         // Scale
         gfxBitmap(1, 24, 8, SCALE_ICON);

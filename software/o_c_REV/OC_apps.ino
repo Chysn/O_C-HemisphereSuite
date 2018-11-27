@@ -325,7 +325,9 @@ void draw_app_menu(const menu::ScreenCursor<5> &cursor) {
 void draw_save_message(uint8_t c) {
   GRAPHICS_BEGIN_FRAME(true);
   uint8_t _size = c % 120;
-  graphics.drawRect(63 - (_size >> 1), 31 - (_size >> 2), _size, _size >> 1);  
+  graphics.setPrintPos(37, 18);
+  graphics.print("Saving...");
+  graphics.drawRect(0, 28, _size, 8);
   GRAPHICS_END_FRAME();
 }
 
