@@ -35,14 +35,9 @@ public:
 
     void Controller() {
         if (!Gate(0)) {
-            int cv = In(0);
-            int mod_depth = depth;
-            if (DetentedIn(1)) {
-                mod_depth += Proportion(In(1), HEMISPHERE_3V_CV, 13);
-                mod_depth = constrain(mod_depth, 1, 13);
-            }
             if (++count >= crusher_ticks[rate]) {
                 count = 0;
+                int cv = In(0);
                 // Convert CV to positive, 16-bit
                 int p_cv = cv + HEMISPHERE_MAX_CV;
                 uint16_t p_cv16 = static_cast<uint16_t>(p_cv);
@@ -90,7 +85,7 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Defeat";
-        help[HEMISPHERE_HELP_CVS]      = "1=Input 2=Depth";
+        help[HEMISPHERE_HELP_CVS]      = "1=Input";
         help[HEMISPHERE_HELP_OUTS]     = "A=Crush B=Thru";
         help[HEMISPHERE_HELP_ENCODER]  = "Rate/Depth";
         //                               "------------------" <-- Size Guide
