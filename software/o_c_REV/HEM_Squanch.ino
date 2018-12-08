@@ -93,6 +93,7 @@ public:
         scale = Unpack(data, PackLocation {0,8});
         shift[0] = Unpack(data, PackLocation {8,8}) - 48;
         shift[1] = Unpack(data, PackLocation {16,8}) - 48;
+        quantizer.Configure(OC::Scales::GetScale(scale), 0xffff);
     }
 
 protected:

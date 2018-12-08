@@ -100,7 +100,11 @@ public:
         root[0] = Unpack(data, PackLocation {16,4});
         root[1] = Unpack(data, PackLocation {20,4});
 
-        ForEachChannel(ch) root[0] = constrain(root[0], 0, 11);
+        ForEachChannel(ch)
+        {
+            root[0] = constrain(root[0], 0, 11);
+            quantizer[ch].Configure(OC::Scales::GetScale(scale[ch]), 0xffff);
+        }
     }
 
 protected:

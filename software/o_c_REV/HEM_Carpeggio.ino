@@ -62,6 +62,10 @@ public:
             replay = 0;
         }
 
+        // Modulation output
+        int xy = (In(0) * In(1)) / HEMISPHERE_MAX_CV;
+        Out(1, xy);
+
         // Handle imprint confirmation animation
         if (--confirm_animation_countdown < 0) {
             confirm_animation_position--;
@@ -109,7 +113,7 @@ protected:
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
         help[HEMISPHERE_HELP_CVS]      = "1=X 2=Y";
-        help[HEMISPHERE_HELP_OUTS]     = "A=Quant";
+        help[HEMISPHERE_HELP_OUTS]     = "A=Quant B=(XY)/5V";
         help[HEMISPHERE_HELP_ENCODER]  = "Note/Chord/Trnspos";
         //                               "------------------" <-- Size Guide
     }

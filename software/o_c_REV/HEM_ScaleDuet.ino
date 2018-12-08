@@ -91,7 +91,7 @@ public:
         mask[0] = Unpack(data, PackLocation {0,12});
         mask[1] = Unpack(data, PackLocation {12,12});
 
-        if (mask[0] == 0 && mask[1] == 0) Start(); // If empty data, initialize
+        ForEachChannel(ch) quantizer.Configure(OC::Scales::GetScale(5), mask[ch]);
     }
 
 protected:
