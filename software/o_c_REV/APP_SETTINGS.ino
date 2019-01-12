@@ -73,6 +73,10 @@ public:
         gfxPrint(0, 35, "beigemaze.com/hs");
         gfxPrint(0, 55, "[CALIBRATE]   [RESET]");
 
+#ifdef BUCHLA_4U
+        gfxPrint(60, 25, "Buchla");
+#endif
+
         DrawQRAt(103, 15);
     }
 
