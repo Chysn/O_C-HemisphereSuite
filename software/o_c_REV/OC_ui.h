@@ -17,8 +17,16 @@ struct App;
 enum UiControl {
   CONTROL_BUTTON_UP   = 0x1,
   CONTROL_BUTTON_DOWN = 0x2,
+  /* Reverse the left and right buttons if Hemisphere Suite is installed on the left-hand
+   * side of a Northern Light 2OC 4U module.
+   */
+#ifdef NORTHERNLIGHT_2OC_LEFTSIDE
+  CONTROL_BUTTON_L    = 0x8,
+  CONTROL_BUTTON_R    = 0x4,
+#else
   CONTROL_BUTTON_L    = 0x4,
   CONTROL_BUTTON_R    = 0x8,
+#endif
   CONTROL_BUTTON_MASK = 0xf,
 
   CONTROL_ENCODER_L   = 0x10,
@@ -116,8 +124,16 @@ private:
   bool screensaver_;
   bool preempt_screensaver_;
 
+  /* Reverse the left and right encoders if Hemisphere Suite is installed on the left-hand
+   * side of a Northern Light 2OC 4U module.
+   */
+#ifdef NORTHERNLIGHT_2OC_LEFTSIDE
+  UI::Encoder<encR1, encR2> encoder_left_;
+  UI::Encoder<encL1, encL2> encoder_right_;
+#else
   UI::Encoder<encR1, encR2> encoder_right_;
   UI::Encoder<encL1, encL2> encoder_left_;
+#endif
 
   UI::EventQueue<kEventQueueDepth> event_queue_;
 
