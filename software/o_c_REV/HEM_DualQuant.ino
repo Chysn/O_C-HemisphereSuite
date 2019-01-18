@@ -75,8 +75,8 @@ public:
         if (cursor == 0 || cursor == 2) {
             // Scale selection
             scale[ch] += direction;
-            if (scale[ch] == OC::Scales::NUM_SCALES) scale[ch] = 0;
-            if (scale[ch] < 0) scale[cursor] = OC::Scales::NUM_SCALES - 1;
+            if (scale[ch] >= OC::Scales::NUM_SCALES) scale[ch] = 0;
+            if (scale[ch] < 0) scale[ch] = OC::Scales::NUM_SCALES - 1;
             quantizer[ch].Configure(OC::Scales::GetScale(scale[ch]), 0xffff);
             continuous[ch] = 1; // Re-enable continuous mode when scale is changed
         } else {
