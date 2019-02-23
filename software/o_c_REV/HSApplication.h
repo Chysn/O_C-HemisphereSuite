@@ -42,7 +42,7 @@ typedef int32_t simfloat;
 #define HSAPPLICATION_CHANGE_THRESHOLD 32
 
 #ifdef BUCHLA_4U
-#define PULSE_VOLTAGE 10
+#define PULSE_VOLTAGE 8
 #else
 #define PULSE_VOLTAGE 5
 #endif
