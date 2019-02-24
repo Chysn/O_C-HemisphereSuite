@@ -34,6 +34,12 @@
 #define HEMISPHERE_ADC_LAG 33
 #define HEMISPHERE_CHANGE_THRESHOLD 32
 
+#ifdef BUCHLA_4U
+#define PULSE_VOLTAGE 8
+#else
+#define PULSE_VOLTAGE 5
+#endif
+
 // Codes for help system sections
 #define HEMISPHERE_HELP_DIGITALS 0
 #define HEMISPHERE_HELP_CVS 1
@@ -349,7 +355,7 @@ public:
 
     void ClockOut(int ch, int ticks = HEMISPHERE_CLOCK_TICKS) {
         clock_countdown[ch] = ticks;
-        Out(ch, 0, 5);
+        Out(ch, 0, PULSE_VOLTAGE);
     }
 
     bool Gate(int ch) {
@@ -366,7 +372,7 @@ public:
     }
 
     void GateOut(int ch, bool high) {
-        Out(ch, 0, (high ? 5 : 0));
+        Out(ch, 0, (high ? PULSE_VOLTAGE : 0));
     }
 
     // Buffered I/O functions
