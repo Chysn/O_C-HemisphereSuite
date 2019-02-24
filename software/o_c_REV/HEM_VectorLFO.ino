@@ -196,6 +196,9 @@ private:
         waveform_number[ch] = waveform;
         osc[ch].SetFrequency(freq[ch]);
         osc[ch].SetScale((12 << 7) * 3);
+#ifdef BUCHLA_4U
+        osc[ch].Offset(HEMISPHERE_3V_CV);
+#endif
     }
 
     int ones(int n) {return (n / 100);}
