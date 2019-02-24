@@ -164,8 +164,12 @@ private:
         osc[ch] = WaveformManager::VectorOscillatorFromWaveform(waveform);
         waveform_number[ch] = waveform;
         osc[ch].SetFrequency(freq[ch]);
+#ifdef BUCHLA_4U
+        osc[ch].SetScale((12 << 7) * 8); // 8V
+#else
         osc[ch].SetScale(3840); // 2.5V
         osc[ch].Offset(3840); // For a total range of 0-5V
+#endif
         osc[ch].Sustain(); // EG
         osc[ch].Cycle(0); // Non cycling
     }
