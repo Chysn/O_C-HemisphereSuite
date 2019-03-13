@@ -142,10 +142,10 @@ private:
             else {
                 // Don't show the residual if the tuning is perfect
                 if (residual >= 0) {
-                    gfxPrint(22, 45, "+");
+                    gfxPrint(22, 38, "+");
                     gfxPrint(residual / 10);
                 } else {
-                    gfxPrint(22, 45, residual / 10);
+                    gfxPrint(22, 38, residual / 10);
                 }
                 gfxPrint("c");
             }
@@ -155,16 +155,25 @@ private:
                 uint8_t n = residual / 100;
                 for (uint8_t i = 0; i < (n + 1); i++)
                 {
-                    gfxPrint(48 + (i * 2), 45, "<");
+                    gfxPrint(48 + (i * 2), 38, "<");
                 }
             } else if (residual < -10) {
                 uint8_t n = -(residual / 100);
                 for (uint8_t i = 0; i < (n + 1); i++)
                 {
-                    gfxPrint(10 - (i * 2), 45, ">");
+                    gfxPrint(10 - (i * 2), 38, ">");
                 }
 
             }
+
+            // Draw frequency
+            const int f = int(floor(frequency_ * 100));
+            const int value = f / 100;
+            const int cents = f % 100;
+            gfxPrint(6 + pad(10000, value), 54, value);
+            gfxPrint(".");
+            if (cents < 10) gfxPrint("0");
+            gfxPrint(cents);
         }
 
         gfxPrint(1, 15, "A4= ");
