@@ -30,6 +30,8 @@
 #include "braids_quantizer_scales.h"
 #include "OC_scales.h"
 #define TM_MAX_SCALE 63
+#define TM_MIN_LENGTH 2
+#define TM_MAX_LENGTH 16
 
 class TM : public HemisphereApplet {
 public:
@@ -49,9 +51,24 @@ public:
     }
 
     void Controller() {
+
+        // CV 1 control over length
+        int lengthCv = DetentedIn(0);
+        if (lengthCv < 0) length = TM_MIN_LENGTH;        
+        if (lengthCv > 0) {
+            length = constrain(ProportionCV(lengthCv, TM_MAX_LENGTH + 1), TM_MIN_LENGTH, TM_MAX_LENGTH);
+        }
+      
+        // CV 2 control over probability
+        int pCv = DetentedIn(1);
+        if (pCv < 0) p = 0;        
+        if (pCv > 0) {
+            p = ProportionCV(pCv, 100 + 2);
+        }
+        
         if (Clock(0)) {
-            // If the cursor is not on the p value, the sequence remains the same
-            int prob = (cursor == 1) ? p : 0;
+            // If the cursor is not on the p value, and Digital 2 is not gated, the sequence remains the same
+            int prob = (cursor == 1 || Gate(1)) ? p : 0;
 
             // Grab the bit that's about to be shifted away
             int last = (reg >> (length - 1)) & 0x01;
@@ -62,7 +79,7 @@ public:
             // Shift left, then potentially add the bit from the other side
             reg = (reg << 1) + last;
         }
-
+        
         // Send 5-bit quantized CV
         int note = reg & 0x1f;
         Out(0, quantizer.Lookup(note + 64));
@@ -83,7 +100,7 @@ public:
     }
 
     void OnEncoderMove(int direction) {
-        if (cursor == 0) length = constrain(length += direction, 2, 16);
+        if (cursor == 0) length = constrain(length += direction, TM_MIN_LENGTH, TM_MAX_LENGTH);
         if (cursor == 1) p = constrain(p += direction, 0, 100);
         if (cursor == 2) {
             scale += direction;
@@ -113,8 +130,8 @@ public:
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock";
-        help[HEMISPHERE_HELP_CVS]      = "";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Prb gate";
+        help[HEMISPHERE_HELP_CVS]      = "1=Length 2=Prob";
         help[HEMISPHERE_HELP_OUTS]     = "A=Quant5-bit B=CV8";
         help[HEMISPHERE_HELP_ENCODER]  = "Length/Prob/Scale";
         //                               "------------------" <-- Size Guide
@@ -134,7 +151,7 @@ private:
         gfxBitmap(1, 14, 8, LOOP_ICON);
         gfxPrint(12 + pad(10, length), 15, length);
         gfxPrint(32, 15, "p=");
-        if (cursor == 1) {
+        if (cursor == 1 || Gate(1)) {
             gfxCursor(45, 23, 18); // Probability Cursor
             gfxPrint(pad(100, p), p);
         } else {
