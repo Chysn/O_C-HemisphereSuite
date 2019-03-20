@@ -23,7 +23,8 @@
 /*
  * Turing Machine based on https://thonk.co.uk/documents/random%20sequencer%20documentation%20v2-1%20THONK%20KIT_LargeImages.pdf
  *
- * Thanks to Tom Whitwell
+ * Thanks to Tom Whitwell for creating the concept, and for clarifying some things
+ * Thanks to Jon Wheeler for the CV length and probability updates
  */
 
 #include "braids_quantizer.h"
@@ -63,7 +64,8 @@ public:
         int pCv = DetentedIn(1);
         if (pCv < 0) p = 0;        
         if (pCv > 0) {
-            p = ProportionCV(pCv, 100 + 2);
+            p = ProportionCV(pCv, 110); // Requiring a little under full voltage for 100%
+            p = constrain(p, 0, 100);
         }
         
         if (Clock(0)) {
