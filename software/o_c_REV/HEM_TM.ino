@@ -60,17 +60,13 @@ public:
             length = constrain(ProportionCV(lengthCv, TM_MAX_LENGTH + 1), TM_MIN_LENGTH, TM_MAX_LENGTH);
         }
       
-        // CV 2 control over probability
-        int pCv = DetentedIn(1);
-        if (pCv < 0) p = 0;        
-        if (pCv > 0) {
-            p = ProportionCV(pCv, 110); // Requiring a little under full voltage for 100%
-            p = constrain(p, 0, 100);
-        }
+        // CV 2 bi-polar modulation of probability
+        int pCv = Proportion(DetentedIn(1), HEMISPHERE_MAX_CV, 100);
         
         if (Clock(0)) {
             // If the cursor is not on the p value, and Digital 2 is not gated, the sequence remains the same
-            int prob = (cursor == 1 || Gate(1)) ? p : 0;
+            int prob = (cursor == 1 || Gate(1)) ? p + pCv : 0;
+            prob = constrain(prob, 0, 100);
 
             // Grab the bit that's about to be shifted away
             int last = (reg >> (length - 1)) & 0x01;
@@ -132,8 +128,8 @@ public:
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Prb gate";
-        help[HEMISPHERE_HELP_CVS]      = "1=Length 2=Prob";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=p Gate";
+        help[HEMISPHERE_HELP_CVS]      = "1=Length 2=p Mod";
         help[HEMISPHERE_HELP_OUTS]     = "A=Quant5-bit B=CV8";
         help[HEMISPHERE_HELP_ENCODER]  = "Length/Prob/Scale";
         //                               "------------------" <-- Size Guide
@@ -154,8 +150,10 @@ private:
         gfxPrint(12 + pad(10, length), 15, length);
         gfxPrint(32, 15, "p=");
         if (cursor == 1 || Gate(1)) {
-            gfxCursor(45, 23, 18); // Probability Cursor
-            gfxPrint(pad(100, p), p);
+            int pCv = Proportion(DetentedIn(1), HEMISPHERE_MAX_CV, 100);
+            int prob = constrain(p + pCv, 0, 100);
+            if (cursor == 1) gfxCursor(45, 23, 18); // Probability Cursor
+            gfxPrint(pad(100, prob), prob);
         } else {
             gfxBitmap(49, 14, 8, LOCK_ICON);
         }
