@@ -38,6 +38,7 @@ public:
         ForEachChannel(ch)
         {
             simfloat input = int2simfloat(In(ch));
+            if (Gate(ch)) signal[ch] = input; // Defeat slew when channel's gate is high
             if (input != signal[ch]) {
 
                 int segment = (input > signal[ch]) ? rise : fall;
@@ -99,7 +100,7 @@ public:
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "";
+        help[HEMISPHERE_HELP_DIGITALS] = "Defeat 1=Ch1 2=Ch2";
         help[HEMISPHERE_HELP_CVS]      = "Input 1=Ch1 2=Ch2";
         help[HEMISPHERE_HELP_OUTS]     = "A=Linear B=Exp";
         help[HEMISPHERE_HELP_ENCODER]  = "Rise/Fall";
@@ -129,7 +130,8 @@ private:
         // Output indicators
         ForEachChannel(ch)
         {
-            gfxRect(1, 15 + (ch * 8), ProportionCV(ViewOut(ch), 62), 6);
+            if (Gate(ch)) gfxFrame(1, 15 + (ch * 8), ProportionCV(ViewOut(ch), 62), 6);
+            else gfxRect(1, 15 + (ch * 8), ProportionCV(ViewOut(ch), 62), 6);
         }
 
         // Change indicator, if necessary
