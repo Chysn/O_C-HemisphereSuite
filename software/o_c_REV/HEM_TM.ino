@@ -43,6 +43,7 @@ public:
     void Start() {
         reg = random(0, 65535);
         p = 0;
+        modded_p = 0;
         length = 16;
         cursor = 0;
         quantizer.Init();
@@ -59,16 +60,12 @@ public:
             length = constrain(ProportionCV(lengthCv, TM_MAX_LENGTH + 1), TM_MIN_LENGTH, TM_MAX_LENGTH);
         }
       
-        // CV 2 control over probability
-        int pCv = DetentedIn(1);
-        if (pCv < 0) p = 0;        
-        if (pCv > 0) {
-            p = ProportionCV(pCv, 100 + 2);
-        }
-        
+        // CV 2 bi-polar modulation over probability
+        modded_p = p + constrain(Proportion(DetentedIn(1), HEMISPHERE_MAX_CV, 100 + 3), 0, 100);
+
         if (Clock(0)) {
             // If the cursor is not on the p value, and Digital 2 is not gated, the sequence remains the same
-            int prob = (cursor == 1 || Gate(1)) ? p : 0;
+            int prob = (cursor == 1 || Gate(1)) ? modded_p : 0;
 
             // Grab the bit that's about to be shifted away
             int last = (reg >> (length - 1)) & 0x01;
@@ -131,7 +128,7 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Prb gate";
-        help[HEMISPHERE_HELP_CVS]      = "1=Length 2=Prob";
+        help[HEMISPHERE_HELP_CVS]      = "1=Length 2=Prb mod";
         help[HEMISPHERE_HELP_OUTS]     = "A=Quant5-bit B=CV8";
         help[HEMISPHERE_HELP_ENCODER]  = "Length/Prob/Scale";
         //                               "------------------" <-- Size Guide
@@ -144,7 +141,8 @@ private:
 
     // Settings
     uint16_t reg; // 16-bit sequence register
-    int p; // Probability of bit 15 changing on each cycle
+    int p; // Probability of bit 15 changing on each cycle (the value set in the panel)
+    int modded_p; // Actual value of p after modulation
     int8_t scale; // Scale used for quantized output
 
     void DrawSelector() {
@@ -153,7 +151,7 @@ private:
         gfxPrint(32, 15, "p=");
         if (cursor == 1 || Gate(1)) {
             gfxCursor(45, 23, 18); // Probability Cursor
-            gfxPrint(pad(100, p), p);
+            gfxPrint(pad(100, modded_p), modded_p);
         } else {
             gfxBitmap(49, 14, 8, LOCK_ICON);
         }
@@ -172,16 +170,6 @@ private:
             if (v) gfxRect(60 - (4 * b), 47, 3, 14);
         }
     }
-
-    void AdvanceRegister(int prob) {
-        // Before shifting, determine the fate of the last bit
-        int last = (reg >> 15) & 0x01;
-        if (random(0, 99) < prob) last = 1 - last;
-
-        // Shift left, then potentially add the bit from the other side
-        reg = (reg << 1) + last;
-    }
-
 };
 
 
