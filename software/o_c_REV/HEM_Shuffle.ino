@@ -44,7 +44,9 @@ public:
             which = 1 - which;
             if (last_tick) {
                 tempo = tick - last_tick;
-                uint32_t delay_ticks = Proportion(delay[which], 100, tempo);
+                int16_t d = delay[which] + Proportion(DetentedIn(which), HEMISPHERE_MAX_CV, 100);
+                d = constrain(d, 0, 100);
+                uint32_t delay_ticks = Proportion(d, 100, tempo);
                 next_trigger = tick + delay_ticks;
             }
             last_tick = tick;
@@ -84,7 +86,7 @@ protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Reset";
-        help[HEMISPHERE_HELP_CVS]      = "";
+        help[HEMISPHERE_HELP_CVS]      = "1=Odd Mod 2=Even";
         help[HEMISPHERE_HELP_OUTS]     = "A=Clock";
         help[HEMISPHERE_HELP_ENCODER]  = "Odd/Even Delay";
         //                               "------------------" <-- Size Guide
@@ -103,7 +105,8 @@ private:
     void DrawSelector() {
         for (int i = 0; i < 2; i++)
         {
-            int16_t d = delay[i];
+            int16_t d = delay[i] + Proportion(DetentedIn(i), HEMISPHERE_MAX_CV, 100);
+            d = constrain(d, 0, 100);
             gfxPrint(32 + pad(10, d), 15 + (i * 10), d);
             gfxPrint("%");
             if (cursor == i) gfxCursor(32, 23 + (i * 10), 18);
@@ -129,7 +132,9 @@ private:
 
         for (int n = 0; n < 2; n++)
         {
-            int x = Proportion(delay[n], 100, 20) + (n * 20) + 4;
+            int16_t d = delay[n] + Proportion(DetentedIn(n), HEMISPHERE_MAX_CV, 100);
+            d = constrain(d, 0, 100);
+            int x = Proportion(d, 100, 20) + (n * 20) + 4;
             gfxBitmap(x, 48 - (which == n ? 3 : 0), 8, which == n ? NOTE_ICON : X_NOTE_ICON);
         }
 
