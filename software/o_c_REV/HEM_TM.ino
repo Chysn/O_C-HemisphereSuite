@@ -23,7 +23,8 @@
 /*
  * Turing Machine based on https://thonk.co.uk/documents/random%20sequencer%20documentation%20v2-1%20THONK%20KIT_LargeImages.pdf
  *
- * Thanks to Tom Whitwell
+ * Thanks to Tom Whitwell for creating the concept, and for clarifying some things
+ * Thanks to Jon Wheeler for the CV length and probability updates
  */
 
 #include "braids_quantizer.h"
@@ -127,8 +128,8 @@ public:
 protected:
     void SetHelp() {
         //                               "------------------" <-- Size Guide
-        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Prb gate";
-        help[HEMISPHERE_HELP_CVS]      = "1=Length 2=Prb mod";
+        help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=p Gate";
+        help[HEMISPHERE_HELP_CVS]      = "1=Length 2=p Mod";
         help[HEMISPHERE_HELP_OUTS]     = "A=Quant5-bit B=CV8";
         help[HEMISPHERE_HELP_ENCODER]  = "Length/Prob/Scale";
         //                               "------------------" <-- Size Guide

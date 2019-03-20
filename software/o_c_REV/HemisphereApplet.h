@@ -17,6 +17,9 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+//
+// Thanks to Mike Thomas, for tons of help with the Buchla stuff
+//
 
 ////////////////////////////////////////////////////////////////////////////////
 //// Hemisphere Applet Base Class
@@ -29,8 +32,10 @@
 #define RIGHT_HEMISPHERE 1
 #ifdef BUCHLA_4U
 #define HEMISPHERE_MAX_CV 15360
+#define HEMISPHERE_CENTER_CV 7680
 #else
 #define HEMISPHERE_MAX_CV 7680
+#define HEMISPHERE_CENTER_CV 0
 #endif
 #define HEMISPHERE_3V_CV 4608
 #define HEMISPHERE_CLOCK_TICKS 100
@@ -319,7 +324,7 @@ public:
 
     // Apply small center detent to input, so it reads zero before a threshold
     int DetentedIn(int ch) {
-        return (In(ch) > 64 || In(ch) < -64) ? In(ch) : 0;
+        return (In(ch) > (HEMISPHERE_CENTER_CV + 64) || In(ch) < (HEMISPHERE_CENTER_CV - 64)) ? In(ch) : HEMISPHERE_CENTER_CV;
     }
 
     void Out(int ch, int value, int octave = 0) {
