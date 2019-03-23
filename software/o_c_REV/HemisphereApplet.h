@@ -119,7 +119,6 @@ public:
         ForEachChannel(ch)
         {
             // Set CV inputs
-
             ADC_CHANNEL channel = (ADC_CHANNEL)(ch + io_offset);
             inputs[ch] = OC::ADC::raw_pitch_value(channel);
             if (abs(inputs[ch] - last_cv[ch]) > HEMISPHERE_CHANGE_THRESHOLD) {

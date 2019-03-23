@@ -1,4 +1,4 @@
-// Categories:
+// Categories*:
 // 0x01 = Modulator
 // 0x02 = Sequencer
 // 0x04 = Clocking
@@ -7,6 +7,9 @@
 // 0x20 = MIDI
 // 0x40 = Logic
 // 0x80 = Other
+//
+// * Category filtering is deprecated at 1.8, but I'm leaving the per-applet categorization
+// alone to avoid breaking forked codebases by other developers.
 
 #define HEMISPHERE_AVAILABLE_APPLETS 51
 

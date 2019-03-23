@@ -46,28 +46,12 @@ public:
         DrawInterface();
     }
 
-    void OnButtonPress() {
-        if (++cursor > 2) cursor = 0;
-    }
+    void OnButtonPress() { }
 
     void OnEncoderMove(int direction) {
-        if (cursor == 0) { // Set tempo
-            uint16_t bpm = clock_m->GetTempo();
-            bpm += direction;
-            clock_m->SetTempoBPM(bpm);
-        }
-
-        if (cursor == 1) { // Set multiplier
-            int8_t mult = clock_m->GetMultiply();
-            mult += direction;
-            clock_m->SetMultiply(mult);
-        }
-
-        if (cursor == 2) { // Start/Stop
-            bool running = clock_m->IsRunning();
-            if (running) clock_m->Stop();
-            else clock_m->Start();
-        }
+        uint16_t bpm = clock_m->GetTempo();
+        bpm += direction;
+        clock_m->SetTempoBPM(bpm);
     }
         
     uint32_t OnDataRequest() {
@@ -88,7 +72,7 @@ protected:
         help[HEMISPHERE_HELP_DIGITALS] = "";
         help[HEMISPHERE_HELP_CVS]      = "";
         help[HEMISPHERE_HELP_OUTS]     = "A=Multiply B=Beat";
-        help[HEMISPHERE_HELP_ENCODER]  = "T=BPM/Mult/Start";
+        help[HEMISPHERE_HELP_ENCODER]  = "Tempo";
         //                               "------------------" <-- Size Guide
     }
     
@@ -101,18 +85,6 @@ private:
         gfxPrint(9, 15, "= ");
         gfxPrint(pad(100, clock_m->GetTempo()), clock_m->GetTempo());
         gfxPrint(" BPM");
-
-        gfxPrint(1, 25, "x");
-        gfxPrint(clock_m->GetMultiply());
-
-        if (cursor != 2 || CursorBlink()) {
-            if (clock_m->IsRunning()) gfxIcon(55, 25, PLAY_ICON);
-            else if (clock_m->IsPaused()) gfxIcon(55, 25, PAUSE_ICON);
-            else gfxIcon(55, 25, STOP_ICON);
-        }
-
-        if (cursor == 0) gfxCursor(21, 23, 18);
-        if (cursor == 1) gfxCursor(8, 33, 12);
 
         DrawMetronome();
     }
