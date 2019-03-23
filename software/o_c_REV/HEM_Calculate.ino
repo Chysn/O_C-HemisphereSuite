@@ -129,7 +129,7 @@ private:
             if (ch == selected) gfxCursor(0 + (31 * ch), 23, 30);
 
             // Show the icon if this random calculator is clocked
-            if (operation[ch] == 6 && rand_clocked[ch]);
+            if (operation[ch] == 6 && rand_clocked[ch]) gfxIcon(20 + 31 * ch, 15, CLOCK_ICON);
         }
     }
 };
