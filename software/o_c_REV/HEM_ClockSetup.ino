@@ -22,7 +22,7 @@ class ClockSetup : public HemisphereApplet {
 public:
 
     const char* applet_name() {
-        return "  Setup";
+        return "ClockSet";
     }
 
     void Start() { }
@@ -32,7 +32,6 @@ public:
     void Controller() { }
 
     void View() {
-        gfxHeader(applet_name());
         DrawInterface();
     }
 
@@ -80,7 +79,14 @@ private:
     ClockManager *clock_m = clock_m->get();
     
     void DrawInterface() {
-        gfxIcon(1, 1, CLOCK_ICON);
+        // Header: This is sort of a faux applet, so its header
+        // needs to extend across the screen
+        graphics.setPrintPos(1, 2);
+        graphics.print("Clock Setup");
+        gfxLine(0, 10, 62, 10);
+        gfxLine(0, 12, 62, 12);
+        graphics.drawLine(0, 10, 127, 10);
+        graphics.drawLine(0, 12, 127, 12);
 
         // Clock Source
         if (clock_m->IsRunning()) {
@@ -90,7 +96,7 @@ private:
             gfxIcon(1, 15, PAUSE_ICON);
             gfxPrint(16, 15, "Internal");
         } else {
-            gfxIcon(1, 15, STOP_ICON);
+            gfxIcon(1, 15, CLOCK_ICON);
             gfxPrint(16, 15, "Forward");
         }
 
@@ -104,7 +110,7 @@ private:
         gfxPrint(1, 35, "x");
         gfxPrint(clock_m->GetMultiply());
 
-        if (cursor == 0) gfxCursor(15, 23, 47);
+        if (cursor == 0) gfxCursor(16, 23, 46);
         if (cursor == 1) gfxCursor(23, 33, 18);
         if (cursor == 2) gfxCursor(8, 43, 12);
     }

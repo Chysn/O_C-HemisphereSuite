@@ -147,6 +147,15 @@ public:
             {
                 int index = my_applet[h];
                 available_applets[index].View(h);
+                if (h == 0) {
+                    if (clock_m->IsRunning() || clock_m->IsPaused()) {
+                        // Metronome icon
+                        graphics.drawBitmap8(56, 1, 8, clock_m->Cycle() ? METRO_L_ICON : METRO_R_ICON);
+                    } else if (forwarding) {
+                        // CV Forwarding Icon
+                        graphics.drawBitmap8(56, 1, 8, CLOCK_ICON);
+                    }
+                }
             }
 
             if (select_mode == LEFT_HEMISPHERE) graphics.drawFrame(0, 0, 64, 64);
@@ -208,7 +217,7 @@ public:
     void ToggleForwarding() {
         if (clock_m->IsRunning()) clock_m->Pause();
         else if (clock_m->IsPaused()) clock_m->Start();
-        else forwarding = forwarding ? 0 : 1;
+        else forwarding = 1 - forwarding;
     }
 
     void ToggleClockSetup() {
