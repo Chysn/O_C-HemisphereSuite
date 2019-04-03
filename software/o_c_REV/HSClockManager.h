@@ -39,6 +39,7 @@ class ClockManager {
     int8_t tocks_per_beat; // Multiplier
     bool cycle; // Alternates for each tock, for display purposes
     byte count; // Multiple counter
+    bool forwarded; // Master clock forwarding is enabled when true
 
     ClockManager() {
         SetTempoBPM(120);
@@ -87,6 +88,7 @@ public:
     }
 
     void Start() {
+        forwarded = 0;
         running = 1;
         Unpause();
     }
@@ -100,9 +102,13 @@ public:
 
     void Unpause() {paused = 0;}
 
+    void ToggleForwarding() {forwarded = 1 - forwarded;}
+
     bool IsRunning() {return (running && !paused);}
 
     bool IsPaused() {return paused;}
+
+    bool IsForwarded() {return forwarded;}
 
     /* Returns true if the clock should fire on this tick, based on the current tempo */
     bool Tock() {

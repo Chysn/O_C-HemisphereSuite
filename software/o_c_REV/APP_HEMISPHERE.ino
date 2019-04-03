@@ -77,7 +77,6 @@ public:
         memcpy(&available_applets, &applets, sizeof(applets));
         ClockSetup = DECLARE_APPLET(9999, 0x01, ClockSetup);
 
-        forwarding = 0;
         help_hemisphere = -1;
         clock_setup = 0;
 
@@ -125,14 +124,12 @@ public:
             }
         }
 
-        // Turn off clock forwarding if internal clock is running
-        if (clock_m->IsRunning()) forwarding = 0;
-        if (clock_setup) ClockSetup.Controller(LEFT_HEMISPHERE, forwarding);
+        if (clock_setup) ClockSetup.Controller(LEFT_HEMISPHERE, clock_m->IsForwarded());
 
         for (int h = 0; h < 2; h++)
         {
             int index = my_applet[h];
-            available_applets[index].Controller(h, (bool)forwarding);
+            available_applets[index].Controller(h, clock_m->IsForwarded());
         }
     }
 
@@ -151,7 +148,7 @@ public:
                     if (clock_m->IsRunning() || clock_m->IsPaused()) {
                         // Metronome icon
                         graphics.drawBitmap8(56, 1, 8, clock_m->Cycle() ? METRO_L_ICON : METRO_R_ICON);
-                    } else if (forwarding) {
+                    } else if (clock_m->IsForwarded()) {
                         // CV Forwarding Icon
                         graphics.drawBitmap8(56, 1, 8, CLOCK_ICON);
                     }
@@ -214,10 +211,10 @@ public:
         }
     }
 
-    void ToggleForwarding() {
+    void ToggleClockRun() {
         if (clock_m->IsRunning()) clock_m->Pause();
         else if (clock_m->IsPaused()) clock_m->Start();
-        else forwarding = 1 - forwarding;
+        else clock_m->ToggleForwarding();
     }
 
     void ToggleClockSetup() {
@@ -291,7 +288,6 @@ private:
     int my_applet[2]; // Indexes to available_applets
     int select_mode;
     bool clock_setup;
-    int forwarding;
     int help_hemisphere; // Which of the hemispheres (if any) is in help mode, or -1 if none
     int midi_in_hemisphere; // Which of the hemispheres (if any) is using MIDI In
     uint32_t click_tick; // Measure time between clicks for double-click
@@ -397,7 +393,7 @@ void HEMISPHERE_handleButtonEvent(const UI::Event &event) {
 
     if (event.type == UI::EVENT_BUTTON_LONG_PRESS) {
         if (event.control == OC::CONTROL_BUTTON_DOWN) manager.ToggleClockSetup();
-        if (event.control == OC::CONTROL_BUTTON_L) manager.ToggleForwarding();
+        if (event.control == OC::CONTROL_BUTTON_L) manager.ToggleClockRun();
     }
 }
 
