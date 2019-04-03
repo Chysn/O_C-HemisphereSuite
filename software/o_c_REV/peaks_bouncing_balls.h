@@ -1,6 +1,6 @@
-// Copyright 2013 Olivier Gillet, 2016 Tim Churches.
+// Copyright 2013 Émilie Gillet, 2016 Tim Churches.
 //
-// Original author: Olivier Gillet (ol.gillet@gmail.com) (Mutable Instruments)
+// Original author: Émilie Gillet (ol.gillet@gmail.com) (Mutable Instruments)
 // Modifications for use in Ornaments & Crimes firmware: Tim Churches (tim.churches@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy

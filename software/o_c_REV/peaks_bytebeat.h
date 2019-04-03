@@ -1,7 +1,7 @@
-// Copyright 2015, 2013 Tim Churches, Olivier Gillet
+// Copyright 2015, 2013 Tim Churches, Émilie Gillet
 //
 // Author: Tim Churches (tim.churches@gmail.com)
-// Based on Peaks unbuffered processor header code by: Olivier Gillet (Mutable Instruments)
+// Based on Peaks unbuffered processor header code by: Émilie Gillet (Mutable Instruments)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

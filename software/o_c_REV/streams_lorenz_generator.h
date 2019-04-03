@@ -1,7 +1,7 @@
-// Copyright 2014 Olivier Gillet.
+// Copyright 2014 Émilie Gillet.
 // Copyright 2016 Tim Churches
 //
-// Original Author: Olivier Gillet (ol.gillet@gmail.com)
+// Original Author: Émilie Gillet (ol.gillet@gmail.com)
 // Modifications for use of this code in firmare for the Ornament and Crime module:
 // Tim Churches (tim.churches@gmail.com)
 //

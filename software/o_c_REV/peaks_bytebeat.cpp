@@ -1,7 +1,7 @@
-// Copyright 2015, 2013 Tim Churches, Olivier Gillet
+// Copyright 2015, 2013 Tim Churches, Émilie Gillet
 //
 // Author: Tim Churches (tim.churches@gmail.com)
-// Loosely based on Peaks unbuffered processor code by: Olivier Gillet (Mutable Instruments)
+// Loosely based on Peaks unbuffered processor code by: Émilie Gillet (Mutable Instruments)
 // Byte beat equations: as indicated in the body of the code below.
 // BitWiz equations used with permission of Jonatan Liljedahl <lijon@kymatica.com> (BitWiz author)
 // Equation Composer equations from Microbe Modular Equation Composer - see https://github.com/clone45/EquationComposer

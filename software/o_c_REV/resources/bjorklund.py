@@ -55,7 +55,7 @@ def bjorklund(pulses, steps):
     return pattern
 
 # an alternative way of building Euclidean patterns, from
-# the Mutable Instruments Grids code by Olivier Gillet
+# the Mutable Instruments Grids code by Émilie Gillet
 # https://github.com/pichenettes/eurorack/blob/master/grids/resources/lookup_tables.py
 
 def Flatten(l):

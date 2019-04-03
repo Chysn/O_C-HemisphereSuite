@@ -1,6 +1,6 @@
 // Copyright (c) 2018, Jason Justian
 //
-// Based on Braids Quantizer, Copyright 2015 Olivier Gillet.
+// Based on Braids Quantizer, Copyright 2015 Émilie Gillet.
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

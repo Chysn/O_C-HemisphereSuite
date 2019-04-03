@@ -1,6 +1,6 @@
-// Copyright 2015 Olivier Gillet.
+// Copyright 2015 Émilie Gillet.
 //
-// Author: Olivier Gillet (ol.gillet@gmail.com)
+// Author: Émilie Gillet (ol.gillet@gmail.com)
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

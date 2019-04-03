@@ -1,7 +1,7 @@
 // Copyright (c) 2018, Jason Justian
 //
 // Port of subset of Low Rents Copyright (c) 2016 Patrick Dowling,
-// Copyright (c) 2014 Olivier Gillet, Copyright (c) 2016 Tim Churches
+// Copyright (c) 2014 Émilie Gillet, Copyright (c) 2016 Tim Churches
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal

@@ -1,6 +1,6 @@
-// Copyright 2015 Olivier Gillet, 2016 mxmxmx
+// Copyright 2015 Émilie Gillet, 2016 mxmxmx
 //
-// Author: Olivier Gillet (ol.gillet@gmail.com)
+// Author: Émilie Gillet (ol.gillet@gmail.com)
 // adapted for OC, mxmxmx
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
