@@ -51,6 +51,7 @@ class ClockManager {
         last_tock_check = 0;
         count = 0;
         tock = 0;
+        forwarded = 0;
     }
 
 public:
