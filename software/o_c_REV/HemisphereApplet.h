@@ -453,6 +453,13 @@ protected:
     /* Master Clock Forwarding is activated. This is updated with each ISR cycle by the Hemisphere Manager */
     bool MasterClockForwarded() {return master_clock_bus;}
 
+    int SetRange(int bias) {
+#ifdef OC_PLUS
+        OC::DAC::set_Vbias(bias);
+#endif
+        return bias;
+    }
+
 private:
     int gfx_offset; // Graphics offset, based on the side
     int io_offset; // Input/Output offset, based on the side

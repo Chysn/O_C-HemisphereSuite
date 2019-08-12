@@ -24,5 +24,9 @@
 /* ------------ use DAC8564 -------------------------------------------------------------------------  */
 //#define DAC8564
 
+// This is the branch for the 10V OC Plus and VOR support, so these default to set
+#define IO_10V
+#define OC_PLUS
+
 #endif
 

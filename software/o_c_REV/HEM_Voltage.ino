@@ -32,6 +32,7 @@ public:
         voltage[1] = (-3 * (12 << 7)) / VOLTAGE_INCREMENTS; // -3V
         gate[0] = 0;
         gate[1] = 0;
+        SetRange(OC::DAC::VBiasBipolar);
     }
 
     void Controller() {
@@ -64,7 +65,7 @@ public:
         uint8_t ch = cursor / 2;
         if (cursor == 0 || cursor == 2) {
             // Change voltage
-            int min = -HEMISPHERE_3V_CV / VOLTAGE_INCREMENTS;
+            int min = -HEMISPHERE_MAX_CV / VOLTAGE_INCREMENTS;
             int max = HEMISPHERE_MAX_CV / VOLTAGE_INCREMENTS;
             voltage[ch] = constrain(voltage[ch] + direction, min, max);
         } else {
