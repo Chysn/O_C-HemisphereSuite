@@ -41,7 +41,7 @@ public:
 
   #ifdef BUCHLA_4U
     static constexpr int kOctaveZero = 0;
-  #elif defined(OC_PLUS) || defined(OC_1U)
+  #elif defined(VOR) || defined(OC_1U)
     #ifdef OC_1U
     static constexpr int kOctaveZero = 3; // todo: can't be a constant (eventually)
     #else

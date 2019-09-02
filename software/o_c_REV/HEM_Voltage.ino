@@ -32,7 +32,6 @@ public:
         voltage[1] = (-3 * (12 << 7)) / VOLTAGE_INCREMENTS; // -3V
         gate[0] = 0;
         gate[1] = 0;
-        SetRange(OC::DAC::VBiasBipolar);
     }
 
     void Controller() {

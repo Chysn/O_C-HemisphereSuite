@@ -40,6 +40,7 @@
 #include "src/drivers/display.h"
 #include "src/drivers/ADC/OC_util_ADC.h"
 #include "util/util_debugpins.h"
+#include "VBiasManager.h"
 
 unsigned long LAST_REDRAW_TIME = 0;
 uint_fast8_t MENU_REDRAW = true;
@@ -171,6 +172,8 @@ void FASTRUN loop() {
           OC_DEBUG_PROFILE_SCOPE(OC::DEBUG::MENU_draw_cycles);
           OC::apps::current_app->DrawMenu();
           ++menu_redraws;
+          VBiasManager *vbias_m = vbias_m->get();
+          vbias_m->DrawPopupPerhaps();
         } else {
           //Blank the screen instead of drawing the screensaver (chysn 9/2/2018)
           //OC::apps::current_app->DrawScreensaver();

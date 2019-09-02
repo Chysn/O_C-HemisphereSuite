@@ -26,7 +26,8 @@
 
 // This is the branch for the 10V OC Plus and VOR support, so these default to set
 #define IO_10V
-#define OC_PLUS
+#define VOR
+#define VOR_NO_RANGE_BUTTON
 
 #endif
 
