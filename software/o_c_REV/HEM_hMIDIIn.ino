@@ -20,12 +20,15 @@
 
 // See https://www.pjrc.com/teensy/td_midi.html
 
+#define HEM_MIDI_CLOCK_DIVISOR 12
+
 #define HEM_MIDI_NOTE_ON 1
 #define HEM_MIDI_NOTE_OFF 0
 #define HEM_MIDI_CC 3
 #define HEM_MIDI_AFTERTOUCH 5
 #define HEM_MIDI_PITCHBEND 6
 #define HEM_MIDI_SYSEX 7
+#define HEM_MIDI_REALTIME 8
 
 // The functions available for each output
 #define HEM_MIDI_NOTE_OUT 0
@@ -35,6 +38,7 @@
 #define HEM_MIDI_CC_OUT 4
 #define HEM_MIDI_AT_OUT 5
 #define HEM_MIDI_PB_OUT 6
+#define HEM_MIDI_REALTIME_OUT 7
 
 struct MIDILogEntry {
     int message;
@@ -53,29 +57,42 @@ public:
         first_note = -1;
         channel = 0; // Default channel 1
 
-        const char * fn_name_list[] = {"Note#", "Trig", "Gate", "Veloc", "Mod", "Aft", "Bend"};
-        for (int i = 0; i < 7; i++) fn_name[i] = fn_name_list[i];
+        const char * fn_name_list[] = {"Note#", "Trig", "Gate", "Veloc", "Mod", "Aft", "Bend", "Clock"};
+        for (int i = 0; i < 8; i++) fn_name[i] = fn_name_list[i];
 
         ForEachChannel(ch)
         {
-            function[ch] = 0 + (ch * 2);
+            function[ch] = ch * 2;
             Out(ch, 0);
         }
 
         log_index = 0;
+        clock_count = 0;
     }
 
     void Controller() {
         if (usbMIDI.read()) {
             int message = usbMIDI.getType();
-            if (message == HEM_MIDI_SYSEX) {
-                ReceiveManagerSysEx();
+            int data1 = usbMIDI.getData1();
+            int data2 = usbMIDI.getData2();
+
+            if (message == HEM_MIDI_SYSEX) ReceiveManagerSysEx();
+
+            // Listen for incoming clock
+            if (message == HEM_MIDI_REALTIME && data1 == 0) {
+                if (++clock_count == 1) {
+                    ForEachChannel(ch) 
+                    {
+                        if (function[ch] == HEM_MIDI_REALTIME_OUT) {
+                            ClockOut(ch);
+                        }
+                    }
+                }
+                if (clock_count == HEM_MIDI_CLOCK_DIVISOR) clock_count = 0;
             }
 
             if (usbMIDI.getChannel() == (channel + 1)) {
                 last_tick = OC::CORE::ticks;
-                int data1 = usbMIDI.getData1();
-                int data2 = usbMIDI.getData2();
                 bool log_this = false;
 
                 if (message == HEM_MIDI_NOTE_ON) { // Note on
@@ -170,7 +187,8 @@ public:
         if (cursor == 0) channel = constrain(channel += direction, 0, 15);
         else {
             int ch = cursor - 1;
-            function[ch] = constrain(function[ch] += direction, 0, 6);
+            function[ch] = constrain(function[ch] += direction, 0, 7);
+            clock_count = 0;
         }
     }
         
@@ -207,7 +225,8 @@ private:
     int cursor; // 0=MIDI channel, 1=A/C function, 2=B/D function
     int last_tick; // Tick of last received message
     int first_note; // First note received, for awaiting Note Off
-    const char* fn_name[7];
+    const char* fn_name[8];
+    uint8_t clock_count; // MIDI clock counter (24ppqn)
     
     // Logging
     MIDILogEntry log[7];
