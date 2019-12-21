@@ -184,12 +184,14 @@ public:
     }
 
     void OnEncoderMove(int direction) {
+        if (cursor == 3) return;
         if (cursor == 0) channel = constrain(channel += direction, 0, 15);
         else {
             int ch = cursor - 1;
             function[ch] = constrain(function[ch] += direction, 0, 7);
             clock_count = 0;
         }
+        ResetCursor();
     }
         
     uint32_t OnDataRequest() {
