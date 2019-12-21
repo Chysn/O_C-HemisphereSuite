@@ -21,7 +21,6 @@
     DECLARE_APPLET( 47, 0x09, ASR), \
     DECLARE_APPLET( 41, 0x41, Binary), \
     DECLARE_APPLET( 51, 0x80, BootsNCat), \
-    DECLARE_APPLET( 38, 0x80, BowTieSeq), \
     DECLARE_APPLET(  4, 0x14, Brancher), \
     DECLARE_APPLET( 31, 0x04, Burst), \
     DECLARE_APPLET( 12, 0x10, Calculate),\
