@@ -19,6 +19,7 @@
     DECLARE_APPLET( 34, 0x01, ADEG), \
     DECLARE_APPLET( 15, 0x02, AnnularFusion), \
     DECLARE_APPLET( 47, 0x09, ASR), \
+    DECLARE_APPLET( 56, 0x10, AttenuateOffset), \
     DECLARE_APPLET( 41, 0x41, Binary), \
     DECLARE_APPLET( 51, 0x80, BootsNCat), \
     DECLARE_APPLET(  4, 0x14, Brancher), \
