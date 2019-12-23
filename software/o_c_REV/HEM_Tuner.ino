@@ -71,7 +71,11 @@ public:
 
     void View() {
         gfxHeader(applet_name());
+#ifdef FLIP_180
+        if (hemisphere == 0) DrawTuner();
+#else
         if (hemisphere == 1) DrawTuner();
+#endif
         else DrawWarning();
     }
 

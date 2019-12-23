@@ -27,6 +27,8 @@
 // and that the dark spots are too illuminated by adjacent pixels, or whatever.
 // But I'm leaving this in because with the right phone and the right display, who
 // knows?
+// Ah, the heck with it. Commenting it out.
+/*
 const uint32_t QR[25] = {
         0x1fdeb7f,
         0x1042d41,
@@ -54,6 +56,7 @@ const uint32_t QR[25] = {
         0x12c7741,
         0x1e4dc7f
 };
+*/
 
 class Settings : public HSApplication {
 public:
@@ -77,7 +80,7 @@ public:
         gfxPrint(60, 25, "Buchla");
 #endif
 
-        DrawQRAt(103, 15);
+        //DrawQRAt(103, 15);
     }
 
     /////////////////////////////////////////////////////////////////
@@ -110,7 +113,7 @@ public:
     }
 
 private:
-
+/*
     void DrawQRAt(byte x, byte y) {
         for (byte c = 0; c < 25; c++) // Column
         {
@@ -121,6 +124,7 @@ private:
             }
         }
     }
+*/
 
 };
 

@@ -643,7 +643,6 @@ private:
                 if (++clock_count >= 24) clock_count = 0;
             }
 
-
             bool note_captured = 0; // A note or gate should only be captured by
             bool gate_captured = 0; // one assignment, to allow polyphony in the interface
 
