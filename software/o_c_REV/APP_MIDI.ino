@@ -165,13 +165,13 @@ struct CaptainMIDILog {
 
             if (message == 0 || message == 1) {
                 graphics.print(midi_note_numbers[data1]);
-                graphics.setPrintPos(103 + x_offset, y);
+                graphics.setPrintPos(91 + x_offset, y);
                 graphics.print(data2); // Velocity
             }
 
             if (message == 2 || message == 3) {
                 if (message == 2) graphics.print(data1); // Controller number
-                graphics.setPrintPos(103 + x_offset, y);
+                graphics.setPrintPos(91 + x_offset, y);
                 graphics.print(data2); // Value
             }
 
