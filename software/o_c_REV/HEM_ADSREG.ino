@@ -93,7 +93,15 @@ public:
     }
 
     void View() {
+        int adsr[4] = {attack, decay, sustain, release};
+        char *labels[] = {"Attack","Decay","Sustain","Release"};
+
         gfxHeader(applet_name());
+        gfxPos(1, 15);
+        gfxPrint(labels[edit_stage]);
+        gfxPrint(45 + 18 - digitCount(adsr[edit_stage]) * 6, 15, adsr[edit_stage]);
+        gfxCursor(46, 23, 17);
+
         DrawIndicator();
         DrawADSR();
     }
