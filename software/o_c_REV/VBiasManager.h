@@ -42,7 +42,8 @@ class VBiasManager {
 
 public:
     static const int UNI = 0;
-    static const int BI = 1;
+    static const int ASYM = 1;
+    static const int BI = 2;
 
     static VBiasManager *get() {
         if (!instance) instance = new VBiasManager;
@@ -56,7 +57,7 @@ public:
         // Only advance the bias if it's been less than a second since the last button press.
         // This is so that the first button press shows the popup without changing anything.
         if (OC::CORE::ticks - last_advance_tick < BIAS_EDITOR_TIMEOUT) {
-            if (++bias_state > 1) bias_state = 0;
+            if (++bias_state > 2) bias_state = 0;
             instance->ChangeBiasToState(bias_state);
         }
         last_advance_tick = OC::CORE::ticks;
@@ -78,8 +79,9 @@ public:
      *
      */
     void ChangeBiasToState(int new_bias_state) {
-        int new_bias_value = OC::calibration_data.v_bias; // Bipolar
-        if (new_bias_state == VBiasManager::UNI) new_bias_value = OC::DAC::VBiasUnipolar; // Unipolar
+        int new_bias_value = OC::calibration_data.v_bias & 0xFFFF; // Bipolar = lower 2 bytes
+        if (new_bias_state == VBiasManager::UNI) new_bias_value = OC::DAC::VBiasUnipolar;
+        if (new_bias_state == VBiasManager::ASYM) new_bias_value = (OC::calibration_data.v_bias >> 16); // asym. = upper 2 bytes
         OC::DAC::set_Vbias(new_bias_value);
         bias_state = new_bias_state;
     }
@@ -90,7 +92,7 @@ public:
     void DrawPopupPerhaps() {
         if (OC::CORE::ticks - last_advance_tick < BIAS_EDITOR_TIMEOUT) {
             graphics.clearRect(17, 7, 82, 43);
-            graphics.drawFrame(18, 8, 80, 32);
+            graphics.drawFrame(18, 8, 80, 42);
 
             graphics.setPrintPos(20, 10);
             graphics.print("Range:");
@@ -98,9 +100,11 @@ public:
             // Unipolar state
             graphics.setPrintPos(30, 20);
             graphics.print(" 0V -> 10V");
-
-            // Bipolar state
+            // Asym State
             graphics.setPrintPos(30, 30);
+            graphics.print("-3V -> 7V");
+            // Bipolar state
+            graphics.setPrintPos(30, 40);
             graphics.print("-5V -> 5V");
 
             graphics.setPrintPos(20, 20 + (bias_state * 10));

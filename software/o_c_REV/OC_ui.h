@@ -2,6 +2,7 @@
 #define OC_UI_H_
 
 #include "OC_config.h"
+#include "OC_options.h"
 #include "OC_debug.h"
 #include "UI/ui_button.h"
 #include "UI/ui_encoder.h"
@@ -27,14 +28,19 @@ enum UiControl {
   CONTROL_BUTTON_L    = 0x4,
   CONTROL_BUTTON_R    = 0x8,
 #endif
-  CONTROL_BUTTON_MASK = 0xf,
+  //CONTROL_BUTTON_MASK = 0xf,
 
   CONTROL_BUTTON_M    = 0x10,
   CONTROL_ENCODER_L   = 0x20,
   CONTROL_ENCODER_R   = 0x40,
 
+  #ifdef VOR
+  CONTROL_LAST = 6,
+  CONTROL_BUTTON_LAST = 5,
+  #else
   CONTROL_LAST = 5,
   CONTROL_BUTTON_LAST = 4,
+  #endif
 };
 
 static inline uint16_t control_mask(unsigned i) {
