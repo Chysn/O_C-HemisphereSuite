@@ -25,9 +25,15 @@
 //#define DAC8564
 
 // This is the branch for the 10V OC Plus and VOR support, so these default to set
-#define IO_10V
+
+/* ------------ uncomment for use with Plum Audio VOR anabled versions (OCP, 1uO_c v2, 4Robots) ---------------------------------------------------------  */
 #define VOR
-//#define VOR_NO_RANGE_BUTTON
+/* ------------ uncomment for use with Plum Audio 1uO_c 4Robots (To use Up button long press to change VOR instead activate screensaver) ----------------  */
+#define VOR_NO_RANGE_BUTTON
+
+#if defined(VOR)
+  #define IO_10V
+#endif
 
 #endif
 
