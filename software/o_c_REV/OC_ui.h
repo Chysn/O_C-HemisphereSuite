@@ -34,7 +34,7 @@ enum UiControl {
   CONTROL_ENCODER_L   = 0x20,
   CONTROL_ENCODER_R   = 0x40,
 
-  #ifdef VOR
+  #if defined(VOR) && !defined(VOR_NO_RANGE_BUTTON)
   CONTROL_LAST = 6,
   CONTROL_BUTTON_LAST = 5,
   #else
@@ -124,8 +124,8 @@ private:
   uint32_t ticks_;
   uint32_t screensaver_timeout_;
 
-  UI::Button buttons_[4];
-  uint32_t button_press_time_[4];
+  UI::Button buttons_[CONTROL_BUTTON_LAST];
+  uint32_t button_press_time_[CONTROL_BUTTON_LAST];
   uint16_t button_state_;
   uint16_t button_ignore_mask_;
   bool screensaver_;

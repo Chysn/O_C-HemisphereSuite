@@ -13,8 +13,11 @@
 #include "OC_version.h"
 #include "OC_options.h"
 #include "src/drivers/display.h"
+
+#ifdef VOR
 #include "VBiasManager.h"
 VBiasManager *VBiasManager::instance = 0;
+#endif
 
 extern uint_fast8_t MENU_REDRAW;
 
@@ -26,7 +29,12 @@ void Ui::Init() {
   ticks_ = 0;
   set_screensaver_timeout(SCREENSAVER_TIMEOUT_S);
 
+#if defined(VOR) && !defined(VOR_NO_RANGE_BUTTON)
+  static const int button_pins[] = { but_top, but_bot, butL, butR, but_mid };
+#else
   static const int button_pins[] = { but_top, but_bot, butL, butR };
+#endif
+
   for (size_t i = 0; i < CONTROL_BUTTON_LAST; ++i) {
     buttons_[i].Init(button_pins[i], OC_GPIO_BUTTON_PINMODE);
   }
@@ -178,7 +186,7 @@ UiMode Ui::Splashscreen(bool &reset_settings) {
       mode = UI_MODE_APP_SETTINGS;
 
     reset_settings =
-    #ifdef BUCHLA_4U
+    #if defined(BUCHLA_4U) && !defined(IO_10V)
        read_immediate(CONTROL_BUTTON_UP) && read_immediate(CONTROL_BUTTON_R);
     #else
        read_immediate(CONTROL_BUTTON_UP) && read_immediate(CONTROL_BUTTON_DOWN);
