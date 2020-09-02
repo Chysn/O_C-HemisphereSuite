@@ -49,7 +49,7 @@ public:
             int32_t rho_h = SCALE8_16(constrain(rho + rho_cv, 4, 127));
             lorenz_m->SetRho(hemisphere, USAT16(rho_h));
 
-            if (Clock(0)) lorenz_m->Reset(hemisphere);
+            if (Clock(0, true)) lorenz_m->Reset(hemisphere);
             lorenz_m->Process();
 
             // The scaling here is based on observation of the value range
@@ -75,7 +75,7 @@ public:
         if (cursor == 0) freq = constrain(freq += direction, 0, 255);
         if (cursor == 1) rho = constrain(rho += direction, 4, 127);
     }
-        
+
     uint32_t OnDataRequest() {
         uint32_t data = 0;
         Pack(data, PackLocation {0,8}, (uint8_t)freq);
@@ -97,7 +97,7 @@ protected:
         help[HEMISPHERE_HELP_ENCODER]  = "Freq/Rho";
         //                               "------------------" <-- Size Guide
     }
-    
+
 private:
     LorenzGeneratorManager *lorenz_m = lorenz_m->get();
     int freq;
