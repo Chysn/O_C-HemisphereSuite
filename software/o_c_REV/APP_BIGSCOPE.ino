@@ -39,7 +39,7 @@ public:
 
             if (--sample_countdown < 1) {
                 sample_countdown = sample_ticks;
-                if (++sample_num > 63) sample_num = 0;
+                if (++sample_num > 127) sample_num = 0;
                 int sample = Proportion(In(0), HEMISPHERE_MAX_CV, 128);
                 sample = constrain(sample, -128, 127) + 127;
                 snapshot[sample_num] = (uint8_t) sample;
@@ -57,7 +57,7 @@ public:
         DrawBPM();
         DrawInput1();
         if (freeze) {
-            gfxInvert(0, 24, 64, 40);
+            gfxInvert(0, 24, 128, 40);
         }
     }
 
@@ -110,7 +110,7 @@ private:
     bool freeze;
 
     // Scope
-    uint8_t snapshot[64];
+    uint8_t snapshot[128];
     int sample_ticks; // Ticks between samples
     int sample_countdown; // Last time a sample was taken
     int sample_num; // Current sample number at the start
@@ -148,12 +148,12 @@ private:
     }
 
     void DrawInput1() {
-        for (int s = 0; s < 64; s++)
+        for (int s = 0; s < 128; s++)
         {
             int x = s + sample_num;
-            if (x > 63) x -= 64;
-            int l = Proportion(snapshot[x], 255, 28);
-            gfxPixel(x, (28 - l) + 10);
+            if (x > 127) x -= 128;
+            int l = Proportion(snapshot[x], 255, 48);
+            gfxPixel(x, (48 - l) + 14);
         }
 
     }
