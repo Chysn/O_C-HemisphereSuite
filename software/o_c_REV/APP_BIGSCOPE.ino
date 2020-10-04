@@ -7,36 +7,15 @@
 class BigScope : public HSApplication, public SystemExclusiveHandler {
 public:
     void Start() {
-        last_bpm_tick = OC::CORE::ticks;
-        bpm = 0;
         sample_ticks = 320;
         freeze = 0;
-        last_scope_tick = 0;
     }
 
     void Resume() {
     }
 
     void Controller() {
-        if (Clock(0)) {
-            int this_tick = OC::CORE::ticks;
-            int time = this_tick - last_bpm_tick;
-            last_bpm_tick = this_tick;
-            bpm = 1000000 / time;
-            if (bpm > 9999) bpm = 9999;
-        }
-
-        if (Clock(1)) {
-            if (last_scope_tick) {
-                int cycle_ticks = OC::CORE::ticks - last_scope_tick;
-                sample_ticks = cycle_ticks / 64;
-                sample_ticks = constrain(sample_ticks, 2, 64000);
-            }
-            last_scope_tick = OC::CORE::ticks;
-        }
-
         if (!freeze) {
-            last_cv = In(1);
 
             if (--sample_countdown < 1) {
                 sample_countdown = sample_ticks;
@@ -53,9 +32,7 @@ public:
 
     void View() {
         gfxHeader("BigScope");
-        DrawBPM();
         DrawInput1();
-        DrawInput2();
         if (freeze) {
             gfxInvert(0, 24, 64, 40);
         }
@@ -101,13 +78,7 @@ public:
     }
 
 private:
-    int8_t cursor;
-    // BPM Calcultion
-    int last_bpm_tick;
-    int bpm;
-
     // CV monitor
-    int last_cv;
     bool freeze;
 
     // Scope
@@ -116,32 +87,7 @@ private:
     int sample_countdown; // Last time a sample was taken
     int sample_num; // Current sample number at the start
     int last_encoder_move; // The last the the sample_ticks value was changed
-    int last_scope_tick; // Used to auto-calculate sample countdown
 
-    // Icons
-
-    void DrawBPM() {
-        gfxPrint(9, 15, "BPM ");
-        gfxPrint(bpm / 4);
-        gfxLine(0, 24, 63, 24);
-
-        if (OC::CORE::ticks - last_bpm_tick < 1666) gfxBitmap(1, 15, 8, CLOCK_ICON);
-    }
-
-    /* Convert CV value to voltage level and print  to two decimal places */
-    void gfxPrintVoltage(int cv) {
-        int v = (cv * 100) / (12 << 7);
-        bool neg = v < 0 ? 1 : 0;
-        if (v < 0) v = -v;
-        int wv = v / 100; // whole volts
-        int dv = v - (wv * 100); // decimal
-        gfxPrint(neg ? "-" : "+");
-        gfxPrint(wv);
-        gfxPrint(".");
-        if (dv < 10) gfxPrint("0");
-        gfxPrint(dv);
-        gfxPrint("V");
-    }
     void DrawInput1() {
         for (int s = 0; s < 64; s++)
         {
@@ -154,12 +100,6 @@ private:
         if (OC::CORE::ticks - last_encoder_move < 16667) {
             gfxPrint(1, 26, sample_ticks);
         }
-    }
-
-    void DrawInput2() {
-        gfxLine(0, 53, 63, 53);
-        gfxBitmap(1, 55, 8, CV_ICON);
-        gfxPos(12, 55);
     }
 };
 
