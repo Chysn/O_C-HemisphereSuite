@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
+  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+    <generated />
+  </component>
+  <component name="CMakeSettings">
+    <configurations>
+      <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
+    </configurations>
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="fdbd04a4-b82c-49b5-b96d-734bcb04e032" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/software/o_c_REV/APP_BIGSCOPE.ino" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/o_c_REV/APP_PONGGAME.ino" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/software/o_c_REV/OC_apps.ino" beforeDir="false" afterPath="$PROJECT_DIR$/software/o_c_REV/OC_apps.ino" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="ClangdSettings">
+    <option name="formatViaClangd" value="false" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectId" id="1iQ37yMitXXocdRKU3b8cvuOy0Y" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">
+    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="cf.first.check.clang-format" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/software/o_c_REV" />
+    <property name="settings.editor.selected.configurable" value="preferences.editor" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/software/o_c_REV" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" PASS_PARENT_ENVS_2="true">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="fdbd04a4-b82c-49b5-b96d-734bcb04e032" name="Default Changelist" comment="" />
+      <created>1601825825814</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1601825825814</updated>
+      <workItem from="1601825833761" duration="1443000" />
+      <workItem from="1601829710576" duration="1914000" />
+      <workItem from="1601832930230" duration="4367000" />
+    </task>
+    <servers />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="896" y="-881" key="#Plugins" timestamp="1601832991672">
+      <screen x="0" y="-1058" width="2560" height="1058" />
+    </state>
+    <state x="896" y="-881" key="#Plugins/0.-1058.2560.1058/32.22.2528.1058@0.-1058.2560.1058" timestamp="1601832991672" />
+    <state x="800" y="-890" key="SettingsEditor" timestamp="1601832826506">
+      <screen x="0" y="-1058" width="2560" height="1058" />
+    </state>
+    <state x="800" y="-890" key="SettingsEditor/0.-1058.2560.1058/32.22.2528.1058@0.-1058.2560.1058" timestamp="1601832826506" />
+    <state x="985" y="-768" width="2147" height="1039" key="dock-window-1" timestamp="1601832355109">
+      <screen x="0" y="-1058" width="2560" height="1058" />
+    </state>
+    <state x="985" y="-768" width="2147" height="1039" key="dock-window-1/0.-1058.2560.1058/32.22.2528.1058@0.-1058.2560.1058" timestamp="1601832355109" />
+    <state x="71" y="-995" width="2147" height="1039" key="dock-window-1/0.-1058.2560.1058/32.22.2528.1058@32.22.2528.1058" timestamp="1601827801752" />
+    <state x="968" y="-897" width="1247" height="753" key="find.popup" timestamp="1601836536552">
+      <screen x="0" y="-1058" width="2560" height="1058" />
+    </state>
+    <state x="968" y="-897" width="1247" height="753" key="find.popup/0.-1058.2560.1058/32.22.2528.1058@0.-1058.2560.1058" timestamp="1601836536552" />
+    <state x="988" y="183" width="615" height="735" key="find.popup/0.-1058.2560.1058/32.22.2528.1058@32.22.2528.1058" timestamp="1601826611289" />
+    <state x="964" y="-823" width="670" height="676" key="search.everywhere.popup" timestamp="1601835303341">
+      <screen x="0" y="-1058" width="2560" height="1058" />
+    </state>
+    <state x="964" y="-823" width="670" height="676" key="search.everywhere.popup/0.-1058.2560.1058/32.22.2528.1058@0.-1058.2560.1058" timestamp="1601835303341" />
+  </component>
+</project>
