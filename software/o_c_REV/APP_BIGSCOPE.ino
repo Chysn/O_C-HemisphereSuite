@@ -3,19 +3,39 @@
 
 #define HEMISPHERE_MAX_CV 7680
 #define HEMISPHERE_CENTER_CV 0
+#define SCOPE_WIDTH 128
 
 class BigScope : public HSApplication, public SystemExclusiveHandler {
 public:
     void Start() {
+        last_bpm_tick = OC::CORE::ticks;
+        bpm = 0;
         sample_ticks = 320;
         freeze = 0;
+        last_scope_tick = 0;
     }
 
     void Resume() {
     }
 
     void Controller() {
+        if (Clock(0)) {
+            int this_tick = OC::CORE::ticks;
+            int time = this_tick - last_bpm_tick;
+            last_bpm_tick = this_tick;
+            bpm = 1000000 / time;
+            if (bpm > 9999) bpm = 9999;
+
+            if (last_scope_tick) {
+                int cycle_ticks = OC::CORE::ticks - last_scope_tick;
+                sample_ticks = cycle_ticks / 64;
+                sample_ticks = constrain(sample_ticks, 2, 64000);
+            }
+            last_scope_tick = OC::CORE::ticks;
+        }
+
         if (!freeze) {
+            last_cv = In(0);
 
             if (--sample_countdown < 1) {
                 sample_countdown = sample_ticks;
@@ -26,12 +46,15 @@ public:
             }
 
             Out(0, In(0));
-            Out(1, In(1));
         }
     }
 
     void View() {
-        gfxHeader("BigScope");
+        gfxHeader("Scope");
+        //gfxPrint(1, 2, "Scope");
+        //DrawTicks();
+        DrawVoltage();
+        DrawBPM();
         DrawInput1();
         if (freeze) {
             gfxInvert(0, 24, 64, 40);
@@ -78,7 +101,12 @@ public:
     }
 
 private:
+    // BPM Calcultion
+    int last_bpm_tick;
+    int bpm;
+
     // CV monitor
+    int last_cv;
     bool freeze;
 
     // Scope
@@ -87,6 +115,37 @@ private:
     int sample_countdown; // Last time a sample was taken
     int sample_num; // Current sample number at the start
     int last_encoder_move; // The last the the sample_ticks value was changed
+    int last_scope_tick; // Used to auto-calculate sample countdown
+
+    void DrawBPM() {
+        gfxPrint(110, 1, bpm / 4);
+        gfxBitmap(102, 1, 8, CLOCK_ICON);
+    }
+
+//    void DrawTicks() {
+//        gfxPrint(40, 1, sample_ticks);
+//    }
+
+
+    void gfxPrintVoltage(int cv) {
+        int v = (cv * 100) / (12 << 7);
+        bool neg = v < 0 ? 1 : 0;
+        if (v < 0) v = -v;
+        int wv = v / 100; // whole volts
+        int dv = v - (wv * 100); // decimal
+        gfxPrint(neg ? "-" : "+");
+        gfxPrint(wv);
+        gfxPrint(".");
+        if (dv < 10) gfxPrint("0");
+        gfxPrint(dv);
+        gfxPrint("V");
+    }
+
+    void DrawVoltage() {
+        gfxBitmap(45, 3, 8, CV_ICON);
+        gfxPos(55, 1);
+        gfxPrintVoltage(last_cv);
+    }
 
     void DrawInput1() {
         for (int s = 0; s < 64; s++)
@@ -97,10 +156,8 @@ private:
             gfxPixel(x, (28 - l) + 24);
         }
 
-        if (OC::CORE::ticks - last_encoder_move < 16667) {
-            gfxPrint(1, 26, sample_ticks);
-        }
     }
+
 };
 
 BigScope BigScope_instance;
