@@ -153,7 +153,7 @@ private:
             int x = s + sample_num;
             if (x > 63) x -= 64;
             int l = Proportion(snapshot[x], 255, 28);
-            gfxPixel(x, (28 - l) + 24);
+            gfxPixel(x, (28 - l) + 10);
         }
 
     }
