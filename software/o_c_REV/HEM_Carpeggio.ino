@@ -36,6 +36,7 @@ public:
         replay = 0;
         transpose = 0;
         ImprintChord(2);
+        pitch_out_for_step();
     }
 
     void Controller() {
@@ -53,8 +54,8 @@ public:
                 step = (y * 4) + x;
                 pitch_out_for_step();
             } else {
-                pitch_out_for_step();
                 if (++step > 15) step = 0;
+                pitch_out_for_step();
             }
             replay = 0;
         } else if (replay) {
