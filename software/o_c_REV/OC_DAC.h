@@ -42,7 +42,7 @@ public:
   #ifdef BUCHLA_4U
     static constexpr int kOctaveZero = 0;
   #elif defined(VOR) 
-    static constexpr int kOctaveZero = 0;
+    static constexpr int kOctaveZero = 5;
     static constexpr int VBiasUnipolar = 3900;   // onboard DAC @ Vref 1.2V (internal), 1.75x gain
     static constexpr int VBiasBipolar = 2000;    // onboard DAC @ Vref 1.2V (internal), 1.75x gain
     static constexpr int VBiasAsymmetric = 2760; // onboard DAC @ Vref 1.2V (internal), 1.75x gain
