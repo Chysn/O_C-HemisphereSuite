@@ -1,3 +1,5 @@
+### Attention!! If you are using an O+C Plus, do NOT calibrate it using this fork of Hemispheres! Nothing will break, but you will calibrate it incorrectly. Please install the classic O+C Firmware with VOR enabled and calibrate there, only then install this firmware.
+
 Hemisphere Suite: Alternate Alternate Firmware for Ornament and Crime
 ===
 
