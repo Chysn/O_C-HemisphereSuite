@@ -253,7 +253,7 @@ public:
         RequestAppletData();
 
         // Describe the data structure for the audience
-        uint8_t V[12];
+        uint8_t V[10];
         V[0] = (uint8_t)values_[HEMISPHERE_SELECTED_LEFT_ID];
         V[1] = (uint8_t)values_[HEMISPHERE_SELECTED_RIGHT_ID];
         V[2] = (uint8_t)(values_[HEMISPHERE_LEFT_DATA_L] & 0xff);
@@ -264,18 +264,16 @@ public:
         V[7] = (uint8_t)((values_[HEMISPHERE_LEFT_DATA_H] >> 8) & 0xff);
         V[8] = (uint8_t)(values_[HEMISPHERE_RIGHT_DATA_H] & 0xff);
         V[9] = (uint8_t)((values_[HEMISPHERE_RIGHT_DATA_H] >> 8) & 0xff);
-        V[10] = (uint8_t)(values_[HEMISPHERE_CLOCK_DATA] & 0xff);
-        V[11] = (uint8_t)((values_[HEMISPHERE_CLOCK_DATA] >> 8) & 0xff);
 
         // Pack it up, ship it out
         UnpackedData unpacked;
-        unpacked.set_data(12, V);
+        unpacked.set_data(10, V);
         PackedData packed = unpacked.pack();
         SendSysEx(packed, 'H');
     }
 
     void OnReceiveSysEx() {
-        uint8_t V[12];
+        uint8_t V[10];
         if (ExtractSysExData(V, 'H')) {
             values_[HEMISPHERE_SELECTED_LEFT_ID] = V[0];
             values_[HEMISPHERE_SELECTED_RIGHT_ID] = V[1];
@@ -283,7 +281,6 @@ public:
             values_[HEMISPHERE_RIGHT_DATA_L] = ((uint16_t)V[5] << 8) + V[4];
             values_[HEMISPHERE_LEFT_DATA_H] = ((uint16_t)V[7] << 8) + V[6];
             values_[HEMISPHERE_RIGHT_DATA_H] = ((uint16_t)V[9] << 8) + V[8];
-            values_[HEMISPHERE_CLOCK_DATA] = ((uint16_t)V[11] << 8) + V[10];
             Resume();
         }
     }
