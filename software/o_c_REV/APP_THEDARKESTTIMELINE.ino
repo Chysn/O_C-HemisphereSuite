@@ -515,7 +515,7 @@ SETTINGS_DECLARE(TheDarkestTimeline, DT_SETTING_LAST) {
     {16, 1, 32, "Length", NULL, settings::STORAGE_TYPE_U8},
     {0, 0, 31, "Index", NULL, settings::STORAGE_TYPE_U8},
     {5, 0, OC::Scales::NUM_SCALES - 1, "Scale", NULL, settings::STORAGE_TYPE_U8},
-    {0, 0, 12, "Root", NULL, settings::STORAGE_TYPE_U8},
+    {0, 0, 11, "Root", NULL, settings::STORAGE_TYPE_U8},
     {0, 0, 16, "MIDI Channel", NULL, settings::STORAGE_TYPE_U8},
     {0, 0, 16, "MIDI Channel Alt", NULL, settings::STORAGE_TYPE_U8},
     {0, 0, 16, "MIDI Channel In", NULL, settings::STORAGE_TYPE_U8},
