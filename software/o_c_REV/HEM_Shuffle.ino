@@ -40,7 +40,7 @@ public:
             last_tick = tick;
         }
 
-        if (Clock(0)) {
+        if (Clock(0) && !Gate(1)) {
             which = 1 - which;
             if (last_tick) {
                 tempo = tick - last_tick;

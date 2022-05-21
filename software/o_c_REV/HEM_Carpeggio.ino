@@ -42,7 +42,7 @@ public:
     void Controller() {
         if (Clock(1)) step = 0; // Reset
 
-        if (Clock(0)) {
+        if (Clock(0) && !Gate(1)) {
             // Are the X or Y position being set? If so, get step coordinates. Otherwise,
             // simply play current step and advance it. This way, the applet can be used as
             // a more conventional arpeggiator as well as a Cartesian one.

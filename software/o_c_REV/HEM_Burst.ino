@@ -137,7 +137,7 @@ protected:
         //                               "------------------" <-- Size Guide
         help[HEMISPHERE_HELP_DIGITALS] = "1=Clock 2=Burst";
         help[HEMISPHERE_HELP_CVS]      = "1=Number 2=Spacing";
-        help[HEMISPHERE_HELP_OUTS]     = "1=Burst 2=Gate";
+        help[HEMISPHERE_HELP_OUTS]     = "A=Burst B=Gate";
         help[HEMISPHERE_HELP_ENCODER]  = "Number/Spacing/Div";
         //                               "------------------" <-- Size Guide
     }

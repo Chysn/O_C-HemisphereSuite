@@ -57,7 +57,7 @@ public:
         }
 
         // The input was clocked; set timing info
-        if (Clock(0)) {
+        if (Clock(0) && !Gate(1)) {
         		cycle_time = ClockCycleTicks(0);
             // At the clock input, handle clock division
             ForEachChannel(ch)

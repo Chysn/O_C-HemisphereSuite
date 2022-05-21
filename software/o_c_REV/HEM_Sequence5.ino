@@ -48,7 +48,7 @@ public:
 
         if (Clock(0)) StartADCLag();
 
-        if (EndOfADCLag()) {
+        if (EndOfADCLag() && !Gate(1)) {
             Advance(step);
             if (step == 0) ClockOut(1);
             play = 1;

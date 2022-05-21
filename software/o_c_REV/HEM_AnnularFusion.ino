@@ -53,7 +53,7 @@ public:
         if (Clock(1)) step = 0; // Reset
 
         // Advance both rings
-        if (Clock(0)) {
+        if (Clock(0) && !Gate(1)) {
             last_clock = OC::CORE::ticks;
             ForEachChannel(ch)
             {
