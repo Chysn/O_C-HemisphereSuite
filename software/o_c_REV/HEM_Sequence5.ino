@@ -46,9 +46,9 @@ public:
         int play_note = note[step] + 60 + transpose;
         play_note = constrain(play_note, 0, 127);
 
-        if (Clock(0)) StartADCLag();
+        if (Clock(0) && !Clock(1)) StartADCLag();
 
-        if (EndOfADCLag() && !Gate(1)) {
+        if (EndOfADCLag()) {
             Advance(step);
             if (step == 0) ClockOut(1);
             play = 1;
