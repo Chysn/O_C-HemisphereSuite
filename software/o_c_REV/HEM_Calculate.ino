@@ -22,7 +22,7 @@
 #define HEMISPHERE_NUMBER_OF_CALC 7
 int hem_MIN(int v1, int v2) {return (v1 < v2) ? v1 : v2;}
 int hem_MAX(int v1, int v2) {return (v1 > v2) ? v1 : v2;}
-int hem_SUM(int v1, int v2) {return constrain(v1 + v2, 0, HEMISPHERE_MAX_CV);}
+int hem_SUM(int v1, int v2) {return constrain(v1 + v2, -HEMISPHERE_3V_CV, HEMISPHERE_MAX_CV);}
 int hem_DIFF(int v1, int v2) {return hem_MAX(v1, v2) - hem_MIN(v1, v2);}
 int hem_MEAN(int v1, int v2) {return (v1 + v2) / 2;}
 typedef int(*CalcFunction)(int, int);
