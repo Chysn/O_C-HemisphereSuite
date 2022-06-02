@@ -35,8 +35,11 @@ public:
 	/* Run during the interrupt service routine, 16667 times per second */
     void Controller() {
         if (Clock(0, 1)) OnButtonPress(); // Clock at Dig 0 emulates press (ignore forwarding)
-        ClockOut(0, trigger_out); // If trigger is in queue, send clock from A
-        if (trigger_out) trigger_out = 0; // Clear trigger queue
+        if (trigger_out) {
+            ClockOut(0);
+            trigger_out = 0; // Clear trigger queue
+            trigger_countdown = 1667; // Trigger display countdown
+        }
         GateOut(1, toggle_st); // Send toggle state
     }
 
@@ -50,7 +53,6 @@ public:
     void OnButtonPress() {
         trigger_out = 1; // Set trigger queue
         toggle_st = 1 - toggle_st; // Alternate toggle state when pressed
-        trigger_countdown = 1667;
     }
 
 	/* Called when the encoder for this hemisphere is rotated
@@ -93,11 +95,11 @@ private:
     void DrawIndicator()
     {
         if (trigger_countdown > 0) {
-            gfxBitmap(44, 45, 8, CLOCK_ICON);
+            gfxBitmap(12, 45, 8, CLOCK_ICON);
             trigger_countdown--;
         }
 
-        gfxBitmap(76, 45, 8, toggle_st ? CLOSED_ICON : OPEN_ICON);
+        gfxBitmap(44, 45, 8, toggle_st ? CLOSED_ICON : OPEN_ICON);
     }
 };
 
