@@ -60,6 +60,7 @@ enum HEMISPHERE_SETTINGS {
     HEMISPHERE_RIGHT_DATA_L,
     HEMISPHERE_LEFT_DATA_H,
     HEMISPHERE_RIGHT_DATA_H,
+    HEMISPHERE_CLOCK_DATA,
     HEMISPHERE_SETTING_LAST
 };
 
@@ -92,6 +93,7 @@ public:
             uint32_t data = (values_[4 + h] << 16) + values_[2 + h];
             available_applets[index].OnDataReceive(h, data);
         }
+        ClockSetup.OnDataReceive(0, uint32_t(values_[HEMISPHERE_CLOCK_DATA]));
     }
 
     void SetApplet(int hemisphere, int index) {
@@ -243,6 +245,7 @@ public:
             apply_value(2 + h, data & 0xffff);
             apply_value(4 + h, (data >> 16) & 0xffff);
         }
+        apply_value(HEMISPHERE_CLOCK_DATA, ClockSetup.OnDataRequest(0));
     }
 
     void OnSendSysEx() {
@@ -331,6 +334,7 @@ SETTINGS_DECLARE(HemisphereManager, HEMISPHERE_SETTING_LAST) {
     {0, 0, 65535, "Data R low", NULL, settings::STORAGE_TYPE_U16},
     {0, 0, 65535, "Data L high", NULL, settings::STORAGE_TYPE_U16},
     {0, 0, 65535, "Data R high", NULL, settings::STORAGE_TYPE_U16},
+    {0, 0, 65535, "Clock data", NULL, settings::STORAGE_TYPE_U16},
 };
 
 HemisphereManager manager;

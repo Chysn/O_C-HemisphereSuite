@@ -60,9 +60,25 @@ public:
             clock_m->SetMultiply(mult);
         }
     }
-        
-    uint32_t OnDataRequest() {return 0;}
-    void OnDataReceive(uint32_t data) { }
+
+    uint32_t OnDataRequest() {
+        uint32_t data = 0;
+        Pack(data, PackLocation { 0, 1 }, clock_m->IsRunning() || clock_m->IsPaused());
+        Pack(data, PackLocation { 1, 9 }, clock_m->GetTempo());
+        Pack(data, PackLocation { 10, 5 }, clock_m->GetMultiply());
+        return data;
+    }
+
+    void OnDataReceive(uint32_t data) {
+        if (Unpack(data, PackLocation { 0, 1 })) {
+            clock_m->Start();
+            clock_m->Pause();
+        } else {
+            clock_m->Stop();
+        }
+        clock_m->SetTempoBPM(Unpack(data, PackLocation { 1, 9 }));
+        clock_m->SetMultiply(Unpack(data, PackLocation { 10, 5 }));
+    }
 
 protected:
     void SetHelp() {
@@ -73,11 +89,11 @@ protected:
         help[HEMISPHERE_HELP_ENCODER]  = "";
         //                               "------------------" <-- Size Guide
     }
-    
+
 private:
     int cursor; // 0=Source, 1=Tempo, 2=Multiply
     ClockManager *clock_m = clock_m->get();
-    
+
     void DrawInterface() {
         // Header: This is sort of a faux applet, so its header
         // needs to extend across the screen
