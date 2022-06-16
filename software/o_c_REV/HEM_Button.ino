@@ -95,11 +95,9 @@ private:
 
     void DrawIndicator()
     {
-        if (trigger_countdown) {
-            gfxBitmap(12, 35, 8, CLOCK_ICON);
-        }
-
-        gfxBitmap(44, 43, 8, toggle_st ? CLOSED_ICON : OPEN_ICON);
+        if (trigger_countdown) gfxFrame(9, 42, 13, 13);
+        gfxBitmap(12, 45, 8, CLOCK_ICON);
+        gfxBitmap(44, 45, 8, toggle_st ? CLOSED_ICON : OPEN_ICON);
     }
 };
 
