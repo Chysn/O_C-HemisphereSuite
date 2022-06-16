@@ -38,9 +38,10 @@ public:
         if (trigger_out) {
             ClockOut(0);
             trigger_out = 0; // Clear trigger queue
-            trigger_countdown = 333; // Trigger display countdown
+            trigger_countdown = 1667; // Trigger display countdown
         }
         GateOut(1, toggle_st); // Send toggle state
+        if (trigger_countdown) trigger_countdown--;
     }
 
 	/* Draw the screen */
@@ -94,9 +95,8 @@ private:
 
     void DrawIndicator()
     {
-        if (trigger_countdown > 0) {
+        if (trigger_countdown) {
             gfxBitmap(12, 35, 8, CLOCK_ICON);
-            trigger_countdown--;
         }
 
         gfxBitmap(44, 43, 8, toggle_st ? CLOSED_ICON : OPEN_ICON);
