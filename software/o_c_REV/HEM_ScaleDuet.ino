@@ -91,7 +91,8 @@ public:
         mask[0] = Unpack(data, PackLocation {0,12});
         mask[1] = Unpack(data, PackLocation {12,12});
 
-        ForEachChannel(ch) quantizer.Configure(OC::Scales::GetScale(5), mask[ch]);
+        last_scale = 0;
+        quantizer.Configure(OC::Scales::GetScale(5), mask[last_scale]);
     }
 
 protected:
