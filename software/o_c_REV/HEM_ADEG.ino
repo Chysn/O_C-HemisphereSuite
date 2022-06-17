@@ -53,7 +53,7 @@ public:
             if (phase == 1) target = int2simfloat(HEMISPHERE_MAX_CV); // Rise to max for attack
             if (phase == 2) target = 0; // Fall to zero for decay
 
-            if (signal != target) {
+            //if (signal != target) { // Logarhythm fix 8/2020
                 int segment = phase == 1
                     ? effective_attack + Proportion(DetentedIn(0), HEMISPHERE_MAX_CV, HEM_ADEG_MAX_VALUE)
                     : effective_decay + Proportion(DetentedIn(1), HEMISPHERE_MAX_CV, HEM_ADEG_MAX_VALUE);
@@ -82,7 +82,7 @@ public:
                     ClockOut(1);
                     phase = 0;
                 }
-            }
+            //}
             Out(0, simfloat2int(signal));
         }
     }
