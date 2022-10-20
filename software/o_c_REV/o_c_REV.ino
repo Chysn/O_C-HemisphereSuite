@@ -151,7 +151,7 @@ void setup() {
 
 #ifdef VOR
   VBiasManager *vbias_m = vbias_m->get();
-  vbias_m->ChangeBiasToState(VBiasManager::UNI);
+  vbias_m->ChangeBiasToState(VBiasManager::BI);
 #endif
 }
 

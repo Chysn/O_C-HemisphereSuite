@@ -45,9 +45,9 @@ class VBiasManager {
     }
 
 public:
-    static const int UNI = 0;
+    static const int BI = 0;
     static const int ASYM = 1;
-    static const int BI = 2;
+    static const int UNI = 2;
 
     static VBiasManager *get() {
         if (!instance) instance = new VBiasManager;
@@ -78,7 +78,7 @@ public:
      *
      * #ifdef VOR
      *     VBiasManager *vbias_m = vbias_m->get();
-     *     vbias_m->ChangeBiasToState(VBiasManager::UNI);
+     *     vbias_m->ChangeBiasToState(VBiasManager::BI);
      * #endif
      *
      */
@@ -101,15 +101,15 @@ public:
             graphics.setPrintPos(20, 10);
             graphics.print("Range:");
 
-            // Unipolar state
+            // Bipolar state
             graphics.setPrintPos(30, 20);
-            graphics.print(" 0V -> 10V");
+            graphics.print("-5V -> 5V");
             // Asym State
             graphics.setPrintPos(30, 30);
             graphics.print("-3V -> 7V");
-            // Bipolar state
+            // Unipolar state
             graphics.setPrintPos(30, 40);
-            graphics.print("-5V -> 5V");
+            graphics.print(" 0V -> 10V");
 
             graphics.setPrintPos(20, 20 + (bias_state * 10));
             graphics.print("> ");
